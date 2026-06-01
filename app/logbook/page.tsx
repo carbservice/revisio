@@ -9,6 +9,20 @@ export default function Logbook() {
           <p className="text-zinc-600 dark:text-zinc-400 mt-2">Wat ik leer en bouw aan Revisio</p>
         </header>
 
+        <div className="bg-white dark:bg-zinc-800 rounded-lg p-8 shadow-sm border border-zinc-200 dark:border-zinc-700 mb-8">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-4">De ruggengraat van Revisio</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <App name="Visual Studio Code" role="De werkbank waar ik mijn code schrijf op mijn laptop" />
+            <App name="Next.js" role="Het bouwpakket dat van mijn code een werkende website maakt" />
+            <App name="GitHub" role="De kluis waar alle versies van mijn code veilig opgeslagen staan" />
+            <App name="Supabase" role="De database in de wolken waar alle data van Revisio in komt" />
+            <App name="Vercel" role="De etalage die mijn website live op het internet zet" />
+          </div>
+          <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-6 leading-relaxed italic">
+            Ik schrijf in Visual Studio Code → Next.js bouwt → GitHub bewaart → Vercel zet live → Supabase levert de data.
+          </p>
+        </div>
+
         <article className="space-y-8">
           
           <div className="bg-white dark:bg-zinc-800 rounded-lg p-8 shadow-sm border border-zinc-200 dark:border-zinc-700">
@@ -21,7 +35,7 @@ export default function Logbook() {
             <Section title="Tools geïnstalleerd">
               <Item>Python — voor API koppelingen</Item>
               <Item>Node.js — motor voor Next.js</Item>
-              <Item>VS Code — code editor</Item>
+              <Item>Visual Studio Code — code editor</Item>
               <Item>Git — versie beheer</Item>
             </Section>
 
@@ -60,6 +74,15 @@ export default function Logbook() {
         </article>
 
       </div>
+    </div>
+  )
+}
+
+function App({ name, role }: { name: string; role: string }) {
+  return (
+    <div className="border border-zinc-200 dark:border-zinc-700 rounded-md p-3">
+      <p className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">{name}</p>
+      <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed">{role}</p>
     </div>
   )
 }
