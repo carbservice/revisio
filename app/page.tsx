@@ -6,7 +6,6 @@ export default async function Home() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#f7f4ef' }}>
       
-      {/* Header */}
       <header className="border-b border-zinc-200 py-6 px-6" style={{ backgroundColor: '#1a3c2e' }}>
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div>
@@ -19,7 +18,6 @@ export default async function Home() {
         </div>
       </header>
 
-      {/* Hero */}
       <section className="px-6 py-20" style={{ backgroundColor: '#1a3c2e' }}>
         <div className="max-w-3xl mx-auto text-center">
           <p className="text-xs uppercase tracking-widest mb-4" style={{ color: '#b8962e' }}>
@@ -35,7 +33,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Stages preview */}
       <section className="px-6 py-16">
         <div className="max-w-5xl mx-auto">
           <h3 className="text-xs uppercase tracking-widest text-zinc-500 mb-8 text-center">De stadia van een revisie</h3>
@@ -50,7 +47,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Status */}
       <section className="px-6 py-12 border-t border-zinc-200">
         <div className="max-w-3xl mx-auto">
           <div className="bg-white rounded-lg p-8 border border-zinc-200">
@@ -62,7 +58,7 @@ export default async function Home() {
             {data && data.length > 0 && (
               <div className="mt-4 pt-4 border-t border-zinc-100">
                 <p className="text-xs text-zinc-500 mb-1">Eerste databaseverbinding actief</p>
-                {data.map((row: any) => (
+                {data.map((row: { id: number; bericht: string }) => (
                   <p key={row.id} className="text-sm text-zinc-700">✓ {row.bericht}</p>
                 ))}
               </div>
@@ -71,7 +67,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="px-6 py-8 mt-12 border-t border-zinc-200" style={{ backgroundColor: '#1a2820' }}>
         <div className="max-w-5xl mx-auto text-center">
           <p className="text-xs text-zinc-400">
