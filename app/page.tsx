@@ -1,98 +1,167 @@
 import { supabase } from '@/lib/supabase'
 
 export default async function Home() {
-  const { data } = await supabase.from('test').select('*')
+  await supabase.from('test').select('*')
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#f7f4ef' }}>
+    <div className="min-h-screen" style={{ 
+      background: 'linear-gradient(135deg, #f5f1e8 0%, #e8ede4 50%, #d8e3d4 100%)',
+      fontFamily: "'Karma', 'Times New Roman', serif"
+    }}>
       
-      <header className="border-b border-zinc-200 py-6 px-6" style={{ backgroundColor: '#1a3c2e' }}>
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-widest" style={{ color: '#b8962e' }}>Carburateur Service Nederland</p>
-            <h1 className="text-2xl font-bold text-white mt-1">Revisio</h1>
-          </div>
-          <a href="/logbook" className="text-sm text-zinc-300 hover:text-white transition-colors">
-            Logboek →
+      <link href="https://fonts.googleapis.com/css2?family=Karma:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+      <nav className="absolute top-0 right-0 left-0 px-8 py-5 flex items-center justify-between">
+        <div className="text-xs uppercase tracking-widest" style={{ color: '#1a3c2e', opacity: 0.7 }}>
+          Carburateur
+        </div>
+        <div className="flex items-center gap-8 text-sm" style={{ color: '#1a3c2e' }}>
+          <a href="#order" className="hover:opacity-70 transition-opacity">Volg Uw Order</a>
+          <a href="https://www.carbservice.nl" className="hover:opacity-70 transition-opacity">Contact</a>
+          <a href="/logbook" className="hover:opacity-70 transition-opacity flex items-center gap-1.5">
+            <span style={{ color: '#1a3c2e' }}>⚙</span> Admin
           </a>
         </div>
-      </header>
+      </nav>
 
-      <section className="px-6 py-20" style={{ backgroundColor: '#1a3c2e' }}>
+      <section className="px-6 pt-32 pb-20">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-xs uppercase tracking-widest mb-4" style={{ color: '#b8962e' }}>
-            Auto · Motor · Boot · Pre-war
-          </p>
-          <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight mb-6">
-            Volg jouw revisie live op onze werkbank
-          </h2>
-          <p className="text-lg text-zinc-300 leading-relaxed max-w-2xl mx-auto">
-            Stap voor stap zie je hoe jouw carburateur door onze handen gaat. 
-            Van demontage tot afstelling — met foto's en updates van onze monteurs.
-          </p>
-        </div>
-      </section>
-
-      <section className="px-6 py-16">
-        <div className="max-w-5xl mx-auto">
-          <h3 className="text-xs uppercase tracking-widest text-zinc-500 mb-8 text-center">De stadia van een revisie</h3>
           
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <Stage number="1" name="Ontvangen" desc="Intake en eerste check" />
-            <Stage number="2" name="Diagnose" desc="Inspectie en analyse" />
-            <Stage number="3" name="In revisie" desc="Monteur aan de slag" />
-            <Stage number="4" name="Afgesteld" desc="Getest op de bank" />
-            <Stage number="5" name="Klaar" desc="Klaar om af te halen" />
+          <div className="mb-12 flex justify-center">
+            <div className="text-center">
+              <h1 
+                className="text-5xl md:text-6xl tracking-wide"
+                style={{ 
+                  color: '#1a3c2e', 
+                  fontFamily: "'Karma', serif",
+                  fontWeight: 400,
+                  letterSpacing: '0.02em'
+                }}
+              >
+                Carburateur
+              </h1>
+              <p 
+                className="text-xs uppercase tracking-[0.4em] mt-1"
+                style={{ color: '#1a3c2e', opacity: 0.8 }}
+              >
+                Service
+              </p>
+            </div>
+          </div>
+
+          <p 
+            className="text-xs uppercase tracking-[0.3em] mb-8"
+            style={{ color: '#1a3c2e' }}
+          >
+            Specialisten in klassiekers
+          </p>
+
+          <h2 
+            className="text-6xl md:text-7xl mb-2"
+            style={{ 
+              color: '#1a1a1a',
+              fontFamily: "'Karma', serif",
+              fontWeight: 400,
+              lineHeight: 1.1
+            }}
+          >
+            Volg Uw
+          </h2>
+          <h2 
+            className="text-6xl md:text-7xl italic mb-8"
+            style={{ 
+              color: '#2d6b4c',
+              fontFamily: "'Karma', serif",
+              fontWeight: 400,
+              fontStyle: 'italic',
+              lineHeight: 1.1
+            }}
+          >
+            Carburateur Revisie
+          </h2>
+
+          <p 
+            className="text-lg mb-12 max-w-xl mx-auto"
+            style={{ color: '#4a4a4a', lineHeight: 1.6 }}
+          >
+            Bekijk realtime de voortgang van uw revisie met foto's van elke fase.
+          </p>
+
+          <form className="flex gap-3 max-w-2xl mx-auto" id="order">
+            <div className="flex-1 relative">
+              <input 
+                type="text" 
+                placeholder="Voer uw ordernummer in..."
+                className="w-full px-5 py-4 pl-12 rounded-lg bg-white/80 backdrop-blur border border-zinc-200 text-zinc-800 placeholder-zinc-400 focus:outline-none focus:border-green-700 transition-colors"
+                style={{ fontFamily: "'Karma', serif" }}
+              />
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">⌕</span>
+            </div>
+            <button 
+              type="submit"
+              className="px-8 py-4 rounded-lg text-white font-medium flex items-center gap-2 transition-all hover:shadow-lg"
+              style={{ backgroundColor: '#2d6b4c', fontFamily: "'Karma', serif" }}
+            >
+              Bekijk Status →
+            </button>
+          </form>
+
+          <div className="flex items-center justify-center gap-2 mt-8 text-sm" style={{ color: '#2d6b4c' }}>
+            <span>◔</span>
+            <span>Live updates met foto's van elke fase</span>
+          </div>
+
+        </div>
+      </section>
+
+      <section className="px-6 py-20">
+        <div className="max-w-5xl mx-auto">
+          <p 
+            className="text-xs uppercase tracking-[0.3em] text-center mb-12"
+            style={{ color: '#1a3c2e' }}
+          >
+            De stadia van uw revisie
+          </p>
+          
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <Stage name="Ontvangen" desc="Intake en eerste check" />
+            <Stage name="Diagnose" desc="Inspectie en analyse" />
+            <Stage name="In revisie" desc="Monteur aan de slag" />
+            <Stage name="Afgesteld" desc="Getest op de bank" />
+            <Stage name="Klaar" desc="Klaar om af te halen" />
           </div>
         </div>
       </section>
 
-      <section className="px-6 py-12 border-t border-zinc-200">
-        <div className="max-w-3xl mx-auto">
-          <div className="bg-white rounded-lg p-8 border border-zinc-200">
-            <p className="text-xs uppercase tracking-widest text-zinc-500 mb-3">Status platform</p>
-            <p className="text-zinc-700 leading-relaxed">
-              Revisio is in opbouw. De koppeling met onze offertes en facturen 
-              wordt momenteel ingericht — binnenkort kun je hier jouw revisie live volgen.
-            </p>
-            {data && data.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-zinc-100">
-                <p className="text-xs text-zinc-500 mb-1">Eerste databaseverbinding actief</p>
-                {data.map((row: { id: number; bericht: string }) => (
-                  <p key={row.id} className="text-sm text-zinc-700">✓ {row.bericht}</p>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      <footer className="px-6 py-8 mt-12 border-t border-zinc-200" style={{ backgroundColor: '#1a2820' }}>
-        <div className="max-w-5xl mx-auto text-center">
-          <p className="text-xs text-zinc-400">
-            Carburateur Service Nederland · Huizerweg 49, 1401 GH Bussum · +31 6 53864208
-          </p>
-          <p className="text-xs text-zinc-500 mt-2">
-            <a href="https://www.carbservice.nl" className="hover:text-zinc-300">www.carbservice.nl</a>
-          </p>
-        </div>
+      <footer className="px-6 py-12 text-center" style={{ color: '#1a3c2e' }}>
+        <p className="text-sm">
+          Carburateur Service Nederland · Huizerweg 49, 1401 GH Bussum
+        </p>
+        <p className="text-xs mt-2 opacity-70">
+          <a href="https://www.carbservice.nl" className="hover:opacity-100">www.carbservice.nl</a>
+          {' · '}
+          <a href="tel:+31653864208">+31 6 53864208</a>
+        </p>
       </footer>
 
     </div>
   )
 }
 
-function Stage({ number, name, desc }: { number: string; name: string; desc: string }) {
+function Stage({ name, desc }: { name: string; desc: string }) {
   return (
-    <div className="bg-white rounded-lg p-5 border border-zinc-200 text-center">
-      <div 
-        className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm mx-auto mb-3"
-        style={{ backgroundColor: '#b8962e' }}
+    <div 
+      className="bg-white/60 backdrop-blur rounded-lg p-5 text-center border border-white/40"
+    >
+      <p 
+        className="font-medium text-base mb-1"
+        style={{ color: '#1a3c2e', fontFamily: "'Karma', serif" }}
       >
-        {number}
-      </div>
-      <p className="font-bold text-sm" style={{ color: '#1a3c2e' }}>{name}</p>
-      <p className="text-xs text-zinc-500 mt-1">{desc}</p>
+        {name}
+      </p>
+      <p className="text-xs" style={{ color: '#4a4a4a' }}>
+        {desc}
+      </p>
     </div>
   )
 }
