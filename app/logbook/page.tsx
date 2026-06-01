@@ -10,17 +10,24 @@ export default function Logbook() {
         </header>
 
         <div className="bg-white dark:bg-zinc-800 rounded-lg p-8 shadow-sm border border-zinc-200 dark:border-zinc-700 mb-8">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-4">De ruggengraat van Revisio</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <App name="Visual Studio Code" role="De werkbank waar ik mijn code schrijf op mijn laptop" />
-            <App name="Next.js" role="Het bouwpakket dat van mijn code een werkende website maakt" />
-            <App name="GitHub" role="De kluis waar alle versies van mijn code veilig opgeslagen staan" />
-            <App name="Supabase" role="De database in de wolken waar alle data van Revisio in komt" />
-            <App name="Vercel" role="De etalage die mijn website live op het internet zet" />
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-6">De ruggengraat van Revisio</h2>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <App name="Visual Studio Code" role="De editor waarin ik mijn code schrijf en bewerk. Werkt lokaal op mijn Lenovo." />
+            <App name="Next.js" role="Het framework dat van mijn code een werkende website maakt. Regelt pagina's, routing en de verbinding met data." />
+            <App name="GitHub" role="Online opslagplek voor al mijn code en alle wijzigingen. Vanuit hier kan ik altijd terug naar een oudere versie." />
+            <App name="Vercel" role="De hostingplek die mijn website 24/7 live op het internet zet. Updatet automatisch elke keer dat ik nieuwe code naar GitHub stuur." />
+            <App name="Supabase" role="De database in de cloud waar alle data van Revisio in staat. Hier komen straks klanten, voertuigen, revisies en foto's." />
           </div>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-6 leading-relaxed italic">
-            Ik schrijf in Visual Studio Code → Next.js bouwt → GitHub bewaart → Vercel zet live → Supabase levert de data.
-          </p>
+
+          <div className="mt-8 pt-6 border-t border-zinc-100 dark:border-zinc-700">
+            <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed mb-4">
+              <strong>Hoe het samenwerkt:</strong> Ik schrijf in Visual Studio Code → Next.js bouwt de pagina → GitHub bewaart de versie → Vercel zet het live op internet → Supabase levert de data.
+            </p>
+            <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+              <strong>Belangrijk om te onthouden:</strong> mijn geheime keys (zoals het Supabase adres) staan op twee plekken — in <code className="bg-zinc-100 dark:bg-zinc-700 px-1.5 py-0.5 rounded text-xs">.env.local</code> op mijn laptop voor lokaal testen, en in Vercel zelf voor de live website. Nooit in GitHub, want dat is publiek zichtbaar.
+            </p>
+          </div>
         </div>
 
         <article className="space-y-8">
@@ -80,9 +87,9 @@ export default function Logbook() {
 
 function App({ name, role }: { name: string; role: string }) {
   return (
-    <div className="border border-zinc-200 dark:border-zinc-700 rounded-md p-3">
-      <p className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">{name}</p>
-      <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed">{role}</p>
+    <div className="rounded-md p-4" style={{ backgroundColor: '#1a3c2e' }}>
+      <p className="font-bold text-base text-white">{name}</p>
+      <p className="text-xs text-zinc-200 mt-1.5 leading-relaxed">{role}</p>
     </div>
   )
 }
