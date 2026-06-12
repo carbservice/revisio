@@ -6,7 +6,7 @@
 // naar beneden), met aanklikbare thumbnails.
 // Toegang via /volg?t=token of /volg?nr=ORDERNR&code=CODE.
 
-import { Suspense, useEffect, useState, CSSProperties } from "react";
+import { Suspense, useEffect, useRef, useState, CSSProperties } from "react";
 import { useSearchParams } from "next/navigation";
 import Lightbox from "@/app/components/Lightbox";
 
@@ -40,6 +40,38 @@ function Inner() {
   const [laden, setLaden] = useState(true);
   const [logoOk, setLogoOk] = useState(true);
   const [lightbox, setLightbox] = useState<{ fotos: string[]; start: number } | null>(null);
+  const [vul, setVul] = useState(0);
+  const [centers, setCenters] = useState<number[]>([]);
+  const tijdlijnRef = useRef<HTMLDivElement | null>(null);
+  const dotRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Het carburateur-icoon zakt langzaam langs de balk tot het huidige stadium
+  // en vult onderweg de groene bolletjes. We meten de posities live (de kaarten
+  // hebben wisselende hoogtes door foto's).
+  useEffect(() => {
+    if (!data) return;
+    let raf = 0;
+    let start: number | null = null;
+    let huidige = -1;
+    STADIA.forEach((st, i) => { if (data.stappen.find((s) => s.stap === st.stap)) huidige = i; });
+    if (huidige < 0) return;
+    const tick = (ts: number) => {
+      if (start == null) start = ts;
+      const cont = tijdlijnRef.current;
+      if (cont) {
+        const cTop = cont.getBoundingClientRect().top;
+        const cs = dotRefs.current.map((d) => (d ? d.getBoundingClientRect().top - cTop + d.offsetHeight / 2 : 0));
+        setCenters(cs);
+        const doel = cs[huidige] || 0;
+        const p = Math.min(1, (ts - start) / 6000);
+        setVul(doel * p);
+        if (p < 1) raf = requestAnimationFrame(tick);
+        else setVul(doel);
+      }
+    };
+    const to = setTimeout(() => { raf = requestAnimationFrame(tick); }, 500);
+    return () => { clearTimeout(to); cancelAnimationFrame(raf); };
+  }, [data]);
 
   useEffect(() => {
     const qs = t ? `t=${encodeURIComponent(t)}` : `nr=${encodeURIComponent(nr)}&code=${encodeURIComponent(code)}`;
@@ -150,34 +182,32 @@ function Inner() {
             <span style={{ fontSize: 32, fontWeight: 700, color: GROEN, fontVariantNumeric: "tabular-nums" }}>{pct}%</span>
           </div>
 
-          {/* Verticale, bewegende voortgang per stadium */}
-          <div style={{ marginTop: 22 }}>
+          {/* Verticale voortgang: het icoon zakt langzaam naar het huidige
+              stadium en vult onderweg de groene bolletjes. */}
+          <div ref={tijdlijnRef} style={{ position: "relative", marginTop: 22 }}>
+            {centers.length > 0 && (
+              <>
+                <div style={{ position: "absolute", left: 13, top: centers[0], height: Math.max(0, (centers[centers.length - 1] || 0) - (centers[0] || 0)), width: 6, borderRadius: 3, background: SPOOR }} />
+                <div style={{ position: "absolute", left: 13, top: centers[0], height: Math.max(0, vul - (centers[0] || 0)), width: 6, borderRadius: 3, background: "linear-gradient(180deg, #2f8f5b, #3aa66b)", boxShadow: "0 0 12px rgba(47,143,91,0.45)" }} />
+                {vul > (centers[0] || 0) - 1 && (
+                  <img src="/icon.png" alt="" style={{ position: "absolute", left: 0, top: vul - 16, width: 32, height: 32, borderRadius: "50%", zIndex: 3, boxShadow: "0 2px 8px rgba(0,0,0,0.3)" }} />
+                )}
+              </>
+            )}
             {STADIA.map((st, i) => {
               const s = stapData(st.stap);
               const done = !!s;
-              const volgendeDone = i < STADIA.length - 1 && !!stapData(STADIA[i + 1].stap);
               const laatste = i === STADIA.length - 1;
-              const huidig = done && i === huidigeIndex && !klaar;
+              const bereikt = done && centers[i] != null && vul >= centers[i] - 2;
               return (
                 <div key={st.stap} style={{ position: "relative", paddingLeft: 50, paddingBottom: laatste ? 0 : 16 }}>
-                  {!laatste && (
-                    <div style={{
-                      position: "absolute", left: 12, top: 32, bottom: 0, width: 8, borderRadius: 4,
-                      background: volgendeDone
-                        ? "repeating-linear-gradient(180deg, #2f8f5b 0, #2f8f5b 6px, #3aa66b 6px, #3aa66b 11px)"
-                        : SPOOR,
-                      backgroundSize: volgendeDone ? "100% 22px" : undefined,
-                      transformOrigin: "top",
-                      animation: volgendeDone ? `volgVul 0.55s ease-out ${i * 0.4}s both, volgVloei 1.2s linear ${i * 0.4 + 0.55}s infinite` : undefined,
-                    }} />
-                  )}
-                  <div style={{
-                    position: "absolute", left: 0, top: 2, width: 32, height: 32, borderRadius: "50%",
+                  <div ref={(el) => { dotRefs.current[i] = el; }} style={{
+                    position: "absolute", left: 1, top: 2, width: 30, height: 30, borderRadius: "50%",
                     display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800, color: "#fff",
-                    background: done ? GROEN_LICHT : "#fff", border: done ? "none" : `2px solid ${RAND}`,
-                    boxShadow: huidig ? "0 0 0 5px rgba(47,143,91,0.18)" : (done ? "0 0 0 4px rgba(47,143,91,0.12)" : "none"),
-                    animation: huidig ? "volgPuls 1.8s ease-in-out infinite" : undefined,
-                  }}>{done ? "✓" : ""}</div>
+                    background: bereikt ? GROEN_LICHT : "#fff", border: bereikt ? "none" : `2px solid ${RAND}`,
+                    boxShadow: bereikt ? "0 0 0 4px rgba(47,143,91,0.14)" : "none",
+                    transition: "background .35s ease, border .35s ease, box-shadow .35s ease", zIndex: 2,
+                  }}>{bereikt ? "✓" : ""}</div>
 
                   {/* Eigen blok per stap */}
                   <div style={{
