@@ -66,6 +66,7 @@ export default function Systeemstatus() {
               boxShadow: r.ok ? `0 0 0 2px ${GROEN_BG}, 0 0 7px ${GROEN}` : `0 0 0 2px ${ROOD_BG}, 0 0 7px ${ROOD}`,
               animation: r.ok ? "revled 2.4s ease-in-out infinite" : "none",
             }} />
+            <span style={{ fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.4, color: r.ok ? GROEN : ROOD }}>{r.ok ? "live" : "offline"}</span>
             {r.kort}
           </span>
         ))}

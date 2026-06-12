@@ -10,6 +10,7 @@ import DashboardNav from "@/app/components/DashboardNav";
 import LaadScherm from "@/app/components/LaadScherm";
 import { uitCache, haalEnCache } from "@/lib/cache";
 import ScrollNaarBoven from "@/app/components/ScrollNaarBoven";
+import Systeemstatus from "@/app/components/Systeemstatus";
 
 const MAAND = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
 function maandLabel(ym: string) {
@@ -90,6 +91,8 @@ function WerkplaatsDashboard() {
       <ScrollNaarBoven />
       <h1 style={{ fontSize: 26, fontWeight: 800, color: GROEN, margin: "10px 0 2px" }}>Werkplaats</h1>
       <div style={{ fontSize: 13.5, color: GRIJS, marginBottom: 18 }}>Live uit de werkplaats-app · {maandLabel(data.maand)} vergeleken met {maandLabel(data.vorige_maand)}</div>
+
+      <Systeemstatus />
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginBottom: 14 }}>
         {tegel("Op de plank nu", String(data.plank.totaal), data.plank.alert ? ROOD : GROEN,

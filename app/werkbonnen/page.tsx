@@ -9,6 +9,7 @@ import { duur, mmss, dagenGeleden } from "@/lib/format";
 import type { Klus, Monteur, Regel, Veld, Check, Artikel } from "@/lib/types";
 import DashboardNav from "@/app/components/DashboardNav";
 import ScrollNaarBoven from "@/app/components/ScrollNaarBoven";
+import Systeemstatus from "@/app/components/Systeemstatus";
 import BlokOpmerkingen from "./components/BlokOpmerkingen";
 import BlokArtikelen from "./components/BlokArtikelen";
 import BlokEindcontrole from "./components/BlokEindcontrole";
@@ -670,6 +671,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
 
       <h1 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 14px" }}>Werkplaats Werkbonnen</h1>
       {isAdmin && <DashboardNav />}
+      {isAdmin && <Systeemstatus />}
       {fout && <div style={{ ...kaart, color: ROOD, borderColor: ROOD }}>Let op: {fout}</div>}
 
       <div style={{ ...kaart, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
