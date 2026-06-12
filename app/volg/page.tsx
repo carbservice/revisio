@@ -18,11 +18,11 @@ const GROEN_BG = "#e7f0ea";
 const SPOOR = "#e1e7dd";
 
 const STADIA = [
-  { stap: "ontvangen", label: "Ontvangen op de werkbank", pct: 20 },
-  { stap: "gestart", label: "Demontage", pct: 40 },
-  { stap: "voor_ultrasoon", label: "Ultrasoonreiniging", pct: 60 },
-  { stap: "na_ultrasoon", label: "Heropbouwen", pct: 80 },
-  { stap: "schoon", label: "Klaar en gecontroleerd", pct: 100 },
+  { stap: "ontvangen", label: "Ontvangen", omschrijving: "Intake en eerste check — is alles goed aangekomen?", pct: 20 },
+  { stap: "gestart", label: "Diagnose", omschrijving: "Inspectie & analyse — is alles gangbaar?", pct: 40 },
+  { stap: "voor_ultrasoon", label: "Reviseren", omschrijving: "Aan de slag met de carburateurrevisie: demontage, ultrasoonreiniging en onderdelen plaatsen.", pct: 60 },
+  { stap: "na_ultrasoon", label: "Afbouwen & aftesten", omschrijving: "We bouwen de carburateur af en zetten deze daarna onder vacuüm en benzinedruk.", pct: 80 },
+  { stap: "schoon", label: "Klaar om te verzenden of op te halen", omschrijving: "Uw revisie is afgerond, gecontroleerd en klaar.", pct: 100 },
 ];
 
 type Stap = { stap: string; label: string; pct: number; bericht: string; gedaan_op: string | null; fotos: string[] };
@@ -182,9 +182,10 @@ function Inner() {
                     borderLeft: `4px solid ${done ? GROEN_LICHT : RAND}`,
                     borderRadius: 12, padding: "13px 16px",
                   }}>
-                    <div style={{ fontSize: 19, fontWeight: 700, color: done ? GROEN : "#a8a59c" }}>{st.label}</div>
-                    {done && s!.bericht && <div style={{ fontSize: 16, lineHeight: 1.6, color: TEKST, marginTop: 6 }}>{s!.bericht}</div>}
-                    {!done && <div style={{ fontSize: 15, color: "#a8a59c", marginTop: 4 }}>Nog te doen</div>}
+                    <div style={{ fontSize: 19, fontWeight: 700, color: done ? GROEN : "#9a978e" }}>{st.label}</div>
+                    {st.omschrijving && <div style={{ fontSize: 15, lineHeight: 1.55, color: done ? GRIJS : "#a8a59c", marginTop: 4 }}>{st.omschrijving}</div>}
+                    {done && s!.bericht && <div style={{ fontSize: 15.5, lineHeight: 1.6, color: TEKST, marginTop: 8 }}>{s!.bericht}</div>}
+                    {!done && <div style={{ display: "inline-block", fontSize: 12.5, fontWeight: 700, color: "#8d8a81", background: "#efefea", borderRadius: 999, padding: "3px 11px", marginTop: 8 }}>Nog te doen</div>}
 
                     {done && s!.fotos.length > 0 && (
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14 }}>
