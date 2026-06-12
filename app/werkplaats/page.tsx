@@ -4,32 +4,9 @@
 
 import { useEffect, useState, useRef, CSSProperties } from "react";
 import { supabase } from "@/lib/supabase";
-
-// Lichte werkplaats-stijl met duidelijke blokafzetting.
-const GROEN = "#1a3c2e";
-const GROEN_DONKER = "#1a3c2e";
-const GROEN_BG = "#e7f0ea";
-const GOUD = "#b8962e";
-const GOUD_BG = "#f7eecd";
-const ROOD = "#a23b2e";
-const ROOD_BG = "#f5e7e0";
-const TEKST = "#23211c";
-const GRIJS = "#7a7770";
-const RAND = "#dcd8cc";            // iets steviger rand voor duidelijke blokken
-const BG = "#eef0ea";             // pagina net iets dieper, zodat witte kaarten afsteken
-const KAART_BG = "#ffffff";
-const VERLOOP = "#eef0ea";
-const VELD_BG = "#ffffff";
-const VELD_TEKST = "#23211c";
-const VELD_RAND = "#d9d4c8";
-const KAART_SCHADUW = "0 1px 3px rgba(26,60,46,0.06), 0 1px 2px rgba(26,60,46,0.04)";
-
-type Klus = { id: string; nummer: string; klant: string; voertuig: string; klacht: string; bedrag: number; datum: string; getekend: string };
-type Monteur = { id: string; naam: string };
-type Regel = { id: string; monteur_naam: string; minuten: number; notitie: string | null; aangemaakt_op: string };
-type Veld = { key: string; veld_type: string; label: string; eenheid: string; positie: number; binnenkomst: string; afleveren: string };
-type Check = { key: string; naam: string; status: string; notitie: string; vast: boolean };
-type Artikel = { key: string; naam: string; bedrag: string; vast: boolean };
+import { GROEN, GROEN_BG, GOUD, GOUD_BG, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG, KAART_BG, VELD_BG, VELD_TEKST, VELD_RAND, KAART_SCHADUW } from "@/lib/theme";
+import { euro, duur, mmss, dagenGeleden, datumKort, datumTijd, datumStempel } from "@/lib/format";
+import type { Klus, Monteur, Regel, Veld, Check, Artikel } from "@/lib/types";
 
 const VELD_TYPES: { type: string; label: string; eenheid: string; categorie: string; opties?: string[] }[] = [
   { type: "vlotterhoogte",        label: "Vlotterhoogte",               eenheid: "mm",           categorie: "afstelling" },
@@ -91,45 +68,6 @@ const key = () => `v${_k++}`;
 const cfgVan = (t: string) => VELD_TYPES.find((x) => x.type === t);
 const catVan = (t: string) => cfgVan(t)?.categorie || (t === "eigen_sproeier" ? "sproeier" : "afstelling");
 function statusKleur(o: string) { return o === "Goed" ? GROEN : o === "Slecht" ? GOUD : ROOD; }
-function euro(n: number) {
-  return new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
-}
-
-function duur(min: number) {
-  const u = Math.floor(min / 60), m = min % 60;
-  if (u && m) return `${u}u ${m}m`;
-  if (u) return `${u}u`;
-  return `${m}m`;
-}
-function mmss(ms: number) {
-  const s = Math.max(0, Math.floor(ms / 1000));
-  return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
-}
-function dagenGeleden(d: string) {
-  if (!d) return null;
-  const iso = d.length <= 10 ? `${d}T00:00:00` : d;
-  const t = new Date(iso).getTime();
-  if (isNaN(t)) return null;
-  return Math.floor((Date.now() - t) / 86400000);
-}
-function datumKort(d: string) {
-  if (!d) return "";
-  const dt = new Date(d);
-  if (isNaN(dt.getTime())) return "";
-  return dt.toLocaleDateString("nl-NL", { day: "numeric", month: "short" });
-}
-function datumTijd(d: string) {
-  if (!d) return "";
-  const dt = new Date(d);
-  if (isNaN(dt.getTime())) return "";
-  return dt.toLocaleString("nl-NL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-}
-function datumStempel(d: string) {
-  if (!d) return "";
-  const dt = new Date(d);
-  if (isNaN(dt.getTime())) return "";
-  return dt.toLocaleString("nl-NL", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
-}
 function standaardVelden(): Veld[] {
   return VELD_TYPES.map((d) => ({ key: key(), veld_type: d.type, label: d.label, eenheid: d.eenheid, positie: 1, binnenkomst: "", afleveren: "" }));
 }
