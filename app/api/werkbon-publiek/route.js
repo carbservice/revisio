@@ -1,12 +1,17 @@
 // app/api/werkbon-publiek/route.js
 // Publieke klant-API. Toegang via token (?t=) of via ordernummer + code
 // (?nr=&code=). Toont alleen de GEPUBLICEERDE stand: de werkplaats bepaalt
-// zelf wanneer een update zichtbaar wordt voor de klant.
+// zelf wanneer een update (en welke foto's) zichtbaar worden voor de klant.
 
 import { supabase } from "@/lib/supabase";
 
-const STADIA_PCT = { ontvangen: 20, gestart: 40, voor_ultrasoon: 60, na_ultrasoon: 80, schoon: 100 };
-const STADIA_LABEL = { ontvangen: "Ontvangen op de werkbank", gestart: "Demontage", voor_ultrasoon: "Ultrasoonreiniging", na_ultrasoon: "Heropbouwen", schoon: "Klaar en gecontroleerd" };
+const STADIA = [
+  { stap: "ontvangen", label: "Ontvangen op de werkbank", pct: 20 },
+  { stap: "gestart", label: "Demontage", pct: 40 },
+  { stap: "voor_ultrasoon", label: "Ultrasoonreiniging", pct: 60 },
+  { stap: "na_ultrasoon", label: "Heropbouwen", pct: 80 },
+  { stap: "schoon", label: "Klaar en gecontroleerd", pct: 100 },
+];
 
 export async function GET(req) {
   try {
@@ -22,24 +27,39 @@ export async function GET(req) {
 
     const { data: link } = await q.maybeSingle();
     if (!link) return Response.json({ fout: "Onbekend ordernummer of code." }, { status: 404 });
-    // Bij ordernummer + code: exacte (case-ongevoelige) controle op de code.
     if (!token && (link.toegangscode || "").toLowerCase() !== code.toLowerCase()) {
       return Response.json({ fout: "Onbekend ordernummer of code." }, { status: 404 });
     }
 
-    // Alleen gepubliceerde stadia tellen mee voor de voortgang.
+    // Alleen gepubliceerde voortgang en foto's.
     const { data: voortgang } = await supabase
       .from("klus_voortgang")
-      .select("stap, bericht, gedaan_op, gepubliceerd_op")
+      .select("stap, bericht, gedaan_op")
       .eq("klus_id", link.klus_id)
       .not("gepubliceerd_op", "is", null);
+    const { data: fotos } = await supabase
+      .from("klus_fotos")
+      .select("stap, url, geupload_op")
+      .eq("klus_id", link.klus_id)
+      .not("gepubliceerd_op", "is", null)
+      .order("geupload_op");
 
-    const stappen = voortgang || [];
-    let pct = 0, stadium = "";
-    stappen.forEach((v) => {
-      const p = STADIA_PCT[v.stap] || 0;
-      if (p >= pct) { pct = p; stadium = STADIA_LABEL[v.stap] || ""; }
-    });
+    const vMap = {};
+    (voortgang || []).forEach((v) => { vMap[v.stap] = v; });
+    const fByStap = {};
+    (fotos || []).forEach((f) => { (fByStap[f.stap] = fByStap[f.stap] || []).push(f.url); });
+
+    const stappen = STADIA.filter((s) => vMap[s.stap]).map((s) => ({
+      stap: s.stap,
+      label: s.label,
+      pct: s.pct,
+      bericht: vMap[s.stap].bericht || "",
+      gedaan_op: vMap[s.stap].gedaan_op || null,
+      fotos: fByStap[s.stap] || [],
+    }));
+
+    const pct = stappen.reduce((m, s) => Math.max(m, s.pct), 0);
+    const stadium = stappen.length ? stappen[stappen.length - 1].label : "";
 
     return Response.json({
       nummer: link.nummer,
@@ -48,7 +68,9 @@ export async function GET(req) {
       klacht: link.klacht || "",
       pct,
       stadium,
-      gepubliceerd: stappen.length > 0,
+      stappen,
+      algemeneFotos: fByStap["algemeen"] || [],
+      gepubliceerd: stappen.length > 0 || (fByStap["algemeen"] || []).length > 0,
     });
   } catch (e) {
     return Response.json({ fout: String(e) }, { status: 500 });

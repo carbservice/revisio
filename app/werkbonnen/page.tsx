@@ -508,9 +508,11 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
       code = maakCode();
       await supabase.from("werkbon_links").update({ toegangscode: code, klacht: open.klacht }).eq("klus_id", open.id);
     }
-    // Publiceer de huidige stand: stempel de nog niet-gepubliceerde stadia.
-    const { error: pubErr } = await supabase.from("klus_voortgang").update({ gepubliceerd_op: new Date().toISOString() }).eq("klus_id", open.id).is("gepubliceerd_op", null);
+    // Publiceer de huidige stand: stempel de nog niet-gepubliceerde stadia + foto's.
+    const nu = new Date().toISOString();
+    const { error: pubErr } = await supabase.from("klus_voortgang").update({ gepubliceerd_op: nu }).eq("klus_id", open.id).is("gepubliceerd_op", null);
     if (pubErr) { setFout("Publiceren mislukt: " + pubErr.message); return; }
+    await supabase.from("klus_fotos").update({ gepubliceerd_op: nu }).eq("klus_id", open.id).is("gepubliceerd_op", null);
     log(open.id, "update naar klant gepubliceerd");
     setDeelCode(code || "");
     setDeelLink(`${window.location.origin}/volg?t=${token}`);
