@@ -159,6 +159,8 @@ function WerkplaatsApp({ ingelogd, onUitloggen }: { ingelogd: Monteur; onUitlogg
   const [stapPopup, setStapPopup] = useState<string | null>(null);
   const [stapNotitie, setStapNotitie] = useState("");
   const [fotoMelding, setFotoMelding] = useState("");
+  const [bulkBezig, setBulkBezig] = useState(false);
+  const [bulkMelding, setBulkMelding] = useState("");
   const [deelLink, setDeelLink] = useState("");
   const [klusStart, setKlusStart] = useState<{ naam: string; tijd: string } | null>(null);
 
@@ -453,6 +455,33 @@ function WerkplaatsApp({ ingelogd, onUitloggen }: { ingelogd: Monteur; onUitlogg
   async function verwijderFoto(id: string) {
     await supabase.from("klus_fotos").delete().eq("id", id);
     if (open) { log(open.id, "foto verwijderd"); await laadVoortgang(open.id); }
+  }
+
+  // Upload meerdere foto's tegelijk (verkleind), losstaand van een stadium.
+  // Ze krijgen stadium "algemeen" zodat ze in het foto-overzicht meetellen.
+  async function uploadMeerdereFotos(files: FileList) {
+    if (!open || files.length === 0) return;
+    setBulkBezig(true); setBulkMelding("");
+    let gelukt = 0, mislukt = 0;
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      setBulkMelding(`Bezig met uploaden, foto ${i + 1} van ${files.length}...`);
+      try {
+        const { blob, ext: rawExt } = await verkleinFoto(file);
+        const ext = (rawExt || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+        const pad = `${open.id}/algemeen/${Date.now()}-${i}.${ext}`;
+        const { error } = await supabase.storage.from("werkbon-fotos").upload(pad, blob, { contentType: blob.type || "image/jpeg" });
+        if (error) { mislukt++; continue; }
+        const { data } = supabase.storage.from("werkbon-fotos").getPublicUrl(pad);
+        const { error: insErr } = await supabase.from("klus_fotos").insert({ klus_id: open.id, stap: "algemeen", url: data.publicUrl });
+        if (insErr) { mislukt++; continue; }
+        gelukt++;
+      } catch { mislukt++; }
+    }
+    log(open.id, "meerdere foto's geupload", `${gelukt} gelukt${mislukt ? `, ${mislukt} mislukt` : ""}`);
+    setBulkMelding(`${gelukt} foto${gelukt === 1 ? "" : "'s"} geüpload${mislukt ? `, ${mislukt} mislukt` : ""}.`);
+    setBulkBezig(false);
+    await laadVoortgang(open.id);
   }
 
   async function deelMetKlant() {
@@ -790,6 +819,41 @@ function WerkplaatsApp({ ingelogd, onUitloggen }: { ingelogd: Monteur; onUitlogg
           <BlokArtikelen artikelen={artikelen} artikelenTotaal={artikelenTotaal} updArtikel={updArtikel} onVerwijder={(k) => setArtikelen((as) => as.filter((x) => x.key !== k))} onToevoegen={() => setArtikelen((as) => [...as, { key: key(), naam: "", bedrag: "", vast: false }])} kaart={kaart} kopstijl={kopstijl} inpG={inpG} plus={plus} />
           <BlokOpmerkingen opmerking={opmerking} setOpmerking={setOpmerking} kaart={kaart} kopstijl={kopstijl} inp={inp} />
           <BlokEindcontrole checklist={checklist} updCheck={updCheck} onVerwijder={(k) => setChecklist((cs) => cs.filter((x) => x.key !== k))} onToevoegen={() => setChecklist((cs) => [...cs, { key: key(), naam: "", status: "", notitie: "", vast: false }])} kaart={kaart} kopstijl={kopstijl} inpG={inpG} plus={plus} toggle={toggle} />
+
+          <div style={kaart}>
+            <div style={kopstijl}>Foto's</div>
+            <div style={{ fontSize: 12, color: GRIJS, marginBottom: 10 }}>Upload hier in één keer alle foto's van deze klus. Ze worden automatisch verkleind.</div>
+            <label style={{ display: "block", textAlign: "center", background: bulkBezig ? "#cdbe8a" : GOUD, color: "#fff", borderRadius: 12, padding: "13px", fontSize: 15, fontWeight: 700, cursor: bulkBezig ? "default" : "pointer" }}>
+              {bulkBezig ? "Bezig met uploaden..." : "Alle foto's uploaden"}
+              <input type="file" accept="image/*" multiple disabled={bulkBezig} style={{ display: "none" }} onChange={(e) => { const fs = e.target.files; if (fs && fs.length) uploadMeerdereFotos(fs); e.currentTarget.value = ""; }} />
+            </label>
+            {bulkMelding && <div style={{ fontSize: 13, color: GROEN, fontWeight: 600, marginTop: 10 }}>{bulkMelding}</div>}
+
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: 14, paddingTop: 10, borderTop: `1px solid ${RAND}` }}>
+              <span style={{ fontSize: 13, color: GRIJS, fontWeight: 600 }}>Totaal foto's</span>
+              <span style={{ fontSize: 18, fontWeight: 800, color: fotos.length ? GROEN : GRIJS }}>{fotos.length}</span>
+            </div>
+            {[...STADIA.map((s) => ({ id: s.id, naam: s.kort })), { id: "algemeen", naam: "Algemeen" }].map((g) => {
+              const n = fotos.filter((f) => f.stap === g.id).length;
+              if (!n) return null;
+              return (
+                <div key={g.id} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, padding: "5px 0", borderTop: `1px solid ${RAND}` }}>
+                  <span style={{ color: TEKST }}>{g.naam}</span>
+                  <span style={{ color: GRIJS, fontWeight: 600 }}>{n} foto{n === 1 ? "" : "'s"}</span>
+                </div>
+              );
+            })}
+            {fotos.filter((f) => f.stap === "algemeen").length > 0 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+                {fotos.filter((f) => f.stap === "algemeen").map((f) => (
+                  <div key={f.id} style={{ position: "relative" }}>
+                    <img src={f.url} alt="" style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8, border: `1px solid ${RAND}` }} />
+                    <button onClick={() => verwijderFoto(f.id)} style={{ position: "absolute", top: -6, right: -6, width: 22, height: 22, borderRadius: 999, border: "none", background: ROOD, color: "#fff", fontSize: 13, cursor: "pointer" }}>×</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           <button onClick={() => bewaarWerkbon(false)} disabled={bezig} style={knop(opgeslagen ? GOUD : GROEN)}>
             {bezig ? "Opslaan..." : opgeslagen ? "Werkbon opgeslagen" : "Werkbon opslaan"}
