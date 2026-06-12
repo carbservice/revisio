@@ -10,6 +10,7 @@ import type { Klus, Monteur, Regel, Veld, Check, Artikel } from "@/lib/types";
 import DashboardNav from "@/app/components/DashboardNav";
 import ScrollNaarBoven from "@/app/components/ScrollNaarBoven";
 import PaginaKop from "@/app/components/PaginaKop";
+import Lightbox from "@/app/components/Lightbox";
 import BlokOpmerkingen from "./components/BlokOpmerkingen";
 import BlokArtikelen from "./components/BlokArtikelen";
 import BlokEindcontrole from "./components/BlokEindcontrole";
@@ -169,6 +170,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
   const [bulkMelding, setBulkMelding] = useState("");
   const [deelLink, setDeelLink] = useState("");
   const [deelCode, setDeelCode] = useState("");
+  const [lightbox, setLightbox] = useState<{ fotos: string[]; start: number } | null>(null);
   const [klusStart, setKlusStart] = useState<{ naam: string; tijd: string } | null>(null);
 
   // Alleen-lezen weergave
@@ -677,9 +679,9 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
                 {fotoMelding && <div style={{ fontSize: 13, color: GROEN, fontWeight: 600, marginBottom: 10 }}>{fotoMelding}</div>}
                 {fotos.filter((f) => f.stap === stapInfo.id).length > 0 && (
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
-                    {fotos.filter((f) => f.stap === stapInfo.id).map((f) => (
+                    {fotos.filter((f) => f.stap === stapInfo.id).map((f, idx, arr) => (
                       <div key={f.id} style={{ position: "relative" }}>
-                        <img src={f.url} alt="" style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8, border: `1px solid ${RAND}` }} />
+                        <img src={f.url} alt="" onClick={() => setLightbox({ fotos: arr.map((x) => x.url), start: idx })} style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8, border: `1px solid ${RAND}`, cursor: "pointer", display: "block" }} />
                         <button onClick={() => verwijderFoto(f.id)} style={{ position: "absolute", top: -6, right: -6, width: 22, height: 22, borderRadius: 999, border: "none", background: ROOD, color: "#fff", fontSize: 13, cursor: "pointer" }}>×</button>
                       </div>
                     ))}
@@ -890,11 +892,9 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
             })}
             {fotos.length > 0 && (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
-                {fotos.map((f) => (
+                {fotos.map((f, idx) => (
                   <div key={f.id} style={{ position: "relative", width: 80 }}>
-                    <a href={f.url} target="_blank" rel="noreferrer">
-                      <img src={f.url} alt="" style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8, border: `1px solid ${RAND}`, display: "block" }} />
-                    </a>
+                    <img src={f.url} alt="" onClick={() => setLightbox({ fotos: fotos.map((x: any) => x.url), start: idx })} style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8, border: `1px solid ${RAND}`, display: "block", cursor: "pointer" }} />
                     <button onClick={() => verwijderFoto(f.id)} style={{ position: "absolute", top: -6, right: -6, width: 22, height: 22, borderRadius: 999, border: "none", background: ROOD, color: "#fff", fontSize: 13, cursor: "pointer" }}>×</button>
                     <div style={{ fontSize: 10, color: GRIJS, textAlign: "center", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.stap === "algemeen" ? "Algemeen" : (STADIA.find((s) => s.id === f.stap)?.kort || f.stap)}</div>
                   </div>
@@ -922,6 +922,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
           </div>
         </div>
       )}
+      {lightbox && <Lightbox fotos={lightbox.fotos} start={lightbox.start} onClose={() => setLightbox(null)} />}
     </main>
   );
 }

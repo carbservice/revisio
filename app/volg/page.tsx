@@ -8,6 +8,7 @@
 
 import { Suspense, useEffect, useState, CSSProperties } from "react";
 import { useSearchParams } from "next/navigation";
+import Lightbox from "@/app/components/Lightbox";
 
 const GROEN = "#1a3c2e";
 const GROEN_LICHT = "#2f8f5b";
@@ -38,6 +39,7 @@ function Inner() {
   const [fout, setFout] = useState("");
   const [laden, setLaden] = useState(true);
   const [logoOk, setLogoOk] = useState(true);
+  const [lightbox, setLightbox] = useState<{ fotos: string[]; start: number } | null>(null);
 
   useEffect(() => {
     const qs = t ? `t=${encodeURIComponent(t)}` : `nr=${encodeURIComponent(nr)}&code=${encodeURIComponent(code)}`;
@@ -190,9 +192,7 @@ function Inner() {
                     {done && s!.fotos.length > 0 && (
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14 }}>
                         {s!.fotos.slice(0, 3).map((url, j) => (
-                          <a key={j} href={url} target="_blank" rel="noreferrer">
-                            <img src={url} alt="" style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 12, border: `1px solid ${RAND}`, display: "block" }} />
-                          </a>
+                          <img key={j} src={url} alt="" onClick={() => setLightbox({ fotos: s!.fotos.slice(0, 3), start: j })} style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 12, border: `1px solid ${RAND}`, display: "block", cursor: "pointer" }} />
                         ))}
                       </div>
                     )}
@@ -207,9 +207,7 @@ function Inner() {
               <div style={{ ...labelStijl, marginBottom: 12 }}>Extra foto's</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
                 {data.algemeneFotos.slice(0, 3).map((url, j) => (
-                  <a key={j} href={url} target="_blank" rel="noreferrer">
-                    <img src={url} alt="" style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 12, border: `1px solid ${RAND}`, display: "block" }} />
-                  </a>
+                  <img key={j} src={url} alt="" onClick={() => setLightbox({ fotos: data.algemeneFotos.slice(0, 3), start: j })} style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 12, border: `1px solid ${RAND}`, display: "block", cursor: "pointer" }} />
                 ))}
               </div>
             </div>
@@ -222,6 +220,7 @@ function Inner() {
           </div>
         </div>
       </div>
+      {lightbox && <Lightbox fotos={lightbox.fotos} start={lightbox.start} onClose={() => setLightbox(null)} />}
     </main>
   );
 }
