@@ -881,45 +881,63 @@ function WerkplaatsApp({ ingelogd, onUitloggen }: { ingelogd: Monteur; onUitlogg
   );
 }
 
-// Inlogscherm met pincode. Dit is de zichtbare pagina.
+// Inlogscherm met e-mail magic link. Dit is de zichtbare pagina.
 export default function WerkplaatsPagina() {
   const [ingelogd, setIngelogd] = useState<Monteur | null>(null);
-  const [pin, setPin] = useState("");
+  const [email, setEmail] = useState("");
   const [bezig, setBezig] = useState(false);
   const [fout, setFout] = useState("");
+  const [verstuurd, setVerstuurd] = useState(false);
   const [klaar, setKlaar] = useState(false);
 
-  // onthouden op het apparaat
+  // Koppel een ingelogd e-mailadres aan een monteur in app_gebruikers.
+  // Geen match of niet actief: meteen weer uitloggen en toegang weigeren.
+  async function koppelGebruiker(authEmail: string | undefined | null) {
+    if (!authEmail) { setIngelogd(null); return; }
+    const adres = authEmail.toLowerCase();
+    const { data, error } = await supabase.from("app_gebruikers").select("id, naam, rol, actief, email").ilike("email", adres).limit(1);
+    const g = data && data[0];
+    const match = g && typeof g.email === "string" && g.email.toLowerCase() === adres;
+    if (error || !match || !g!.actief) {
+      setFout(error ? "Er ging iets mis, probeer het nog eens." : "Dit e-mailadres heeft geen toegang. Vraag de beheerder om je toe te voegen.");
+      await supabase.auth.signOut();
+      setIngelogd(null);
+      return;
+    }
+    setFout("");
+    setIngelogd({ id: g!.id as string, naam: g!.naam as string });
+  }
+
+  // Bij laden de bestaande sessie ophalen en luisteren naar in-/uitloggen.
+  // De magic-link-redirect komt ook via onAuthStateChange binnen.
   useEffect(() => {
-    try {
-      const opg = localStorage.getItem("werkplaats-gebruiker");
-      if (opg) {
-        const g = JSON.parse(opg);
-        if (g && g.id && g.naam) setIngelogd({ id: g.id, naam: g.naam });
-      }
-    } catch {}
-    setKlaar(true);
+    let levend = true;
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!levend) return;
+      await koppelGebruiker(data.session?.user?.email);
+      setKlaar(true);
+    })();
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      koppelGebruiker(session?.user?.email);
+    });
+    return () => { levend = false; sub.subscription.unsubscribe(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function inloggen() {
-    const code = pin.trim();
-    if (!code) return;
+    const adres = email.trim();
+    if (!adres) return;
     setBezig(true); setFout("");
-    try {
-      const { data, error } = await supabase.from("app_gebruikers").select("id, naam, rol, actief").eq("pincode", code).limit(1);
-      if (error) { setFout("Er ging iets mis, probeer het nog eens."); setBezig(false); return; }
-      const g = data && data[0];
-      if (!g || !g.actief) { setFout("Onbekende of geblokkeerde code."); setPin(""); setBezig(false); return; }
-      const gebruiker = { id: g.id as string, naam: g.naam as string };
-      try { localStorage.setItem("werkplaats-gebruiker", JSON.stringify({ ...gebruiker, rol: g.rol })); } catch {}
-      setIngelogd(gebruiker);
-    } catch (e) { setFout(String(e)); }
-    finally { setBezig(false); }
+    const { error } = await supabase.auth.signInWithOtp({ email: adres, options: { emailRedirectTo: `${window.location.origin}/werkplaats` } });
+    if (error) setFout("Inloglink versturen mislukt: " + error.message);
+    else setVerstuurd(true);
+    setBezig(false);
   }
 
-  function uitloggen() {
-    try { localStorage.removeItem("werkplaats-gebruiker"); } catch {}
-    setIngelogd(null); setPin("");
+  async function uitloggen() {
+    await supabase.auth.signOut();
+    setIngelogd(null); setEmail(""); setVerstuurd(false); setFout("");
   }
 
   const wrapL: CSSProperties = { minHeight: "100vh", background: BG, color: TEKST, fontFamily: "system-ui, -apple-system, sans-serif", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 };
@@ -936,20 +954,36 @@ export default function WerkplaatsPagina() {
           <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", color: GROEN }}>Revisio</span>
         </div>
         <h1 style={{ fontSize: 22, fontWeight: 800, color: GROEN, margin: "6px 0 4px" }}>Werkplaats</h1>
-        <div style={{ fontSize: 13.5, color: GRIJS, marginBottom: 18 }}>Voer je pincode in om in te loggen.</div>
-        <input
-          inputMode="numeric"
-          type="password"
-          value={pin}
-          onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
-          onKeyDown={(e) => { if (e.key === "Enter") inloggen(); }}
-          placeholder="Pincode"
-          style={{ width: "100%", boxSizing: "border-box", border: `1.5px solid ${RAND}`, borderRadius: 10, padding: "14px 14px", fontSize: 20, letterSpacing: 6, textAlign: "center", marginBottom: 12 }}
-        />
-        {fout && <div style={{ fontSize: 13, color: ROOD, marginBottom: 12 }}>{fout}</div>}
-        <button disabled={bezig || !pin} onClick={inloggen} style={{ width: "100%", background: pin ? GROEN : "#b9c2bc", color: "#fff", border: "none", borderRadius: 12, padding: "15px", fontSize: 16, fontWeight: 700, cursor: pin ? "pointer" : "default" }}>
-          {bezig ? "Bezig..." : "Inloggen"}
+
+        {verstuurd ? (
+          <>
+            <div style={{ fontSize: 13.5, color: TEKST, lineHeight: 1.5, margin: "12px 0 18px" }}>
+              We hebben een inloglink gestuurd naar <span style={{ fontWeight: 700 }}>{email.trim()}</span>. Open je mail en tik op de link om in te loggen.
+            </div>
+            {fout && <div style={{ fontSize: 13, color: ROOD, marginBottom: 12 }}>{fout}</div>}
+            <button onClick={() => { setVerstuurd(false); setFout(""); }} style={{ width: "100%", background: "#fff", color: GROEN, border: `1px solid ${RAND}`, borderRadius: 12, padding: "13px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+              Ander e-mailadres gebruiken
+            </button>
+          </>
+        ) : (
+          <>
+            <div style={{ fontSize: 13.5, color: GRIJS, marginBottom: 18 }}>Vul je e-mailadres in, dan sturen we je een inloglink.</div>
+            <input
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") inloggen(); }}
+              placeholder="naam@bedrijf.nl"
+              style={{ width: "100%", boxSizing: "border-box", border: `1.5px solid ${RAND}`, borderRadius: 10, padding: "14px 14px", fontSize: 16, marginBottom: 12 }}
+            />
+            {fout && <div style={{ fontSize: 13, color: ROOD, marginBottom: 12 }}>{fout}</div>}
+            <button disabled={bezig || !email.trim()} onClick={inloggen} style={{ width: "100%", background: email.trim() ? GROEN : "#b9c2bc", color: "#fff", border: "none", borderRadius: 12, padding: "15px", fontSize: 16, fontWeight: 700, cursor: email.trim() ? "pointer" : "default" }}>
+          {bezig ? "Versturen..." : "Stuur inloglink"}
         </button>
+          </>
+        )}
       </div>
     </main>
   );
