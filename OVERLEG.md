@@ -4,7 +4,7 @@ _Laatst bijgewerkt: 12 juni 2026._
 
 ## Wat al af is
 
-- Monteurs-app op `/werkplaats`: stadia met voortgang, tijdregistratie (timer plus handmatig), afstelling en sproeierbezetting, extra artikelen, opmerkingen, eindcontrole, retour-vinkje, logspoor en foto's per stadium.
+- Monteurs-app op `/werkbonnen` (heette eerst `/werkplaats`): stadia met voortgang, tijdregistratie (timer plus handmatig), afstelling en sproeierbezetting, extra artikelen, opmerkingen, eindcontrole, retour-vinkje, logspoor en foto's per stadium.
 - Retour-teller op beide dashboards.
 - Werkbonnen-dashboard met zoeken plus een aparte alleen-lezen leespagina op `/werkbon-bekijk`.
 - Datum-tijd-stempel onder elke tijdregel (naam groot, datum en tijd klein en grijs eronder).
@@ -19,11 +19,16 @@ _Laatst bijgewerkt: 12 juni 2026._
 - **Alle code veiliggesteld op GitHub** (`carbservice/revisio`). Tot dan stond een groot deel alleen lokaal.
 - **Gedeelde basis in `/lib`**: kleuren (`theme.ts`), opmaak-helpers (`format.ts`) en types (`types.ts`) staan nu op één plek; alle 6 pagina's importeren ze in plaats van ze over te typen. Eén wijziging werkt overal door.
 - **Huisstijl gelijkgetrokken**: rand, paginafond en het euro-formaat zijn nu consistent over alle pagina's.
-- **`werkplaats/page.tsx` opgesplitst** (1137 → ~886 regels) in losse componenten in `app/werkplaats/components/`: BlokOpmerkingen, BlokArtikelen, BlokEindcontrole, BlokTijd, BlokAfstelling en de alleen-lezen WerkbonBekijk.
+- **`werkbonnen/page.tsx` opgesplitst** (1137 → ~886 regels) in losse componenten in `app/werkbonnen/components/`: BlokOpmerkingen, BlokArtikelen, BlokEindcontrole, BlokTijd, BlokAfstelling en de alleen-lezen WerkbonBekijk.
 - **Database-gat gedicht**: tabellen `klus_voortgang` en `klus_fotos` ontbraken in Supabase (foto's en stadia werkten daardoor niet). Aangemaakt + foutmeldingen in de app zichtbaar gemaakt.
 - **Bulk foto-upload**: onderaan de werkbon kun je in één keer meerdere foto's uploaden (verkleind), met een tellingoverzicht en thumbnails per stadium.
 - **E-maillogin live** (Supabase Auth magic link): vervangt de pincode. Alleen e-mailadressen in `app_gebruikers` mogen inloggen; koppeling op e-mail, met admin-rol voor cyrielgaemers@gmail.com. Inlogmails in het Nederlands (Magic Link + Confirm signup sjablonen), verstuurd via Gmail-SMTP.
 - **Productie draait**: app live op `revisio-umber.vercel.app`. Moneybird- en Anthropic-keys staan nu ook in Vercel (Environment Variables), dus klussen en de AI-knop werken live.
+- **Dashboards achter login + admin-rol** (`AuthGate`): `/dashboard` en `/dashboard/werkplaats` zijn niet meer open op internet. Alleen ingelogde admins zien ze; monteurs krijgen "geen toegang", niet-ingelogden een inlogscherm. De data laadt pas na goedkeuring. Eerste stap van de rol-gelaagdheid.
+- **Dashboard-navigatie**: drie grote knoppen bovenin (📊 Cijfers, 🔧 Werkplaats Dashboard, 🧾 Werkbonnen) via `next/link` met prefetch (directe overstap). Op `/werkbonnen` is de balk alleen zichtbaar voor admins; monteurs zien 'm niet.
+- **Geeky laadscherm** op de dashboards: brede kaart die toont dat de API's live data ophalen, met voortgangsbalk en per API een status (bezig/klaar).
+- **Data-buffer** (`lib/cache.ts`): terugkeren naar een dashboard toont direct de vorige cijfers (geen laadscherm) en ververst op de achtergrond (stale-while-revalidate).
+- **Monteur-app verhuisd** van `/werkplaats` naar `/werkbonnen`. Het oude pad redirect automatisch, dus bestaande bookmarks blijven werken.
 
 ## Nog te doen, op korte termijn
 
@@ -35,7 +40,7 @@ _Laatst bijgewerkt: 12 juni 2026._
 ## Nog te doen, rond livegang
 
 - **Back-ups regelen**: gratis Supabase heeft geen back-ups. Of naar Supabase Pro (25 dollar per maand, automatische back-ups plus meer opslag), of een gratis dagelijkse back-up via GitHub Actions opzetten.
-- **RLS dichtzetten** en het dashboard achter de admin-rol (die staat al in `app_gebruikers`), voordat het volledig open op internet staat. Let op: nu staan de Supabase-policies bewust ruim open (`anon`).
+- **RLS dichtzetten (echte sluitpost)**: de dashboards zitten nu achter login + admin-rol in de UI, maar de database-policies staan nog bewust ruim open en de API-routes (`/api/dashboard`, `/api/werkplaats-stats`) checken de rol nog niet zelf. Wie een API-URL rechtstreeks aanroept, kan technisch nog bij data. Volgende stap: RLS per rol + rolcheck in de API-routes.
 - **E-mail later professioneel maken**: nu verstuurt Gmail-SMTP de inlogmails (prima voor dit volume). Wil je vanaf `noreply@carbservice.nl` mailen, dan is Resend met domeinverificatie de stap.
 
 ## Voor later, ideeën
