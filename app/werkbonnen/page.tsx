@@ -175,6 +175,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
   const [rijdt, setRijdt] = useState(false);
   const huidigPctRef = useRef(0);
   const rijdtRef = useRef(false);
+  const rafRef = useRef(0);
   const [klusStart, setKlusStart] = useState<{ naam: string; tijd: string } | null>(null);
 
   // Alleen-lezen weergave
@@ -407,29 +408,34 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
   const eindcontroleCompleet = checklist.filter((c) => c.vast).every((c) => c.status);
   const huidigPct = STADIA.filter((s) => isGedaan(s.id)).reduce((m, s) => Math.max(m, s.pct), 0);
   huidigPctRef.current = huidigPct;
-  rijdtRef.current = rijdt;
 
-  // Carburateur-icoon laat de voortgangsbalk traag oplopen bij het openen.
-  useEffect(() => {
-    if (!open) { setVulPct(0); setRijdt(false); return; }
-    let raf = 0; let start: number | null = null;
-    setVulPct(0); setRijdt(true);
+  function rijdNaar(vanaf: number, naar: number, duur: number) {
+    cancelAnimationFrame(rafRef.current);
+    setRijdt(true); rijdtRef.current = true;
+    let start: number | null = null;
     const tick = (ts: number) => {
       if (start == null) start = ts;
-      const doel = huidigPctRef.current;
-      const p = Math.min(1, (ts - start) / 8500);
-      setVulPct(doel * p);
-      if (p < 1) raf = requestAnimationFrame(tick);
-      else { setVulPct(doel); setRijdt(false); }
+      const p = Math.min(1, (ts - start) / duur);
+      setVulPct(vanaf + (naar - vanaf) * p);
+      if (p < 1) rafRef.current = requestAnimationFrame(tick);
+      else { setVulPct(naar); setRijdt(false); rijdtRef.current = false; }
     };
-    const to = setTimeout(() => { raf = requestAnimationFrame(tick); }, 300);
-    return () => { clearTimeout(to); cancelAnimationFrame(raf); setRijdt(false); };
+    rafRef.current = requestAnimationFrame(tick);
+  }
+
+  // Bij het openen van een klus: het icoon loopt traag van 0 naar het huidige %.
+  useEffect(() => {
+    cancelAnimationFrame(rafRef.current);
+    if (!open) { setVulPct(0); setRijdt(false); rijdtRef.current = false; return; }
+    setVulPct(0); setRijdt(true); rijdtRef.current = true;
+    const to = setTimeout(() => rijdNaar(0, huidigPctRef.current, 8500), 300);
+    return () => { clearTimeout(to); cancelAnimationFrame(rafRef.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open?.id]);
 
-  // Na het lopen volgt de balk de echte stand als je stadia afvinkt.
+  // Bij elke nieuwe bevestiging (stadium afgevinkt): opnieuw laten lopen.
   useEffect(() => {
-    if (open && !rijdtRef.current) setVulPct(huidigPct);
+    if (open && !rijdtRef.current) rijdNaar(vulPct, huidigPct, 2600);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [huidigPct]);
 
@@ -843,12 +849,14 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
           <div style={kaart}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
               <span style={kopstijl}>Voortgang</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: GROEN }}>{Math.round(vulPct)}%</span>
             </div>
-            <div style={{ position: "relative", height: 44, margin: "2px 0 8px" }}>
-              <div style={{ position: "absolute", left: 0, right: 0, top: "50%", transform: "translateY(-50%)", height: 8, background: GROEN_BG, borderRadius: 999 }} />
-              <div style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", height: 8, width: `${vulPct}%`, background: GROEN, borderRadius: 999, transition: rijdt ? "none" : "width .5s ease" }} />
-              <img src="/icon.png" alt="" style={{ position: "absolute", left: `${vulPct}%`, top: "50%", transform: "translate(-50%, -50%)", width: 40, height: 40, borderRadius: "50%", boxShadow: "0 0 0 2px #fff, 0 3px 9px rgba(0,0,0,0.3)", zIndex: 2, transition: rijdt ? "none" : "left .5s ease" }} />
+            <div style={{ position: "relative", height: 60, margin: "2px 0 8px" }}>
+              <div style={{ position: "absolute", left: 0, right: 0, bottom: 8, height: 8, background: GROEN_BG, borderRadius: 999 }} />
+              <div style={{ position: "absolute", left: 0, bottom: 8, height: 8, width: `${vulPct}%`, background: GROEN, borderRadius: 999, transition: rijdt ? "none" : "width .5s ease" }} />
+              <div style={{ position: "absolute", left: `${vulPct}%`, top: 0, transform: "translateX(-50%)", transition: rijdt ? "none" : "left .5s ease", zIndex: 3 }}>
+                <span style={{ display: "inline-block", background: GROEN, color: "#fff", fontSize: 12.5, fontWeight: 800, borderRadius: 999, padding: "2px 8px", boxShadow: "0 2px 5px rgba(0,0,0,0.25)", whiteSpace: "nowrap" }}>{Math.round(vulPct)}%</span>
+              </div>
+              <img src="/icon.png" alt="" style={{ position: "absolute", left: `${vulPct}%`, bottom: 0, transform: "translateX(-50%)", width: 38, height: 38, borderRadius: "50%", boxShadow: "0 0 0 2px #fff, 0 3px 9px rgba(0,0,0,0.3)", zIndex: 2, transition: rijdt ? "none" : "left .5s ease" }} />
             </div>
             <div style={{ display: "flex", gap: 6, padding: "0 1px" }}>
               {STADIA.map((s) => {
