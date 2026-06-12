@@ -5,6 +5,7 @@
 import { useEffect, useState, CSSProperties, SVGProps } from "react";
 import { GROEN, GROEN_BG, GOUD, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG } from "@/lib/theme";
 import { euro } from "@/lib/format";
+import AuthGate from "@/app/components/AuthGate";
 
 const GROEN_LICHT = "#a9c0b4";
 
@@ -118,7 +119,15 @@ function StatusTegel({ kleur, icon, titel, waarde, onder }: { kleur: string; ico
   );
 }
 
-export default function Dashboard() {
+export default function DashboardPagina() {
+  return (
+    <AuthGate requireAdmin>
+      <Dashboard />
+    </AuthGate>
+  );
+}
+
+function Dashboard() {
   const [data, setData] = useState<any>(null);
   const [fout, setFout] = useState("");
   const [wp, setWp] = useState<any>(null);

@@ -5,6 +5,7 @@
 import { useEffect, useState, CSSProperties } from "react";
 import { GROEN, GOUD, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG } from "@/lib/theme";
 import { datumKort } from "@/lib/format";
+import AuthGate from "@/app/components/AuthGate";
 
 const MAAND = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
 function maandLabel(ym: string) {
@@ -29,7 +30,15 @@ function bonHref(klusId: string) {
   return `/werkbon-bekijk?klus=${encodeURIComponent(klusId)}`;
 }
 
-export default function WerkplaatsDashboard() {
+export default function WerkplaatsDashboardPagina() {
+  return (
+    <AuthGate requireAdmin>
+      <WerkplaatsDashboard />
+    </AuthGate>
+  );
+}
+
+function WerkplaatsDashboard() {
   const [data, setData] = useState<any>(null);
   const [laden, setLaden] = useState(true);
   const [fout, setFout] = useState("");
