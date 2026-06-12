@@ -87,19 +87,26 @@ export default async function Home() {
             Bekijk realtime de voortgang van uw revisie met foto's van elke fase.
           </p>
 
-          <form className="flex gap-3 max-w-2xl mx-auto" id="order">
-            <div className="flex-1 relative">
-              <input 
-                type="text" 
-                placeholder="Voer uw ordernummer in..."
-                className="w-full px-5 py-4 pl-12 rounded-lg bg-white/80 backdrop-blur border border-zinc-200 text-zinc-800 placeholder-zinc-400 focus:outline-none focus:border-green-700 transition-colors"
-                style={{ fontFamily: "'Karma', serif" }}
-              />
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">⌕</span>
-            </div>
-            <button 
+          <form action="/volg" method="get" className="flex flex-col sm:flex-row gap-3 max-w-2xl mx-auto" id="order">
+            <input
+              name="nr"
+              type="text"
+              required
+              placeholder="Ordernummer (bijv. 2026-0587)"
+              className="flex-1 px-5 py-4 rounded-lg bg-white/80 backdrop-blur border border-zinc-200 text-zinc-800 placeholder-zinc-400 focus:outline-none focus:border-green-700 transition-colors"
+              style={{ fontFamily: "'Karma', serif" }}
+            />
+            <input
+              name="code"
+              type="text"
+              required
+              placeholder="Code"
+              className="w-full sm:w-40 px-5 py-4 rounded-lg bg-white/80 backdrop-blur border border-zinc-200 text-zinc-800 placeholder-zinc-400 focus:outline-none focus:border-green-700 transition-colors uppercase tracking-widest"
+              style={{ fontFamily: "'Karma', serif" }}
+            />
+            <button
               type="submit"
-              className="px-8 py-4 rounded-lg text-white font-medium flex items-center gap-2 transition-all hover:shadow-lg"
+              className="px-8 py-4 rounded-lg text-white font-medium flex items-center justify-center gap-2 transition-all hover:shadow-lg"
               style={{ backgroundColor: '#2d6b4c', fontFamily: "'Karma', serif" }}
             >
               Bekijk Status →

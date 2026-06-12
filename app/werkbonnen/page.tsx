@@ -77,6 +77,9 @@ const key = () => `v${_k++}`;
 const cfgVan = (t: string) => VELD_TYPES.find((x) => x.type === t);
 const catVan = (t: string) => cfgVan(t)?.categorie || (t === "eigen_sproeier" ? "sproeier" : "afstelling");
 function statusKleur(o: string) { return o === "Goed" ? GROEN : o === "Slecht" ? GOUD : ROOD; }
+// Korte klantcode, zonder verwarrende tekens (geen 0/O/1/I/L/S/5/B/8/2/Z).
+const CODE_ALFA = "ACDEFGHJKMNPQRTUVWXY3467";
+function maakCode() { let s = ""; for (let i = 0; i < 5; i++) s += CODE_ALFA[Math.floor(Math.random() * CODE_ALFA.length)]; return s; }
 function standaardVelden(): Veld[] {
   return VELD_TYPES.map((d) => ({ key: key(), veld_type: d.type, label: d.label, eenheid: d.eenheid, positie: 1, binnenkomst: "", afleveren: "" }));
 }
@@ -165,6 +168,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
   const [bulkBezig, setBulkBezig] = useState(false);
   const [bulkMelding, setBulkMelding] = useState("");
   const [deelLink, setDeelLink] = useState("");
+  const [deelCode, setDeelCode] = useState("");
   const [klusStart, setKlusStart] = useState<{ naam: string; tijd: string } | null>(null);
 
   // Alleen-lezen weergave
@@ -487,17 +491,29 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
     await laadVoortgang(open.id);
   }
 
+  // Publiceert de huidige stand naar de klant en geeft de link + code terug.
+  // De klant ziet pas iets nadat hier op gedrukt is (geen auto-updates).
   async function deelMetKlant() {
     if (!open) return;
-    const { data: bestaand } = await supabase.from("werkbon_links").select("token").eq("klus_id", open.id).limit(1);
+    const { data: bestaand } = await supabase.from("werkbon_links").select("token, toegangscode").eq("klus_id", open.id).limit(1);
     let token = bestaand && bestaand[0] ? bestaand[0].token : null;
+    let code = bestaand && bestaand[0] ? bestaand[0].toegangscode : null;
     if (!token) {
       token = (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2)).replace(/-/g, "");
-      const { error } = await supabase.from("werkbon_links").insert({ token, klus_id: open.id, nummer: open.nummer, klant: open.klant, voertuig: open.voertuig });
+      code = maakCode();
+      const { error } = await supabase.from("werkbon_links").insert({ token, toegangscode: code, klus_id: open.id, nummer: open.nummer, klant: open.klant, voertuig: open.voertuig, klacht: open.klacht });
       if (error) { setFout(error.message); return; }
-      log(open.id, "volglink met klant gedeeld");
+      log(open.id, "klantlink aangemaakt");
+    } else if (!code) {
+      code = maakCode();
+      await supabase.from("werkbon_links").update({ toegangscode: code, klacht: open.klacht }).eq("klus_id", open.id);
     }
-    setDeelLink(`${window.location.origin}/werkbon?t=${token}`);
+    // Publiceer de huidige stand: stempel de nog niet-gepubliceerde stadia.
+    const { error: pubErr } = await supabase.from("klus_voortgang").update({ gepubliceerd_op: new Date().toISOString() }).eq("klus_id", open.id).is("gepubliceerd_op", null);
+    if (pubErr) { setFout("Publiceren mislukt: " + pubErr.message); return; }
+    log(open.id, "update naar klant gepubliceerd");
+    setDeelCode(code || "");
+    setDeelLink(`${window.location.origin}/volg?t=${token}`);
   }
 
   function updVeld(k: string, veld: "label" | "binnenkomst" | "afleveren", val: string) {
@@ -806,10 +822,21 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
                 );
               })}
             </div>
-            <button onClick={deelMetKlant} style={{ ...plus, marginTop: 12 }}>Deel met klant</button>
+            <button onClick={deelMetKlant} style={{ ...knop(GOUD), marginTop: 12 }}>📣 Stuur update naar klant</button>
             {deelLink && (
-              <div style={{ marginTop: 8 }}>
-                <div style={{ fontSize: 12, color: GRIJS, marginBottom: 4 }}>Volglink voor de klant:</div>
+              <div style={{ marginTop: 10 }}>
+                <div style={{ fontSize: 13, color: GROEN, fontWeight: 700, marginBottom: 6 }}>Update gepubliceerd. De klant kan nu deze stand zien.</div>
+                <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                  <div style={{ flex: 1, background: GROEN_BG, borderRadius: 8, padding: "8px 10px" }}>
+                    <div style={{ fontSize: 10.5, color: GRIJS, textTransform: "uppercase", letterSpacing: 0.5 }}>Ordernummer</div>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: GROEN }}>{open.nummer}</div>
+                  </div>
+                  <div style={{ flex: 1, background: GOUD_BG, borderRadius: 8, padding: "8px 10px" }}>
+                    <div style={{ fontSize: 10.5, color: GRIJS, textTransform: "uppercase", letterSpacing: 0.5 }}>Code</div>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: "#6b5410", letterSpacing: 2 }}>{deelCode}</div>
+                  </div>
+                </div>
+                <div style={{ fontSize: 12, color: GRIJS, marginBottom: 4 }}>Of stuur de directe link:</div>
                 <div style={{ display: "flex", gap: 6 }}>
                   <input readOnly value={deelLink} onFocus={(e) => e.target.select()} style={inp} />
                   <button onClick={() => navigator.clipboard?.writeText(deelLink)} style={{ border: "none", background: GROEN, color: "#fff", borderRadius: 8, padding: "0 12px", fontWeight: 700, cursor: "pointer" }}>Kopieer</button>
