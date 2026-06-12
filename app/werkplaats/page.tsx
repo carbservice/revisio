@@ -397,11 +397,13 @@ function WerkplaatsApp({ ingelogd, onUitloggen }: { ingelogd: Monteur; onUitlogg
     const st = STADIA.find((s) => s.id === stapId);
     if (!st) return;
     if (isGedaan(stapId)) {
-      await supabase.from("klus_voortgang").delete().eq("klus_id", open.id).eq("stap", stapId);
+      const { error } = await supabase.from("klus_voortgang").delete().eq("klus_id", open.id).eq("stap", stapId);
+      if (error) { setFout("Stadium ongedaan maken mislukt: " + error.message); return; }
       log(open.id, "stadium ongedaan gemaakt", st.label);
     } else {
       const bericht = st.notitie && stapNotitie.trim() ? `${st.klant} Toelichting: ${stapNotitie.trim()}` : st.klant;
-      await supabase.from("klus_voortgang").upsert({ klus_id: open.id, stap: stapId, bericht, gedaan_op: new Date().toISOString() });
+      const { error } = await supabase.from("klus_voortgang").upsert({ klus_id: open.id, stap: stapId, bericht, gedaan_op: new Date().toISOString() });
+      if (error) { setFout("Stadium opslaan mislukt: " + error.message); return; }
       log(open.id, "stadium gezet", st.label);
     }
     setStapPopup(null); setStapNotitie(""); setFotoMelding("");
@@ -440,7 +442,8 @@ function WerkplaatsApp({ ingelogd, onUitloggen }: { ingelogd: Monteur; onUitlogg
       const { error } = await supabase.storage.from("werkbon-fotos").upload(pad, blob, { contentType: blob.type || "image/jpeg" });
       if (error) { setFout(error.message); return; }
       const { data } = supabase.storage.from("werkbon-fotos").getPublicUrl(pad);
-      await supabase.from("klus_fotos").insert({ klus_id: open.id, stap, url: data.publicUrl });
+      const { error: insErr } = await supabase.from("klus_fotos").insert({ klus_id: open.id, stap, url: data.publicUrl });
+      if (insErr) { setFout("Foto opslaan in database mislukt: " + insErr.message); return; }
       log(open.id, "foto geupload", stap);
       setFotoMelding(`Foto geupload: ${file.name}`);
       await laadVoortgang(open.id);
