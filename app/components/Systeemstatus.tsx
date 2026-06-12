@@ -1,9 +1,9 @@
 "use client";
 
-// Live-statuspaneel voor het dashboard: checkt elke 15 minuten of de
-// app, de API-routes en de externe diensten (Moneybird, Supabase, GitHub)
-// bereikbaar zijn. Groen = live, rood = probleem, met responstijd.
-// Let op: dit is de stand van NU, geen historische uptime.
+// Compacte live-statusbalk voor het dashboard: één brede balk met per
+// dienst een pill en een groen "lampje" dat brandt als de dienst leeft.
+// Checkt elk kwartier of app, API en de externe diensten (Moneybird,
+// Supabase, GitHub) bereikbaar zijn. Toont de stand van nu, geen uptime.
 
 import { useEffect, useState, CSSProperties } from "react";
 import { GROEN, GROEN_BG, ROOD, ROOD_BG, GRIJS, RAND, TEKST, KAART_BG, KAART_SCHADUW } from "@/lib/theme";
@@ -34,47 +34,44 @@ export default function Systeemstatus() {
     return () => clearInterval(t);
   }, []);
 
-  const rijen: Service[] = [
-    { naam: "App & hosting (Vercel)", ok: appOk, ms: null },
-    { naam: "API-routes (Vercel)", ok: appOk, ms: null },
-    ...(services || []),
+  const geladen = services !== null;
+  const vind = (frag: string) => (services || []).find((s) => s.naam.includes(frag));
+  const rijen = [
+    { kort: "App", ok: appOk, ms: null as number | null },
+    { kort: "API", ok: appOk, ms: null as number | null },
+    { kort: "Moneybird", ok: !!vind("Moneybird")?.ok, ms: vind("Moneybird")?.ms ?? null },
+    { kort: "Supabase", ok: !!vind("Supabase")?.ok, ms: vind("Supabase")?.ms ?? null },
+    { kort: "GitHub", ok: !!vind("GitHub")?.ok, ms: vind("GitHub")?.ms ?? null },
   ];
 
-  const geladen = services !== null;
-  const allesOk = geladen && rijen.every((r) => r.ok);
-  const aantalProblemen = rijen.filter((r) => !r.ok).length;
-
-  const kaart: CSSProperties = { background: KAART_BG, border: `1px solid ${RAND}`, borderRadius: 16, padding: 18, marginBottom: 20, boxShadow: KAART_SCHADUW };
-  const kop: CSSProperties = { fontSize: 13, color: GRIJS, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 };
+  const kaart: CSSProperties = { background: KAART_BG, border: `1px solid ${RAND}`, borderRadius: 14, padding: "12px 16px", marginBottom: 20, boxShadow: KAART_SCHADUW };
 
   return (
     <div style={kaart}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 12 }}>
-        <span style={kop}>Systeemstatus</span>
-        {geladen && (
-          <span style={{ fontSize: 12, fontWeight: 800, padding: "3px 10px", borderRadius: 999, color: allesOk ? GROEN : ROOD, background: allesOk ? GROEN_BG : ROOD_BG }}>
-            {allesOk ? "Alles live" : `${aantalProblemen} probleem${aantalProblemen === 1 ? "" : "en"}`}
+      <style>{`@keyframes revled { 0%,100% { opacity: 1 } 50% { opacity: .55 } }`}</style>
+      <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 9 }}>
+        <span style={{ fontSize: 12, color: GRIJS, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, marginRight: 2 }}>Status</span>
+
+        {!geladen && <span style={{ fontSize: 13, color: GRIJS }}>controleren…</span>}
+
+        {geladen && rijen.map((r) => (
+          <span
+            key={r.kort}
+            title={r.ok ? `live${r.ms != null ? ` · ${r.ms} ms` : ""}` : "offline"}
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "7px 13px", borderRadius: 999, border: `1px solid ${r.ok ? RAND : ROOD}`, background: r.ok ? "#fff" : ROOD_BG, fontSize: 13, fontWeight: 600, color: r.ok ? TEKST : ROOD }}
+          >
+            <span style={{
+              width: 9, height: 9, borderRadius: "50%", flexShrink: 0,
+              background: r.ok ? GROEN : ROOD,
+              boxShadow: r.ok ? `0 0 0 2px ${GROEN_BG}, 0 0 7px ${GROEN}` : `0 0 0 2px ${ROOD_BG}, 0 0 7px ${ROOD}`,
+              animation: r.ok ? "revled 2.4s ease-in-out infinite" : "none",
+            }} />
+            {r.kort}
           </span>
-        )}
+        ))}
+
+        {geladen && <span style={{ marginLeft: "auto", fontSize: 11.5, color: GRIJS, whiteSpace: "nowrap" }}>{tijd}</span>}
       </div>
-
-      {!geladen && <div style={{ fontSize: 13, color: GRIJS }}>Status controleren…</div>}
-
-      {geladen && rijen.map((r) => (
-        <div key={r.naam} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderTop: `1px solid ${RAND}` }}>
-          <span style={{ width: 18, textAlign: "center", color: r.ok ? GROEN : ROOD, fontWeight: 800 }}>{r.ok ? "✓" : "✕"}</span>
-          <span style={{ fontSize: 13.5, color: TEKST, flex: 1, minWidth: 0 }}>{r.naam}</span>
-          <span style={{ fontSize: 12, fontWeight: 700, color: r.ok ? GROEN : ROOD, whiteSpace: "nowrap" }}>
-            {r.ok ? "live" : "offline"}{r.ok && r.ms != null ? ` · ${r.ms} ms` : ""}
-          </span>
-        </div>
-      ))}
-
-      {geladen && (
-        <div style={{ fontSize: 11.5, color: GRIJS, marginTop: 12, borderTop: `1px solid ${RAND}`, paddingTop: 10 }}>
-          Laatst gecheckt {tijd} · ververst automatisch elk kwartier. Dit is de stand van nu, geen uptime-geschiedenis.
-        </div>
-      )}
     </div>
   );
 }
