@@ -85,6 +85,7 @@ function Inner() {
     <style>{`
       @keyframes volgVloei { from { background-position: 0 0 } to { background-position: 0 22px } }
       @keyframes volgPuls { 0%,100% { box-shadow: 0 0 0 4px rgba(47,143,91,0.20) } 50% { box-shadow: 0 0 0 9px rgba(47,143,91,0.06) } }
+      @keyframes volgVul { from { transform: scaleY(0) } to { transform: scaleY(1) } }
     `}</style>
   );
 
@@ -166,7 +167,8 @@ function Inner() {
                         ? "repeating-linear-gradient(180deg, #2f8f5b 0, #2f8f5b 6px, #3aa66b 6px, #3aa66b 11px)"
                         : SPOOR,
                       backgroundSize: volgendeDone ? "100% 22px" : undefined,
-                      animation: volgendeDone ? "volgVloei 1.1s linear infinite" : undefined,
+                      transformOrigin: "top",
+                      animation: volgendeDone ? `volgVul 0.55s ease-out ${i * 0.4}s both, volgVloei 1.2s linear ${i * 0.4 + 0.55}s infinite` : undefined,
                     }} />
                   )}
                   <div style={{
