@@ -1,0 +1,58 @@
+name: Health alert
+
+# Pingt elk kwartier /api/health. Is een dienst (of de app zelf) niet
+# bereikbaar, dan gaat er een mail naar de beheerders. Draait in de
+# cloud van GitHub, dus ook als niemand het dashboard open heeft.
+
+on:
+  schedule:
+    - cron: "*/15 * * * *" # elk kwartier (UTC)
+  workflow_dispatch: {} # handmatig starten kan ook (Actions-tab)
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check /api/health (met hercontrole tegen blips)
+        id: health
+        run: |
+          set +e
+          probeer() { curl -s -m 30 https://revisio-umber.vercel.app/api/health; }
+          downlijst() {
+            local r="$1"
+            if [ -z "$r" ]; then echo "App & hosting (Vercel)"; return; fi
+            echo "$r" | jq -r '[.services[] | select(.ok==false) | .naam] | join(", ")'
+          }
+          resp=$(probeer)
+          down=$(downlijst "$resp")
+          if [ -n "$down" ]; then
+            # Mogelijk een korte hapering: even wachten en nog eens checken.
+            sleep 20
+            resp=$(probeer)
+            down=$(downlijst "$resp")
+          fi
+          echo "down=$down" >> "$GITHUB_OUTPUT"
+          echo "tijd=$(date -u '+%d-%m-%Y %H:%M UTC')" >> "$GITHUB_OUTPUT"
+
+      - name: Stuur alert-mail
+        if: steps.health.outputs.down != ''
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.ALERT_GMAIL_USER }}
+          password: ${{ secrets.ALERT_GMAIL_PASS }}
+          subject: URGENT SERVER DOWN - "${{ steps.health.outputs.down }}"
+          to: cyrielgaemers@gmail.com, info@carbservice.nl
+          from: Revisio Monitor <${{ secrets.ALERT_GMAIL_USER }}>
+          body: |
+            Let op: een of meer diensten van de Revisio-app reageren niet.
+
+            Niet bereikbaar : ${{ steps.health.outputs.down }}
+            Gecontroleerd op: ${{ steps.health.outputs.tijd }}
+
+            Bekijk de status op het dashboard:
+            https://revisio-umber.vercel.app/dashboard
+
+            (Automatische melding van de health-check, draait elk kwartier.)
