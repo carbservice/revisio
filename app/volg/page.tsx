@@ -68,7 +68,7 @@ function Inner() {
   const logoKop = (
     <div style={{ background: `linear-gradient(150deg, ${GROEN_LICHT} 0%, ${GROEN} 70%)`, padding: "24px 24px", textAlign: "center" }}>
       {logoOk ? (
-        <img src="/logo-wit.png" alt="Carburateur Service" onError={() => setLogoOk(false)} style={{ height: 52, maxWidth: "82%", objectFit: "contain", display: "inline-block" }} />
+        <img src="/logo-wit.png" alt="Carburateur Service" onError={() => setLogoOk(false)} style={{ width: "78%", maxWidth: 300, height: "auto", display: "block", margin: "0 auto" }} />
       ) : (
         <>
           <div style={{ fontSize: 30, fontWeight: 600, color: "#fff", lineHeight: 1.05, letterSpacing: 0.5 }}>Carburateur</div>
@@ -189,7 +189,7 @@ function Inner() {
 
                     {done && s!.fotos.length > 0 && (
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14 }}>
-                        {s!.fotos.map((url, j) => (
+                        {s!.fotos.slice(0, 3).map((url, j) => (
                           <a key={j} href={url} target="_blank" rel="noreferrer">
                             <img src={url} alt="" style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 12, border: `1px solid ${RAND}`, display: "block" }} />
                           </a>
@@ -206,7 +206,7 @@ function Inner() {
             <div style={{ marginTop: 28, borderTop: `1px solid ${RAND}`, paddingTop: 22 }}>
               <div style={{ ...labelStijl, marginBottom: 12 }}>Extra foto's</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-                {data.algemeneFotos.map((url, j) => (
+                {data.algemeneFotos.slice(0, 3).map((url, j) => (
                   <a key={j} href={url} target="_blank" rel="noreferrer">
                     <img src={url} alt="" style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 12, border: `1px solid ${RAND}`, display: "block" }} />
                   </a>
