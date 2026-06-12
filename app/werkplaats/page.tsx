@@ -1,0 +1,1198 @@
+"use client";
+
+// Revisio werkplaats. app/werkplaats/page.tsx
+
+import { useEffect, useState, useRef, CSSProperties } from "react";
+import { supabase } from "@/lib/supabase";
+
+// Lichte werkplaats-stijl met duidelijke blokafzetting.
+const GROEN = "#1a3c2e";
+const GROEN_DONKER = "#1a3c2e";
+const GROEN_BG = "#e7f0ea";
+const GOUD = "#b8962e";
+const GOUD_BG = "#f7eecd";
+const ROOD = "#a23b2e";
+const ROOD_BG = "#f5e7e0";
+const TEKST = "#23211c";
+const GRIJS = "#7a7770";
+const RAND = "#dcd8cc";            // iets steviger rand voor duidelijke blokken
+const BG = "#eef0ea";             // pagina net iets dieper, zodat witte kaarten afsteken
+const KAART_BG = "#ffffff";
+const VERLOOP = "#eef0ea";
+const VELD_BG = "#ffffff";
+const VELD_TEKST = "#23211c";
+const VELD_RAND = "#d9d4c8";
+const KAART_SCHADUW = "0 1px 3px rgba(26,60,46,0.06), 0 1px 2px rgba(26,60,46,0.04)";
+
+type Klus = { id: string; nummer: string; klant: string; voertuig: string; klacht: string; bedrag: number; datum: string; getekend: string };
+type Monteur = { id: string; naam: string };
+type Regel = { id: string; monteur_naam: string; minuten: number; notitie: string | null; aangemaakt_op: string };
+type Veld = { key: string; veld_type: string; label: string; eenheid: string; positie: number; binnenkomst: string; afleveren: string };
+type Check = { key: string; naam: string; status: string; notitie: string; vast: boolean };
+type Artikel = { key: string; naam: string; bedrag: string; vast: boolean };
+
+const VELD_TYPES: { type: string; label: string; eenheid: string; categorie: string; opties?: string[] }[] = [
+  { type: "vlotterhoogte",        label: "Vlotterhoogte",               eenheid: "mm",           categorie: "afstelling" },
+  { type: "gasnaald_positie",     label: "Gasnaald positie",            eenheid: "",             categorie: "afstelling" },
+  { type: "luchtschroef",         label: "Luchtschroef (enkel lucht)",  eenheid: "halve slagen", categorie: "afstelling" },
+  { type: "co_schroef",           label: "CO schroef (mengselschroef)", eenheid: "",             categorie: "afstelling" },
+  { type: "stationairschroef",    label: "Stationairschroef",           eenheid: "",             categorie: "afstelling" },
+  { type: "vlotter",              label: "Vlotter",                     eenheid: "",             categorie: "afstelling", opties: ["Goed", "Slecht", "Lek"] },
+  { type: "hoofdsproeier",        label: "Hoofdsproeier",               eenheid: "",             categorie: "sproeier" },
+  { type: "stationairsproeier",   label: "Stationairsproeier",          eenheid: "",             categorie: "sproeier" },
+  { type: "luchtremsproeier",     label: "Luchtremsproeier",            eenheid: "",             categorie: "sproeier" },
+  { type: "choke_sproeier",       label: "Choke sproeier",              eenheid: "",             categorie: "sproeier" },
+  { type: "gasnaald_codering",    label: "Gasnaald codering",           eenheid: "",             categorie: "sproeier" },
+  { type: "emulsiebuis_codering", label: "Emulsiebuis codering",        eenheid: "",             categorie: "sproeier" },
+  { type: "sproeierbuis_codering",label: "Sproeierbuis codering",       eenheid: "",             categorie: "sproeier" },
+  { type: "vlotterzitting_maat",  label: "Vlotterzitting maat",         eenheid: "",             categorie: "sproeier" },
+];
+const SECTIES = [
+  { titel: "Afstelling", cat: "afstelling" },
+  { titel: "Sproeierbezetting", cat: "sproeier" },
+];
+const EIGEN: Record<string, string> = { afstelling: "eigen_afstelling", sproeier: "eigen_sproeier" };
+const STANDAARD_ARTIKELEN = ["Vacuumleiding"];
+const CHECKLIST_DEFAULT = [
+  "CO schroef open?",
+  "Stationair schroef correct?",
+  "Pakking, vlotterbak schroefjes vast?",
+  "Werkt de gasschuif of membraan correct?",
+  "Armpjes, gaskleppen, chokehendels gangbaar?",
+  "Zittingen pakkingen goed?",
+  "Blaastest, vlotternaald oke?",
+  "Bank synchronisatie, gaskleppen op nulpunt?",
+];
+const STADIA = [
+  { id: "ontvangen", kort: "Ontvangst", pct: 20, label: "Ontvangen op de werkbank",
+    klant: "We hebben je carburateur goed ontvangen en op de werkbank gelegd.",
+    coaching: "Leg de carburateur of de doos op een schone, egale ondergrond met goed licht. Maak een foto zoals je hem binnen hebt gekregen. Zodra je dit op gedaan zet, geldt de klus als binnen en begint de plank-teller te lopen.",
+    foto: true, notitie: false, eindcontrole: false },
+  { id: "gestart", kort: "Demontage", pct: 40, label: "Revisie gestart",
+    klant: "We zijn begonnen aan je revisie.",
+    coaching: "Leg de gedemonteerde onderdelen overzichtelijk op de werkbank, schone achtergrond. Maak een of twee foto's.",
+    foto: true, notitie: false, eindcontrole: false },
+  { id: "voor_ultrasoon", kort: "Ultrasoonreiniging", pct: 60, label: "Voor ultrasoon reiniging",
+    klant: "De onderdelen gaan de ultrasoon reiniging in.",
+    coaching: "Maak een foto van de vuile onderdelen vlak voordat ze de ultrasoon in gaan. Mooi vergelijkmateriaal voor straks.",
+    foto: true, notitie: false, eindcontrole: false },
+  { id: "na_ultrasoon", kort: "Heropbouwen", pct: 80, label: "Gereinigd en opnieuw opbouwen",
+    klant: "Alles is gereinigd en we bouwen je carburateur weer netjes op.",
+    coaching: "Maak een foto van de schone onderdelen en de opbouw. Laat het verschil met de vorige foto goed zien.",
+    foto: true, notitie: false, eindcontrole: false },
+  { id: "schoon", kort: "Eindcontrole", pct: 100, label: "Schoon, eindfoto met afstrepen",
+    klant: "Je revisie is klaar, afgesteld en gecontroleerd.",
+    coaching: "Strijk de schroeven en stelpunten af met de gele stift. Maak de eindfoto van de schone, afgestreepte carburateur op een nette achtergrond. Hiermee is de klus klaar.",
+    foto: true, notitie: false, eindcontrole: true },
+];
+
+let _k = 0;
+const key = () => `v${_k++}`;
+const cfgVan = (t: string) => VELD_TYPES.find((x) => x.type === t);
+const catVan = (t: string) => cfgVan(t)?.categorie || (t === "eigen_sproeier" ? "sproeier" : "afstelling");
+function statusKleur(o: string) { return o === "Goed" ? GROEN : o === "Slecht" ? GOUD : ROOD; }
+function euro(n: number) {
+  return new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+}
+
+function duur(min: number) {
+  const u = Math.floor(min / 60), m = min % 60;
+  if (u && m) return `${u}u ${m}m`;
+  if (u) return `${u}u`;
+  return `${m}m`;
+}
+function mmss(ms: number) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+}
+function dagenGeleden(d: string) {
+  if (!d) return null;
+  const iso = d.length <= 10 ? `${d}T00:00:00` : d;
+  const t = new Date(iso).getTime();
+  if (isNaN(t)) return null;
+  return Math.floor((Date.now() - t) / 86400000);
+}
+function datumKort(d: string) {
+  if (!d) return "";
+  const dt = new Date(d);
+  if (isNaN(dt.getTime())) return "";
+  return dt.toLocaleDateString("nl-NL", { day: "numeric", month: "short" });
+}
+function datumTijd(d: string) {
+  if (!d) return "";
+  const dt = new Date(d);
+  if (isNaN(dt.getTime())) return "";
+  return dt.toLocaleString("nl-NL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+function datumStempel(d: string) {
+  if (!d) return "";
+  const dt = new Date(d);
+  if (isNaN(dt.getTime())) return "";
+  return dt.toLocaleString("nl-NL", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+function standaardVelden(): Veld[] {
+  return VELD_TYPES.map((d) => ({ key: key(), veld_type: d.type, label: d.label, eenheid: d.eenheid, positie: 1, binnenkomst: "", afleveren: "" }));
+}
+function standaardChecklist(): Check[] {
+  return CHECKLIST_DEFAULT.map((n) => ({ key: key(), naam: n, status: "", notitie: "", vast: true }));
+}
+function standaardArtikelen(): Artikel[] {
+  return STANDAARD_ARTIKELEN.map((n) => ({ key: key(), naam: n, bedrag: "", vast: true }));
+}
+function uitMetingen(rows: any[]): Veld[] {
+  const velden = standaardVelden();
+  rows.forEach((r) => {
+    const label = r.label || cfgVan(r.veld_type)?.label || r.veld_type;
+    let i = velden.findIndex((v) => v.veld_type === r.veld_type && v.positie === r.positie && v.label === label);
+    if (i === -1) {
+      velden.push({ key: key(), veld_type: r.veld_type, label, eenheid: r.eenheid || "", positie: r.positie, binnenkomst: "", afleveren: "" });
+      i = velden.length - 1;
+    }
+    if (r.moment === "afleveren") velden[i].afleveren = r.waarde || "";
+    else velden[i].binnenkomst = r.waarde || "";
+  });
+  return velden;
+}
+function uitChecklist(rows: any[]): Check[] {
+  const lijst = standaardChecklist();
+  rows.forEach((r) => {
+    let i = lijst.findIndex((c) => c.naam === r.check_naam);
+    if (i === -1) lijst.push({ key: key(), naam: r.check_naam, status: r.status || "", notitie: r.notitie || "", vast: false });
+    else { lijst[i].status = r.status || ""; lijst[i].notitie = r.notitie || ""; }
+  });
+  return lijst;
+}
+function uitArtikelen(rows: any[]): Artikel[] {
+  const lijst = standaardArtikelen();
+  rows.forEach((r) => {
+    const bedrag = r.bedrag != null ? String(r.bedrag).replace(".", ",") : "";
+    let i = lijst.findIndex((a) => a.vast && a.naam === r.naam);
+    if (i === -1) lijst.push({ key: key(), naam: r.naam, bedrag, vast: false });
+    else lijst[i].bedrag = bedrag;
+  });
+  return lijst;
+}
+function bedragNum(s: string) {
+  const n = parseFloat((s || "").replace(",", ".").replace(/[^0-9.]/g, ""));
+  return isNaN(n) ? 0 : n;
+}
+
+function WerkplaatsApp({ ingelogd, onUitloggen }: { ingelogd: Monteur; onUitloggen: () => void }) {
+  const [monteur, setMonteur] = useState<Monteur | null>(ingelogd);
+  const [klussen, setKlussen] = useState<Klus[]>([]);
+  const [totalen, setTotalen] = useState<Record<string, number>>({});
+  const [lopendeKlussen, setLopendeKlussen] = useState<Set<string>>(new Set());
+  const [lopendStart, setLopendStart] = useState<Record<string, number>>({});
+  const [ontvangst, setOntvangst] = useState<Record<string, string>>({});
+  const [zoek, setZoek] = useState("");
+  const [open, setOpen] = useState<Klus | null>(null);
+  const [popup, setPopup] = useState(false);
+  const [timerPopup, setTimerPopup] = useState(false);
+  const [regels, setRegels] = useState<Regel[]>([]);
+  const [lopendId, setLopendId] = useState<string | null>(null);
+  const [start, setStart] = useState<number | null>(null);
+  const [nu, setNu] = useState<number>(Date.now());
+  const [limiet, setLimiet] = useState("");
+  const [handMin, setHandMin] = useState("");
+  const [notitie, setNotitie] = useState("");
+  const [velden, setVelden] = useState<Veld[]>(standaardVelden());
+  const [checklist, setChecklist] = useState<Check[]>(standaardChecklist());
+  const [artikelen, setArtikelen] = useState<Artikel[]>(standaardArtikelen());
+  const [opmerking, setOpmerking] = useState("");
+  const [retour, setRetour] = useState(false);
+  const [retourReden, setRetourReden] = useState("");
+  const [bezig, setBezig] = useState(false);
+  const [opgeslagen, setOpgeslagen] = useState(false);
+  const [autoMelding, setAutoMelding] = useState("");
+  const [laden, setLaden] = useState(true);
+  const [fout, setFout] = useState("");
+  const [diagBezig, setDiagBezig] = useState(false);
+  const [diagnoseLijst, setDiagnoseLijst] = useState<{ oorzaak: string; controleren: string }[]>([]);
+  const [diagTekst, setDiagTekst] = useState("");
+  const [diagFout, setDiagFout] = useState("");
+  const [voortgang, setVoortgang] = useState<any[]>([]);
+  const [fotos, setFotos] = useState<any[]>([]);
+  const [stapPopup, setStapPopup] = useState<string | null>(null);
+  const [stapNotitie, setStapNotitie] = useState("");
+  const [fotoMelding, setFotoMelding] = useState("");
+  const [deelLink, setDeelLink] = useState("");
+  const [klusStart, setKlusStart] = useState<{ naam: string; tijd: string } | null>(null);
+
+  // Alleen-lezen weergave
+  const [bekijk, setBekijk] = useState<Klus | null>(null);
+  const [bekijkVelden, setBekijkVelden] = useState<Veld[]>([]);
+  const [bekijkChecklist, setBekijkChecklist] = useState<Check[]>([]);
+  const [bekijkArtikelen, setBekijkArtikelen] = useState<Artikel[]>([]);
+  const [bekijkOpmerking, setBekijkOpmerking] = useState("");
+  const [bekijkRetour, setBekijkRetour] = useState<{ is: boolean; reden: string } | null>(null);
+  const [bekijkVoortgang, setBekijkVoortgang] = useState<any[]>([]);
+  const [bekijkFotos, setBekijkFotos] = useState<any[]>([]);
+  const [bekijkRegels, setBekijkRegels] = useState<Regel[]>([]);
+  const [bekijkLog, setBekijkLog] = useState<any[]>([]);
+  const [bekijkLaden, setBekijkLaden] = useState(false);
+
+  const autoTimer = useRef<any>(null);
+  const eersteLaad = useRef(true);
+
+  // log helper, faalt stil zodat het nooit een actie blokkeert
+  async function log(klusId: string, actie: string, detail?: string) {
+    try {
+      await supabase.from("werkbon_log").insert({ klus_id: klusId, monteur_naam: monteur?.naam || null, actie, detail: detail || null });
+    } catch {}
+  }
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch("/api/klussen").then((x) => x.json());
+        if (r.fout) setFout(r.fout);
+        setKlussen(r.klussen || []);
+        await laadTotalen();
+        await laadOntvangst();
+      } catch (e) { setFout(String(e)); }
+      finally { setLaden(false); }
+    })();
+  }, []);
+
+  useEffect(() => {
+    const t = setInterval(() => setNu(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    if (start == null) return;
+    let klaar = false;
+    const t = setInterval(() => {
+      const n = Date.now();
+      if (klaar) return;
+      const grens = new Date(start); grens.setHours(17, 30, 0, 0);
+      const g = grens.getTime();
+      if (start < g && n >= g) { klaar = true; autoStop(g); }
+    }, 1000);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [start, lopendId]);
+
+  // Autosave: een paar seconden na de laatste wijziging stil opslaan
+  useEffect(() => {
+    if (!open) return;
+    if (eersteLaad.current) { eersteLaad.current = false; return; }
+    if (autoTimer.current) clearTimeout(autoTimer.current);
+    autoTimer.current = setTimeout(() => { bewaarWerkbon(true); }, 2500);
+    return () => { if (autoTimer.current) clearTimeout(autoTimer.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [velden, checklist, artikelen, opmerking, retour, retourReden]);
+
+  async function laadTotalen() {
+    const { data } = await supabase.from("tijdregels").select("klus_id, minuten, start_tijd");
+    const map: Record<string, number> = {};
+    const lopend = new Set<string>();
+    const starts: Record<string, number> = {};
+    (data || []).forEach((r: any) => {
+      if (r.minuten == null) {
+        lopend.add(r.klus_id);
+        if (r.start_tijd) starts[r.klus_id] = new Date(r.start_tijd).getTime();
+      } else {
+        map[r.klus_id] = (map[r.klus_id] || 0) + (r.minuten || 0);
+      }
+    });
+    setTotalen(map); setLopendeKlussen(lopend); setLopendStart(starts);
+  }
+
+  async function laadOntvangst() {
+    const { data } = await supabase.from("klus_voortgang").select("klus_id, gedaan_op").eq("stap", "ontvangen");
+    const map: Record<string, string> = {};
+    (data || []).forEach((r: any) => { map[r.klus_id] = r.gedaan_op; });
+    setOntvangst(map);
+  }
+
+  async function laadKlusTijd(klusId: string) {
+    const { data } = await supabase.from("tijdregels").select("id, monteur_naam, minuten, notitie, start_tijd, eind_tijd, aangemaakt_op").eq("klus_id", klusId).order("aangemaakt_op");
+    const all = (data || []) as any[];
+    const lopend = all.find((r) => r.minuten == null);
+    if (lopend) { setLopendId(lopend.id); setStart(new Date(lopend.start_tijd).getTime()); setNu(Date.now()); }
+    else { setLopendId(null); setStart(null); }
+    setRegels(all.filter((r) => r.minuten != null) as Regel[]);
+    // eerste start van deze klus: vroegste regel met een start_tijd of anders de eerste aangemaakt
+    const metTijd = all.filter((r) => r.start_tijd).sort((a, b) => new Date(a.start_tijd).getTime() - new Date(b.start_tijd).getTime());
+    const eerste = metTijd[0] || all[0];
+    if (eerste) setKlusStart({ naam: eerste.monteur_naam || "Onbekend", tijd: eerste.start_tijd || eerste.aangemaakt_op });
+    else setKlusStart(null);
+  }
+
+  async function laadWerkbon(klusId: string) {
+    const { data: m } = await supabase.from("werkbon_meting").select("moment, veld_type, label, positie, waarde, eenheid").eq("klus_id", klusId);
+    setVelden(uitMetingen(m || []));
+    const { data: c } = await supabase.from("werkbon_checklist").select("check_naam, status, notitie").eq("klus_id", klusId);
+    setChecklist(uitChecklist(c || []));
+    const { data: a } = await supabase.from("werkbon_artikelen").select("naam, bedrag").eq("klus_id", klusId);
+    setArtikelen(uitArtikelen(a || []));
+    const { data: o } = await supabase.from("werkbon_opmerking").select("tekst").eq("klus_id", klusId).limit(1);
+    setOpmerking(o && o[0] ? (o[0].tekst || "") : "");
+    const { data: ret } = await supabase.from("werkbon_retour").select("is_retour, reden").eq("klus_id", klusId).limit(1);
+    if (ret && ret[0]) { setRetour(!!ret[0].is_retour); setRetourReden(ret[0].reden || ""); }
+    else { setRetour(false); setRetourReden(""); }
+  }
+
+  async function laadVoortgang(klusId: string) {
+    const { data: v } = await supabase.from("klus_voortgang").select("stap, bericht, gedaan_op").eq("klus_id", klusId);
+    setVoortgang(v || []);
+    const { data: f } = await supabase.from("klus_fotos").select("id, stap, url").eq("klus_id", klusId).order("geupload_op");
+    setFotos(f || []);
+  }
+
+  function openKlus(k: Klus) {
+    eersteLaad.current = true;
+    setOpen(k); setPopup(true); setTimerPopup(false); setHandMin(""); setNotitie(""); setOpgeslagen(false); setLimiet(""); setAutoMelding("");
+    setDiagnoseLijst([]); setDiagTekst(""); setDiagFout("");
+    setStapPopup(null); setStapNotitie(""); setFotoMelding(""); setDeelLink("");
+    laadKlusTijd(k.id); laadWerkbon(k.id); laadVoortgang(k.id);
+  }
+
+  async function openBekijk(k: Klus) {
+    setBekijk(k); setBekijkLaden(true);
+    setBekijkVelden([]); setBekijkChecklist([]); setBekijkArtikelen([]); setBekijkOpmerking(""); setBekijkRetour(null);
+    setBekijkVoortgang([]); setBekijkFotos([]); setBekijkRegels([]); setBekijkLog([]);
+    try {
+      const { data: m } = await supabase.from("werkbon_meting").select("moment, veld_type, label, positie, waarde, eenheid").eq("klus_id", k.id);
+      setBekijkVelden(uitMetingen(m || []));
+      const { data: c } = await supabase.from("werkbon_checklist").select("check_naam, status, notitie").eq("klus_id", k.id);
+      setBekijkChecklist(uitChecklist(c || []));
+      const { data: a } = await supabase.from("werkbon_artikelen").select("naam, bedrag").eq("klus_id", k.id);
+      setBekijkArtikelen(uitArtikelen(a || []));
+      const { data: o } = await supabase.from("werkbon_opmerking").select("tekst").eq("klus_id", k.id).limit(1);
+      setBekijkOpmerking(o && o[0] ? (o[0].tekst || "") : "");
+      const { data: ret } = await supabase.from("werkbon_retour").select("is_retour, reden").eq("klus_id", k.id).limit(1);
+      setBekijkRetour(ret && ret[0] ? { is: !!ret[0].is_retour, reden: ret[0].reden || "" } : null);
+      const { data: v } = await supabase.from("klus_voortgang").select("stap, bericht, gedaan_op").eq("klus_id", k.id);
+      setBekijkVoortgang(v || []);
+      const { data: f } = await supabase.from("klus_fotos").select("id, stap, url").eq("klus_id", k.id).order("geupload_op");
+      setBekijkFotos(f || []);
+      const { data: t } = await supabase.from("tijdregels").select("id, monteur_naam, minuten, notitie, aangemaakt_op").eq("klus_id", k.id).order("aangemaakt_op");
+      setBekijkRegels(((t || []) as any[]).filter((r) => r.minuten != null) as Regel[]);
+      const { data: lg } = await supabase.from("werkbon_log").select("monteur_naam, actie, detail, gedaan_op").eq("klus_id", k.id).order("gedaan_op", { ascending: false }).limit(50);
+      setBekijkLog(lg || []);
+    } catch (e) { setFout(String(e)); }
+    finally { setBekijkLaden(false); }
+  }
+
+  async function startTimer() {
+    if (!open || !monteur) return;
+    const nuMs = Date.now();
+    const { data, error } = await supabase.from("tijdregels").insert({
+      klus_id: open.id, klus_label: `${open.nummer} ${open.klant}`,
+      monteur_id: monteur.id, monteur_naam: monteur.naam,
+      start_tijd: new Date(nuMs).toISOString(), eind_tijd: null, minuten: null,
+    }).select("id").single();
+    if (error || !data) { setFout(error?.message || "Kon de timer niet starten"); return; }
+    setLopendId(data.id); setStart(nuMs); setNu(nuMs);
+    log(open.id, "timer gestart");
+    await laadTotalen();
+  }
+
+  async function stop() {
+    if (start == null || !lopendId) return;
+    const eind = Date.now();
+    const min = Math.max(1, Math.round((eind - start) / 60000));
+    await supabase.from("tijdregels").update({ eind_tijd: new Date(eind).toISOString(), minuten: min }).eq("id", lopendId);
+    setLopendId(null); setStart(null);
+    if (open) { log(open.id, "timer gestopt", `${min} min`); await laadKlusTijd(open.id); await laadTotalen(); }
+  }
+
+  async function autoStop(g: number) {
+    if (start == null || !lopendId) return;
+    const min = Math.max(1, Math.round((g - start) / 60000));
+    await supabase.from("tijdregels").update({ eind_tijd: new Date(g).toISOString(), minuten: min, notitie: "automatisch gestopt om 17:30" }).eq("id", lopendId);
+    setLopendId(null); setStart(null);
+    setLimiet("De timer liep nog en is automatisch gestopt op 17:30. Controleer of dit klopt en vul zo nodig handmatig aan.");
+    if (open) { log(open.id, "timer automatisch gestopt om 17:30", `${min} min`); await laadKlusTijd(open.id); await laadTotalen(); }
+  }
+
+  async function handmatig() {
+    if (!open || !monteur) return;
+    const min = parseInt(handMin, 10);
+    if (!min || min <= 0) return;
+    const { error } = await supabase.from("tijdregels").insert({
+      klus_id: open.id, klus_label: `${open.nummer} ${open.klant}`,
+      monteur_id: monteur.id, monteur_naam: monteur.naam,
+      start_tijd: null, eind_tijd: null, minuten: min, notitie: notitie || null,
+    });
+    if (error) { setFout(error.message); return; }
+    log(open.id, "handmatige tijd toegevoegd", `${min} min${notitie ? ", " + notitie : ""}`);
+    setHandMin(""); setNotitie("");
+    await laadKlusTijd(open.id); await laadTotalen();
+  }
+
+  async function verwijder(id: string) {
+    await supabase.from("tijdregels").delete().eq("id", id);
+    if (open) { log(open.id, "tijdregel verwijderd"); await laadKlusTijd(open.id); await laadTotalen(); }
+  }
+
+  async function diagnose() {
+    if (!open) return;
+    setDiagBezig(true); setDiagFout(""); setDiagnoseLijst([]); setDiagTekst("");
+    try {
+      const r = await fetch("/api/diagnose", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ klacht: open.klacht, voertuig: open.voertuig }),
+      }).then((x) => x.json());
+      if (r.fout) setDiagFout(r.fout);
+      else if (r.punten) setDiagnoseLijst(r.punten);
+      else if (r.tekst) setDiagTekst(r.tekst);
+    } catch (e) { setDiagFout(String(e)); }
+    finally { setDiagBezig(false); }
+  }
+
+  const isGedaan = (id: string) => voortgang.some((v) => v.stap === id);
+  const eindcontroleCompleet = checklist.filter((c) => c.vast).every((c) => c.status);
+  const huidigPct = STADIA.filter((s) => isGedaan(s.id)).reduce((m, s) => Math.max(m, s.pct), 0);
+
+  async function markeerStap(stapId: string) {
+    if (!open) return;
+    const st = STADIA.find((s) => s.id === stapId);
+    if (!st) return;
+    if (isGedaan(stapId)) {
+      await supabase.from("klus_voortgang").delete().eq("klus_id", open.id).eq("stap", stapId);
+      log(open.id, "stadium ongedaan gemaakt", st.label);
+    } else {
+      const bericht = st.notitie && stapNotitie.trim() ? `${st.klant} Toelichting: ${stapNotitie.trim()}` : st.klant;
+      await supabase.from("klus_voortgang").upsert({ klus_id: open.id, stap: stapId, bericht, gedaan_op: new Date().toISOString() });
+      log(open.id, "stadium gezet", st.label);
+    }
+    setStapPopup(null); setStapNotitie(""); setFotoMelding("");
+    await laadVoortgang(open.id);
+    await laadOntvangst();
+  }
+
+  // Verkleint en comprimeert een foto in de browser voor het uploaden.
+  // Lukt het niet, dan wordt het origineel teruggegeven zodat uploaden altijd doorgaat.
+  async function verkleinFoto(file: File, maxBreed = 1600, kwaliteit = 0.7): Promise<{ blob: Blob; ext: string }> {
+    try {
+      if (!file.type.startsWith("image/")) return { blob: file, ext: (file.name.split(".").pop() || "jpg").toLowerCase() };
+      const bitmap = await createImageBitmap(file);
+      const schaal = Math.min(1, maxBreed / bitmap.width);
+      const breed = Math.round(bitmap.width * schaal);
+      const hoog = Math.round(bitmap.height * schaal);
+      const canvas = document.createElement("canvas");
+      canvas.width = breed; canvas.height = hoog;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return { blob: file, ext: (file.name.split(".").pop() || "jpg").toLowerCase() };
+      ctx.drawImage(bitmap, 0, 0, breed, hoog);
+      const blob: Blob | null = await new Promise((res) => canvas.toBlob((b) => res(b), "image/jpeg", kwaliteit));
+      if (!blob || blob.size >= file.size) return { blob: file, ext: (file.name.split(".").pop() || "jpg").toLowerCase() };
+      return { blob, ext: "jpg" };
+    } catch {
+      return { blob: file, ext: (file.name.split(".").pop() || "jpg").toLowerCase() };
+    }
+  }
+
+  async function uploadFoto(file: File, stap: string) {
+    if (!open) return;
+    try {
+      const { blob, ext: rawExt } = await verkleinFoto(file);
+      const ext = (rawExt || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+      const pad = `${open.id}/${stap}/${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("werkbon-fotos").upload(pad, blob, { contentType: blob.type || "image/jpeg" });
+      if (error) { setFout(error.message); return; }
+      const { data } = supabase.storage.from("werkbon-fotos").getPublicUrl(pad);
+      await supabase.from("klus_fotos").insert({ klus_id: open.id, stap, url: data.publicUrl });
+      log(open.id, "foto geupload", stap);
+      setFotoMelding(`Foto geupload: ${file.name}`);
+      await laadVoortgang(open.id);
+    } catch (e) { setFout(String(e)); }
+  }
+
+  async function verwijderFoto(id: string) {
+    await supabase.from("klus_fotos").delete().eq("id", id);
+    if (open) { log(open.id, "foto verwijderd"); await laadVoortgang(open.id); }
+  }
+
+  async function deelMetKlant() {
+    if (!open) return;
+    const { data: bestaand } = await supabase.from("werkbon_links").select("token").eq("klus_id", open.id).limit(1);
+    let token = bestaand && bestaand[0] ? bestaand[0].token : null;
+    if (!token) {
+      token = (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2)).replace(/-/g, "");
+      const { error } = await supabase.from("werkbon_links").insert({ token, klus_id: open.id, nummer: open.nummer, klant: open.klant, voertuig: open.voertuig });
+      if (error) { setFout(error.message); return; }
+      log(open.id, "volglink met klant gedeeld");
+    }
+    setDeelLink(`${window.location.origin}/werkbon?t=${token}`);
+  }
+
+  function updVeld(k: string, veld: "label" | "binnenkomst" | "afleveren", val: string) {
+    setVelden((vs) => vs.map((v) => (v.key === k ? { ...v, [veld]: val } : v)));
+  }
+  function voegVeldToe(veld_type: string, label: string, eenheid: string) {
+    setVelden((vs) => {
+      const zelfde = vs.filter((v) => v.veld_type === veld_type);
+      const pos = zelfde.length ? Math.max(...zelfde.map((v) => v.positie)) + 1 : 1;
+      return [...vs, { key: key(), veld_type, label: veld_type.startsWith("eigen") ? "" : label, eenheid, positie: pos, binnenkomst: "", afleveren: "" }];
+    });
+  }
+  function verwijderVeld(k: string) { setVelden((vs) => vs.filter((v) => v.key !== k)); }
+  function updCheck(k: string, veld: "naam" | "status" | "notitie", val: string) {
+    setChecklist((cs) => cs.map((c) => (c.key === k ? { ...c, [veld]: val } : c)));
+  }
+  function updArtikel(k: string, veld: "naam" | "bedrag", val: string) {
+    setArtikelen((as) => as.map((a) => (a.key === k ? { ...a, [veld]: val } : a)));
+  }
+
+  async function bewaarWerkbon(auto = false) {
+    if (!open) return;
+    if (!auto) setBezig(true);
+    try {
+      await supabase.from("werkbon_meting").delete().eq("klus_id", open.id);
+      const rows: any[] = [];
+      velden.forEach((v) => {
+        const naam = v.label || v.veld_type;
+        if (v.binnenkomst.trim()) rows.push({ klus_id: open.id, moment: "binnenkomst", veld_type: v.veld_type, label: naam, positie: v.positie, waarde: v.binnenkomst.trim(), eenheid: v.eenheid || null });
+        if (v.afleveren.trim()) rows.push({ klus_id: open.id, moment: "afleveren", veld_type: v.veld_type, label: naam, positie: v.positie, waarde: v.afleveren.trim(), eenheid: v.eenheid || null });
+      });
+      if (rows.length) await supabase.from("werkbon_meting").insert(rows);
+
+      await supabase.from("werkbon_checklist").delete().eq("klus_id", open.id);
+      const crows = checklist.filter((c) => c.naam.trim() && (c.status || c.notitie.trim())).map((c) => ({ klus_id: open.id, check_naam: c.naam.trim(), status: c.status || null, notitie: c.notitie.trim() || null }));
+      if (crows.length) await supabase.from("werkbon_checklist").insert(crows);
+
+      await supabase.from("werkbon_artikelen").delete().eq("klus_id", open.id);
+      const arows = artikelen.filter((a) => a.naam.trim() && bedragNum(a.bedrag) > 0).map((a) => ({ klus_id: open.id, naam: a.naam.trim(), bedrag: bedragNum(a.bedrag), monteur_naam: monteur?.naam || null }));
+      if (arows.length) await supabase.from("werkbon_artikelen").insert(arows);
+
+      await supabase.from("werkbon_opmerking").upsert({ klus_id: open.id, tekst: opmerking.trim() || null, monteur_naam: monteur?.naam || null, bijgewerkt_op: new Date().toISOString() });
+
+      if (retour) {
+        await supabase.from("werkbon_retour").upsert({ klus_id: open.id, is_retour: true, reden: retourReden.trim() || null, monteur_naam: monteur?.naam || null, gemarkeerd_op: new Date().toISOString() });
+      } else {
+        await supabase.from("werkbon_retour").delete().eq("klus_id", open.id);
+      }
+
+      log(open.id, auto ? "werkbon automatisch opgeslagen" : "werkbon opgeslagen");
+
+      if (auto) { setAutoMelding("Automatisch opgeslagen " + new Date().toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })); }
+      else { setOpgeslagen(true); setTimeout(() => setOpgeslagen(false), 2500); }
+    } catch (e) { setFout(String(e)); }
+    finally { if (!auto) setBezig(false); }
+  }
+
+  const totaal = regels.reduce((s, r) => s + (r.minuten || 0), 0);
+  const eersteNietGedaan = STADIA.filter((s) => s.id !== "akkoord").find((s) => !isGedaan(s.id))?.id || "";
+  const lopMin = (id: string) => lopendStart[id] ? Math.max(0, Math.round((nu - lopendStart[id]) / 60000)) : 0;
+  const artikelenTotaal = artikelen.reduce((s, a) => s + bedragNum(a.bedrag), 0);
+
+  const wrap: CSSProperties = { minHeight: "100vh", background: BG, color: TEKST, fontFamily: "system-ui, -apple-system, sans-serif", padding: "20px 14px", maxWidth: 520, margin: "0 auto" };
+  const kaart: CSSProperties = { background: KAART_BG, border: `1px solid ${RAND}`, borderRadius: 16, padding: 18, marginBottom: 16, boxShadow: KAART_SCHADUW };
+  const knop = (bg: string): CSSProperties => ({ background: bg, color: "#fff", border: "none", borderRadius: 12, padding: "16px 20px", fontSize: 17, fontWeight: 700, cursor: "pointer", width: "100%" });
+  const inp: CSSProperties = { flex: 1, minWidth: 0, width: "100%", border: `1px solid ${VELD_RAND}`, borderRadius: 8, padding: "9px 10px", fontSize: 14, boxSizing: "border-box", background: VELD_BG, color: VELD_TEKST };
+  const inpG: CSSProperties = { ...inp, border: `1.5px solid ${GROEN}` };
+  const plus: CSSProperties = { border: `1px dashed ${GROEN}`, background: GROEN_BG, color: GROEN, borderRadius: 999, padding: "5px 12px", fontSize: 12.5, fontWeight: 700, cursor: "pointer", marginTop: 2 };
+  const toggle = (a: boolean, kleur: string): CSSProperties => ({ border: `1px solid ${a ? kleur : RAND}`, background: a ? kleur : "#fff", color: a ? "#fff" : TEKST, borderRadius: 8, padding: "8px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer" });
+  const kopstijl: CSSProperties = { fontSize: 13, color: GRIJS, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, margin: "2px 0 12px" };
+
+  function veldRij(v: Veld) {
+    const isEigen = v.veld_type.startsWith("eigen");
+    const opties = cfgVan(v.veld_type)?.opties;
+    return (
+      <div key={v.key} style={{ marginBottom: 9 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+          {isEigen
+            ? <input value={v.label} onChange={(e) => updVeld(v.key, "label", e.target.value)} placeholder="naam veld" style={{ ...inpG, fontWeight: 600 }} />
+            : <div style={{ fontSize: 13.5, fontWeight: 600 }}>{v.positie > 1 ? `${v.label} ${v.positie}` : v.label}{v.eenheid ? ` (${v.eenheid})` : ""}</div>}
+          {(isEigen || v.positie > 1) && <button onClick={() => verwijderVeld(v.key)} style={{ border: "none", background: "transparent", color: GRIJS, fontSize: 18, cursor: "pointer", padding: "0 6px" }}>×</button>}
+        </div>
+        {opties
+          ? <div style={{ display: "flex", gap: 8 }}>
+              {opties.map((o) => (
+                <button key={o} onClick={() => updVeld(v.key, "binnenkomst", v.binnenkomst === o ? "" : o)} style={toggle(v.binnenkomst === o, statusKleur(o))}>{o}</button>
+              ))}
+            </div>
+          : <div style={{ display: "flex", gap: 8 }}>
+              <input value={v.binnenkomst} onChange={(e) => updVeld(v.key, "binnenkomst", e.target.value)} placeholder="binnenkomst" style={inpG} />
+              <input value={v.afleveren} onChange={(e) => updVeld(v.key, "afleveren", e.target.value)} placeholder="afleveren" style={inpG} />
+            </div>}
+      </div>
+    );
+  }
+
+  function blokAfstelling() {
+    return SECTIES.map((sec) => (
+      <div key={sec.cat} style={kaart}>
+        <div style={kopstijl}>{sec.titel}</div>
+        {VELD_TYPES.filter((c) => c.categorie === sec.cat).map((c) => {
+          const vs = velden.filter((v) => v.veld_type === c.type).sort((a, b) => a.positie - b.positie);
+          return (
+            <div key={c.type} style={{ marginBottom: 8 }}>
+              {vs.map(veldRij)}
+              <button style={plus} onClick={() => voegVeldToe(c.type, c.label, c.eenheid)}>+ {c.label}</button>
+            </div>
+          );
+        })}
+        {(() => {
+          const et = EIGEN[sec.cat];
+          const eigen = velden.filter((v) => v.veld_type === et).sort((a, b) => a.positie - b.positie);
+          return (
+            <div style={{ marginTop: 6, borderTop: `1px solid ${RAND}`, paddingTop: 8 }}>
+              {eigen.map(veldRij)}
+              <button style={plus} onClick={() => voegVeldToe(et, "", "")}>+ Extra veld</button>
+            </div>
+          );
+        })()}
+      </div>
+    ));
+  }
+
+  function blokTijd() {
+    return (
+      <div style={kaart}>
+        <div style={kopstijl}>Tijd</div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <input inputMode="numeric" value={handMin} onChange={(e) => setHandMin(e.target.value.replace(/\D/g, ""))} placeholder="minuten" style={{ ...inp, maxWidth: 100 }} />
+          <input value={notitie} onChange={(e) => setNotitie(e.target.value)} placeholder="notitie" style={inp} />
+          <button disabled={!monteur} onClick={handmatig} style={{ border: "none", background: monteur ? GOUD : "#cdbe8a", color: "#fff", borderRadius: 10, padding: "0 16px", fontWeight: 700, cursor: "pointer" }}>+</button>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", margin: "12px 0 4px" }}>
+          <span style={{ fontSize: 13, color: GRIJS, fontWeight: 600 }}>Geschreven tijd</span>
+          <span style={{ fontWeight: 700 }}>Totaal {duur(totaal)}</span>
+        </div>
+        {regels.map((r) => (
+          <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "7px 0", borderTop: `1px solid ${RAND}` }}>
+            <div><div style={{ fontSize: 14, fontWeight: 600 }}>{r.monteur_naam} · {duur(r.minuten)}</div>{r.aangemaakt_op && <div style={{ fontSize: 11, color: GRIJS, marginTop: 1 }}>{datumStempel(r.aangemaakt_op)}</div>}{r.notitie && <div style={{ fontSize: 12.5, color: GRIJS, marginTop: 1 }}>{r.notitie}</div>}</div>
+            <button onClick={() => verwijder(r.id)} style={{ border: "none", background: "transparent", color: GRIJS, fontSize: 18, cursor: "pointer", padding: "0 6px" }}>×</button>
+          </div>
+        ))}
+        {klusStart && (
+          <div style={{ fontSize: 12, color: GRIJS, marginTop: 10, borderTop: `1px solid ${RAND}`, paddingTop: 8 }}>
+            Gestart door {klusStart.naam}, {datumTijd(klusStart.tijd)}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  function blokArtikelen() {
+    return (
+      <div style={kaart}>
+        <div style={kopstijl}>Extra artikelen</div>
+        <div style={{ fontSize: 12, color: GRIJS, marginBottom: 10 }}>Onderdelen uit het schap, met bedrag. Vul alleen in wat je erbij pakt.</div>
+        {artikelen.map((a) => (
+          <div key={a.key} style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
+            {a.vast
+              ? <div style={{ flex: 1, fontSize: 13.5, fontWeight: 600 }}>{a.naam}</div>
+              : <input value={a.naam} onChange={(e) => updArtikel(a.key, "naam", e.target.value)} placeholder="artikel (bijv. slangklem, boutjes)" style={inpG} />}
+            <div style={{ display: "flex", alignItems: "center", gap: 4, width: 110 }}>
+              <span style={{ color: GRIJS, fontSize: 14 }}>€</span>
+              <input inputMode="decimal" value={a.bedrag} onChange={(e) => updArtikel(a.key, "bedrag", e.target.value.replace(/[^0-9,.]/g, ""))} placeholder="0,00" style={{ ...inpG, textAlign: "right" }} />
+            </div>
+            {!a.vast && <button onClick={() => setArtikelen((as) => as.filter((x) => x.key !== a.key))} style={{ border: "none", background: "transparent", color: GRIJS, fontSize: 18, cursor: "pointer" }}>×</button>}
+          </div>
+        ))}
+        <button style={plus} onClick={() => setArtikelen((as) => [...as, { key: key(), naam: "", bedrag: "", vast: false }])}>+ Extra artikel</button>
+        {artikelenTotaal > 0 && (
+          <div style={{ display: "flex", justifyContent: "space-between", borderTop: `1px solid ${RAND}`, marginTop: 10, paddingTop: 8, fontSize: 13.5 }}>
+            <span style={{ fontWeight: 700 }}>Totaal extra</span>
+            <span style={{ fontWeight: 700 }}>{euro(artikelenTotaal)}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  function blokOpmerkingen() {
+    return (
+      <div style={kaart}>
+        <div style={kopstijl}>Opmerkingen</div>
+        <textarea value={opmerking} onChange={(e) => setOpmerking(e.target.value)} placeholder="Bijzonderheden over deze klus..." style={{ ...inp, minHeight: 80, resize: "vertical" }} />
+      </div>
+    );
+  }
+
+  function blokEindcontrole() {
+    return (
+      <div style={kaart}>
+        <div style={kopstijl}>Eindcontrole</div>
+        {checklist.map((c) => (
+          <div key={c.key} style={{ padding: "9px 0", borderTop: `1px solid ${RAND}` }}>
+            {c.vast
+              ? <div style={{ fontSize: 13.5, fontWeight: 600 }}>{c.naam}</div>
+              : <div style={{ display: "flex", gap: 6 }}><input value={c.naam} onChange={(e) => updCheck(c.key, "naam", e.target.value)} placeholder="eigen controlepunt" style={inpG} /><button onClick={() => setChecklist((cs) => cs.filter((x) => x.key !== c.key))} style={{ border: "none", background: "transparent", color: GRIJS, fontSize: 18, cursor: "pointer" }}>×</button></div>}
+            <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+              <button onClick={() => updCheck(c.key, "status", c.status === "goed" ? "" : "goed")} style={toggle(c.status === "goed", GROEN)}>Goed</button>
+              <button onClick={() => updCheck(c.key, "status", c.status === "afgekeurd" ? "" : "afgekeurd")} style={toggle(c.status === "afgekeurd", ROOD)}>Afgekeurd</button>
+            </div>
+            {c.status === "afgekeurd" && <input value={c.notitie} onChange={(e) => updCheck(c.key, "notitie", e.target.value)} placeholder="wat is er mis?" style={{ ...inpG, marginTop: 6 }} />}
+          </div>
+        ))}
+        <button style={{ ...plus, marginTop: 10 }} onClick={() => setChecklist((cs) => [...cs, { key: key(), naam: "", status: "", notitie: "", vast: false }])}>+ Eigen controlepunt</button>
+      </div>
+    );
+  }
+
+  if (laden) return <main style={wrap}><p style={{ color: GRIJS }}>Laden...</p></main>;
+
+  const stapInfo = stapPopup ? STADIA.find((s) => s.id === stapPopup) : null;
+  const binnenDagenLijst = klussen.map((k) => ontvangst[k.id] ? dagenGeleden(ontvangst[k.id]) : null).filter((d): d is number => d != null);
+  const monLopen = klussen.filter((k) => lopendeKlussen.has(k.id)).length;
+  const monWeek = binnenDagenLijst.filter((d) => d >= 7 && d < 14).length;
+  const monAlert = binnenDagenLijst.filter((d) => d >= 14).length;
+
+  const q = zoek.trim().toLowerCase();
+  const zichtbaar = q ? klussen.filter((k) => `${k.nummer} ${k.klant} ${k.voertuig}`.toLowerCase().includes(q)) : klussen;
+
+  // Alleen-lezen werkbon
+  if (bekijk) {
+    const bTotaal = bekijkRegels.reduce((s, r) => s + (r.minuten || 0), 0);
+    const ingevuld = bekijkVelden.filter((v) => v.binnenkomst.trim() || v.afleveren.trim());
+    const checksIngevuld = bekijkChecklist.filter((c) => c.status);
+    const artIngevuld = bekijkArtikelen.filter((a) => a.naam.trim() && bedragNum(a.bedrag) > 0);
+    const artTotaal = artIngevuld.reduce((s, a) => s + bedragNum(a.bedrag), 0);
+    const bPct = STADIA.filter((s) => bekijkVoortgang.some((x) => x.stap === s.id)).reduce((m, s) => Math.max(m, s.pct), 0);
+    return (
+      <main style={wrap}>
+        <button onClick={() => setBekijk(null)} style={{ border: "none", background: "transparent", color: GROEN, fontWeight: 700, fontSize: 14, cursor: "pointer", padding: "4px 0", marginBottom: 6 }}>← Terug naar klussen</button>
+
+        <div style={kaart}>
+          <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+            <span style={{ display: "inline-block", fontSize: 11, fontWeight: 700, color: GRIJS, background: BG, border: `1px solid ${RAND}`, borderRadius: 999, padding: "3px 10px" }}>Alleen lezen</span>
+            {bekijkRetour && bekijkRetour.is && <span style={{ display: "inline-block", fontSize: 11, fontWeight: 800, color: "#fff", background: ROOD, borderRadius: 999, padding: "3px 10px" }}>RETOUR</span>}
+          </div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: GROEN, letterSpacing: 0.5, lineHeight: 1.1 }}>{bekijk.nummer}</div>
+          <div style={{ fontSize: 21, fontWeight: 700, marginTop: 4 }}>{bekijk.klant}</div>
+          {bekijk.voertuig && <div style={{ fontSize: 13.5, color: GRIJS, marginTop: 8 }}>{bekijk.voertuig}</div>}
+          {bekijk.klacht && <div style={{ fontSize: 14, lineHeight: 1.45, background: GROEN_BG, color: GROEN, borderRadius: 10, padding: "12px 14px", marginTop: 10 }}><span style={{ fontWeight: 800 }}>Klacht: </span>{bekijk.klacht}</div>}
+          {bekijkRetour && bekijkRetour.is && bekijkRetour.reden && <div style={{ fontSize: 13.5, lineHeight: 1.45, background: ROOD_BG, color: ROOD, borderRadius: 10, padding: "12px 14px", marginTop: 10 }}><span style={{ fontWeight: 800 }}>Reden retour: </span>{bekijkRetour.reden}</div>}
+        </div>
+
+        {bekijkLaden && <div style={{ ...kaart, color: GRIJS }}>Werkbon laden...</div>}
+
+        <div style={kaart}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <span style={kopstijl}>Voortgang</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: GROEN }}>{bPct}%</span>
+          </div>
+          <div style={{ height: 8, background: GROEN_BG, borderRadius: 999, overflow: "hidden", margin: "0 0 10px" }}>
+            <div style={{ height: "100%", width: `${bPct}%`, background: GROEN, borderRadius: 999 }} />
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {STADIA.map((s) => {
+              const v = bekijkVoortgang.find((x) => x.stap === s.id);
+              const done = !!v;
+              return (
+                <div key={s.id} style={{ border: `1px solid ${done ? GROEN : RAND}`, background: done ? GROEN : "#fff", color: done ? "#fff" : GRIJS, borderRadius: 8, padding: "7px 10px", fontSize: 11.5, fontWeight: 700 }}>
+                  {done ? "✓ " : ""}{s.kort}{done && v.gedaan_op ? ` · ${datumKort(v.gedaan_op)}` : ""}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div style={kaart}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+            <span style={kopstijl}>Geschreven tijd</span>
+            <span style={{ fontWeight: 700 }}>Totaal {duur(bTotaal)}</span>
+          </div>
+          {bekijkRegels.length === 0 && <div style={{ fontSize: 13, color: GRIJS }}>Nog geen tijd geschreven.</div>}
+          {bekijkRegels.map((r) => (
+            <div key={r.id} style={{ padding: "7px 0", borderTop: `1px solid ${RAND}` }}>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>{r.monteur_naam} · {duur(r.minuten)}</div>
+              {r.aangemaakt_op && <div style={{ fontSize: 11, color: GRIJS, marginTop: 1 }}>{datumStempel(r.aangemaakt_op)}</div>}
+              {r.notitie && <div style={{ fontSize: 12.5, color: GRIJS, marginTop: 1 }}>{r.notitie}</div>}
+            </div>
+          ))}
+        </div>
+
+        {SECTIES.map((sec) => {
+          const lijst = ingevuld.filter((v) => catVan(v.veld_type) === sec.cat).sort((a, b) => a.positie - b.positie);
+          if (lijst.length === 0) return null;
+          return (
+            <div key={sec.cat} style={kaart}>
+              <div style={kopstijl}>{sec.titel}</div>
+              {lijst.map((v) => (
+                <div key={v.key} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "7px 0", borderTop: `1px solid ${RAND}` }}>
+                  <span style={{ fontSize: 13.5, fontWeight: 600 }}>{v.positie > 1 ? `${v.label} ${v.positie}` : v.label}{v.eenheid ? ` (${v.eenheid})` : ""}</span>
+                  <span style={{ fontSize: 13.5, color: GRIJS, textAlign: "right" }}>{v.binnenkomst}{v.binnenkomst && v.afleveren ? "  →  " : ""}{v.afleveren}</span>
+                </div>
+              ))}
+            </div>
+          );
+        })}
+
+        {artIngevuld.length > 0 && (
+          <div style={kaart}>
+            <div style={kopstijl}>Extra artikelen</div>
+            {artIngevuld.map((a) => (
+              <div key={a.key} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "7px 0", borderTop: `1px solid ${RAND}` }}>
+                <span style={{ fontSize: 13.5 }}>{a.naam}</span>
+                <span style={{ fontSize: 13.5, fontWeight: 600 }}>{euro(bedragNum(a.bedrag))}</span>
+              </div>
+            ))}
+            <div style={{ display: "flex", justifyContent: "space-between", borderTop: `1px solid ${RAND}`, marginTop: 6, paddingTop: 8, fontSize: 13.5 }}>
+              <span style={{ fontWeight: 700 }}>Totaal extra</span>
+              <span style={{ fontWeight: 700 }}>{euro(artTotaal)}</span>
+            </div>
+          </div>
+        )}
+
+        {bekijkOpmerking.trim() && (
+          <div style={kaart}>
+            <div style={kopstijl}>Opmerkingen</div>
+            <div style={{ fontSize: 13.5, lineHeight: 1.5, whiteSpace: "pre-wrap" }}>{bekijkOpmerking}</div>
+          </div>
+        )}
+
+        <div style={kaart}>
+          <div style={kopstijl}>Eindcontrole</div>
+          {checksIngevuld.length === 0 && <div style={{ fontSize: 13, color: GRIJS }}>Nog niet ingevuld.</div>}
+          {checksIngevuld.map((c) => (
+            <div key={c.key} style={{ padding: "8px 0", borderTop: `1px solid ${RAND}` }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+                <span style={{ fontSize: 13.5 }}>{c.naam}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: c.status === "goed" ? GROEN : ROOD, whiteSpace: "nowrap" }}>{c.status === "goed" ? "Goed" : "Afgekeurd"}</span>
+              </div>
+              {c.status === "afgekeurd" && c.notitie && <div style={{ fontSize: 12.5, color: ROOD, marginTop: 3 }}>{c.notitie}</div>}
+            </div>
+          ))}
+        </div>
+
+        {bekijkFotos.length > 0 && (
+          <div style={kaart}>
+            <div style={kopstijl}>Foto's</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {bekijkFotos.map((f) => (
+                <a key={f.id} href={f.url} target="_blank" rel="noreferrer">
+                  <img src={f.url} alt="" style={{ width: 84, height: 84, objectFit: "cover", borderRadius: 8, border: `1px solid ${RAND}` }} />
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {bekijkLog.length > 0 && (
+          <div style={kaart}>
+            <div style={kopstijl}>Logboek (wie deed wat)</div>
+            {bekijkLog.map((l, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", gap: 10, padding: "6px 0", borderTop: `1px solid ${RAND}` }}>
+                <span style={{ fontSize: 12.5 }}>{l.monteur_naam || "Onbekend"} · {l.actie}{l.detail ? ` (${l.detail})` : ""}</span>
+                <span style={{ fontSize: 12, color: GRIJS, whiteSpace: "nowrap" }}>{datumTijd(l.gedaan_op)}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div style={{ height: 20 }} />
+      </main>
+    );
+  }
+
+  return (
+    <main style={wrap}>
+      {open && popup && (
+        <div onClick={() => { setPopup(false); if (start == null) setTimerPopup(true); }} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 18, padding: 24, maxWidth: 460, width: "100%", boxShadow: "0 20px 60px rgba(0,0,0,0.35)" }}>
+            <div style={{ fontSize: 13, color: GRIJS, fontWeight: 600, marginBottom: 8 }}>Je werkt vandaag aan</div>
+            <div style={{ fontSize: 30, fontWeight: 800, color: GROEN, lineHeight: 1.05 }}>{open.nummer}</div>
+            <div style={{ fontSize: 20, fontWeight: 700, marginTop: 4 }}>{open.klant}</div>
+            {open.voertuig && <div style={{ fontSize: 14, color: GRIJS, marginTop: 10, lineHeight: 1.4 }}>{open.voertuig}</div>}
+            <button onClick={() => { setPopup(false); if (start == null) setTimerPopup(true); }} style={{ ...knop(GROEN), marginTop: 20 }}>Aan de slag</button>
+          </div>
+        </div>
+      )}
+
+      {open && timerPopup && start == null && (
+        <div onClick={() => setTimerPopup(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 18, padding: 24, maxWidth: 420, width: "100%", textAlign: "center", boxShadow: "0 20px 60px rgba(0,0,0,0.35)" }}>
+            <div style={{ fontSize: 19, fontWeight: 800, color: GROEN, marginBottom: 8 }}>Klaar om te beginnen?</div>
+            <div style={{ fontSize: 14, color: TEKST, lineHeight: 1.5, marginBottom: 18 }}>Start de timer zodra je aan deze klus begint. Je kunt hem onderaan altijd weer stoppen.</div>
+            {!monteur && <div style={{ fontSize: 13, color: ROOD, marginBottom: 12 }}>Kies eerst bovenaan je naam.</div>}
+            <button disabled={!monteur} onClick={() => { startTimer(); setTimerPopup(false); }} style={knop(monteur ? GROEN : "#b9c2bc")}>START</button>
+            <button onClick={() => setTimerPopup(false)} style={{ width: "100%", marginTop: 10, border: "none", background: "transparent", color: GRIJS, fontWeight: 700, fontSize: 14, cursor: "pointer", padding: "6px" }}>Later, eerst iets anders</button>
+          </div>
+        </div>
+      )}
+
+      {open && stapInfo && (
+        <div onClick={() => setStapPopup(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 18, padding: 22, maxWidth: 460, width: "100%", maxHeight: "85vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.35)" }}>
+            <div style={{ fontSize: 12.5, color: GRIJS, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>Stadium · {stapInfo.pct}%</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: GROEN, marginBottom: 8 }}>{stapInfo.label}</div>
+            <div style={{ fontSize: 14, lineHeight: 1.5, marginBottom: 12 }}>{stapInfo.coaching}</div>
+            {stapInfo.notitie && <textarea value={stapNotitie} onChange={(e) => setStapNotitie(e.target.value)} placeholder="Korte toelichting voor de klant" style={{ ...inp, minHeight: 60, marginBottom: 12 }} />}
+            {stapInfo.foto && (
+              <>
+                <label style={{ display: "block", textAlign: "center", background: GOUD, color: "#fff", borderRadius: 12, padding: "13px", fontSize: 15, fontWeight: 700, cursor: "pointer", marginBottom: 10 }}>
+                  Maak foto
+                  <input type="file" accept="image/*" capture="environment" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadFoto(f, stapInfo.id); e.currentTarget.value = ""; }} />
+                </label>
+                {fotoMelding && <div style={{ fontSize: 13, color: GROEN, fontWeight: 600, marginBottom: 10 }}>{fotoMelding}</div>}
+                {fotos.filter((f) => f.stap === stapInfo.id).length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+                    {fotos.filter((f) => f.stap === stapInfo.id).map((f) => (
+                      <div key={f.id} style={{ position: "relative" }}>
+                        <img src={f.url} alt="" style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8, border: `1px solid ${RAND}` }} />
+                        <button onClick={() => verwijderFoto(f.id)} style={{ position: "absolute", top: -6, right: -6, width: 22, height: 22, borderRadius: 999, border: "none", background: ROOD, color: "#fff", fontSize: 13, cursor: "pointer" }}>×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+            {stapInfo.eindcontrole && !eindcontroleCompleet && <div style={{ fontSize: 13, color: ROOD, marginBottom: 10 }}>Vink eerst de eindcontrole helemaal af voordat je dit stadium afrondt.</div>}
+            <button disabled={stapInfo.eindcontrole && !eindcontroleCompleet} onClick={() => markeerStap(stapInfo.id)} style={knop(isGedaan(stapInfo.id) ? GRIJS : (stapInfo.eindcontrole && !eindcontroleCompleet ? "#b9c2bc" : GROEN))}>
+              {isGedaan(stapInfo.id) ? "Ongedaan maken" : "Markeer als gedaan"}
+            </button>
+            <button onClick={() => setStapPopup(null)} style={{ width: "100%", marginTop: 8, border: "none", background: "transparent", color: GRIJS, fontWeight: 700, fontSize: 14, cursor: "pointer", padding: "6px" }}>Sluiten</button>
+          </div>
+        </div>
+      )}
+
+      <h1 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 14px" }}>Werkplaats</h1>
+      {fout && <div style={{ ...kaart, color: ROOD, borderColor: ROOD }}>Let op: {fout}</div>}
+
+      <div style={{ ...kaart, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+        <div style={{ fontSize: 13.5 }}>Ingelogd als <span style={{ fontWeight: 700, color: GROEN }}>{ingelogd.naam}</span></div>
+        <button onClick={onUitloggen} style={{ border: `1px solid ${RAND}`, background: "#fff", color: GRIJS, borderRadius: 999, padding: "7px 14px", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>Uitloggen</button>
+      </div>
+
+      {!open && (
+        <>
+          <div style={kaart}>
+            <input value={zoek} onChange={(e) => setZoek(e.target.value)} placeholder="Zoek op offertenummer, klant of voertuig" style={{ ...inp, fontSize: 15 }} />
+            {q && <div style={{ fontSize: 12, color: GRIJS, marginTop: 8 }}>{zichtbaar.length} {zichtbaar.length === 1 ? "klus" : "klussen"} gevonden{zichtbaar.length ? ", tik op Bekijk werkbon om alleen te lezen" : ""}.</div>}
+          </div>
+
+          {!q && (
+            <div style={{ ...kaart, display: "flex", gap: 8 }}>
+              <div style={{ textAlign: "center", flex: 1 }}>
+                <div style={{ fontSize: 24, fontWeight: 800, color: monLopen ? GROEN : GRIJS }}>{monLopen}</div>
+                <div style={{ fontSize: 11.5, color: GRIJS }}>timer loopt</div>
+              </div>
+              <div style={{ textAlign: "center", flex: 1, borderLeft: `1px solid ${RAND}` }}>
+                <div style={{ fontSize: 24, fontWeight: 800, color: monWeek ? GOUD : GRIJS }}>{monWeek}</div>
+                <div style={{ fontSize: 11.5, color: GRIJS }}>7+ dagen binnen</div>
+              </div>
+              <div style={{ textAlign: "center", flex: 1, borderLeft: `1px solid ${RAND}` }}>
+                <div style={{ fontSize: 24, fontWeight: 800, color: monAlert ? ROOD : GRIJS }}>{monAlert}</div>
+                <div style={{ fontSize: 11.5, color: GRIJS }}>14+ dagen alert</div>
+              </div>
+            </div>
+          )}
+
+          <div style={{ fontSize: 13, color: GRIJS, fontWeight: 600, margin: "4px 2px 8px" }}>{q ? "Zoekresultaten" : "Geaccepteerde klussen"} ({zichtbaar.length})</div>
+          {zichtbaar.map((k) => {
+            const tekenD = dagenGeleden(k.getekend);
+            const binnenIso = ontvangst[k.id];
+            const binnenD = binnenIso ? dagenGeleden(binnenIso) : null;
+            const alert = binnenD != null && binnenD >= 14;
+            const waarschuwing = binnenD != null && binnenD >= 7 && binnenD < 14;
+            const binnenKleur = alert ? ROOD : waarschuwing ? GOUD : TEKST;
+            return (
+              <div key={k.id} style={{ ...kaart, borderColor: alert ? ROOD : RAND, borderWidth: alert ? 1.5 : 1 }}>
+                <div onClick={() => openKlus(k)} style={{ cursor: "pointer" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: GROEN }}>{k.nummer}</div>
+                    {alert && <span style={{ fontSize: 11.5, fontWeight: 800, color: ROOD, letterSpacing: 0.5 }}>ALERT</span>}
+                  </div>
+                  <div style={{ fontWeight: 700, marginTop: 1 }}>{k.klant}</div>
+                  {k.voertuig && <div style={{ fontSize: 13, color: GRIJS, marginTop: 3 }}>{k.voertuig}</div>}
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 6, alignItems: "center" }}>
+                    {tekenD != null && <span style={{ fontSize: 12.5, color: GRIJS }}>{tekenD} {tekenD === 1 ? "dag" : "dagen"} sinds tekenen</span>}
+                    {binnenD != null
+                      ? <span style={{ fontSize: 12.5, color: binnenKleur, fontWeight: (waarschuwing || alert) ? 700 : 600 }}>{binnenD} {binnenD === 1 ? "dag" : "dagen"} binnen</span>
+                      : <span style={{ fontSize: 12.5, color: GRIJS, fontStyle: "italic" }}>nog niet binnen</span>}
+                    {totalen[k.id] ? <span style={{ fontSize: 12.5, color: GROEN, fontWeight: 600 }}>{duur(totalen[k.id])} geschreven</span> : null}
+                    {lopendeKlussen.has(k.id) && <span style={{ fontSize: 12.5, color: ROOD, fontWeight: 700 }}>● timer loopt, {lopMin(k.id)} min</span>}
+                  </div>
+                </div>
+                <div style={{ borderTop: `1px solid ${RAND}`, marginTop: 10, paddingTop: 8 }}>
+                  <button onClick={(e) => { e.stopPropagation(); openBekijk(k); }} style={{ border: "none", background: "transparent", color: GROEN, fontWeight: 700, fontSize: 12.5, cursor: "pointer", padding: 0 }}>Bekijk werkbon (alleen lezen) →</button>
+                </div>
+              </div>
+            );
+          })}
+          {zichtbaar.length === 0 && <div style={{ color: GRIJS }}>{q ? "Niets gevonden voor deze zoekterm." : "Geen geaccepteerde klussen gevonden."}</div>}
+        </>
+      )}
+
+      {open && (
+        <>
+          <button onClick={() => setOpen(null)} style={{ border: "none", background: "transparent", color: GROEN, fontWeight: 700, fontSize: 14, cursor: "pointer", padding: "4px 0", marginBottom: 6 }}>← Klussen</button>
+
+          <div style={kaart}>
+            <div style={{ fontSize: 28, fontWeight: 800, color: GROEN, letterSpacing: 0.5, lineHeight: 1.1 }}>{open.nummer}</div>
+            <div style={{ fontSize: 21, fontWeight: 700, marginTop: 4 }}>{open.klant}</div>
+            {open.voertuig && <div style={{ fontSize: 13.5, color: GRIJS, marginTop: 8 }}>{open.voertuig}</div>}
+
+            <div style={{ marginTop: 12, padding: 12, border: `1.5px solid ${retour ? ROOD : RAND}`, borderRadius: 10, background: retour ? ROOD_BG : "#fff" }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+                <input type="checkbox" checked={retour} onChange={(e) => setRetour(e.target.checked)} style={{ width: 20, height: 20, accentColor: ROOD }} />
+                <span style={{ fontSize: 14.5, fontWeight: 700, color: retour ? ROOD : TEKST }}>Dit is een retour</span>
+              </label>
+              {retour && (
+                <textarea value={retourReden} onChange={(e) => setRetourReden(e.target.value)} placeholder="Reden van terugkomst (verplicht)" style={{ ...inp, border: `1.5px solid ${ROOD}`, minHeight: 60, marginTop: 10, resize: "vertical" }} />
+              )}
+            </div>
+
+            {open.klacht && (
+              <div style={{ marginTop: 12 }}>
+                <div style={{ fontSize: 16, lineHeight: 1.45, background: GROEN_BG, color: GROEN, borderRadius: 10, padding: "14px 16px" }}>
+                  <span style={{ fontWeight: 800 }}>Klacht: </span>{open.klacht}
+                </div>
+                <button onClick={diagnose} disabled={diagBezig} style={{ marginTop: 10, border: `1px solid ${GOUD}`, background: "#fff", color: "#6b5410", borderRadius: 999, padding: "8px 16px", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>
+                  {diagBezig ? "Bezig met meedenken..." : "Denk mee over de klacht"}
+                </button>
+                {diagFout && <div style={{ marginTop: 8, fontSize: 13, color: ROOD }}>{diagFout}</div>}
+                {(diagnoseLijst.length > 0 || diagTekst) && (
+                  <div style={{ marginTop: 8, background: GOUD_BG, border: `1px solid ${GOUD}`, borderRadius: 10, padding: 12 }}>
+                    <div style={{ fontSize: 11.5, color: "#6b5410", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>Aandachtspunten voor deze revisie</div>
+                    {diagnoseLijst.map((p, i) => (
+                      <div key={i} style={{ marginBottom: 8 }}>
+                        <div style={{ fontSize: 13.5, fontWeight: 700 }}>{p.oorzaak}</div>
+                        <div style={{ fontSize: 13, color: TEKST }}>{p.controleren}</div>
+                      </div>
+                    ))}
+                    {diagTekst && <div style={{ fontSize: 13, whiteSpace: "pre-wrap" }}>{diagTekst}</div>}
+                    <div style={{ fontSize: 11.5, color: "#6b5410", marginTop: 6, opacity: 0.8 }}>AI denkt mee, controleer altijd zelf.</div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div style={kaart}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+              <span style={kopstijl}>Voortgang</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: GROEN }}>{huidigPct}%</span>
+            </div>
+            <div style={{ height: 8, background: GROEN_BG, borderRadius: 999, overflow: "hidden", margin: "0 0 12px" }}>
+              <div style={{ height: "100%", width: `${huidigPct}%`, background: GROEN, borderRadius: 999, transition: "width .3s ease" }} />
+            </div>
+            <div style={{ display: "flex", gap: 6, padding: "0 1px" }}>
+              {STADIA.map((s) => {
+                const done = isGedaan(s.id);
+                const next = !done && s.id === eersteNietGedaan;
+                const bg = done ? GROEN : next ? GOUD : "#fff";
+                const bd = done ? GROEN : next ? GOUD : RAND;
+                const tc = (done || next) ? "#fff" : GRIJS;
+                return (
+                  <button key={s.id} onClick={() => { setStapNotitie(""); setFotoMelding(""); setStapPopup(s.id); }} style={{ flex: 1, minWidth: 0, border: `1.5px solid ${bd}`, background: bg, color: tc, borderRadius: 8, padding: "10px 2px", fontSize: 10, fontWeight: 700, cursor: "pointer", lineHeight: 1.2, textAlign: "center", overflowWrap: "anywhere", hyphens: "auto" }}>
+                    {done ? "✓ " : ""}{s.kort}
+                  </button>
+                );
+              })}
+            </div>
+            <button onClick={deelMetKlant} style={{ ...plus, marginTop: 12 }}>Deel met klant</button>
+            {deelLink && (
+              <div style={{ marginTop: 8 }}>
+                <div style={{ fontSize: 12, color: GRIJS, marginBottom: 4 }}>Volglink voor de klant:</div>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <input readOnly value={deelLink} onFocus={(e) => e.target.select()} style={inp} />
+                  <button onClick={() => navigator.clipboard?.writeText(deelLink)} style={{ border: "none", background: GROEN, color: "#fff", borderRadius: 8, padding: "0 12px", fontWeight: 700, cursor: "pointer" }}>Kopieer</button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {limiet && <div style={{ ...kaart, background: GOUD_BG, borderColor: GOUD, color: "#6b5410", fontSize: 13.5 }}>{limiet}</div>}
+
+          {blokTijd()}
+          {blokAfstelling()}
+          {blokArtikelen()}
+          {blokOpmerkingen()}
+          {blokEindcontrole()}
+
+          <button onClick={() => bewaarWerkbon(false)} disabled={bezig} style={knop(opgeslagen ? GOUD : GROEN)}>
+            {bezig ? "Opslaan..." : opgeslagen ? "Werkbon opgeslagen" : "Werkbon opslaan"}
+          </button>
+          <div style={{ fontSize: 12, color: GRIJS, textAlign: "center", marginTop: 8 }}>{autoMelding || "De werkbon slaat zichzelf automatisch op terwijl je werkt."}</div>
+
+          <div style={{ height: 100 }} />
+        </>
+      )}
+
+      {open && (
+        <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 30, background: "#fff", borderTop: `1px solid ${RAND}`, padding: "10px 14px", boxShadow: "0 -4px 16px rgba(0,0,0,0.08)" }}>
+          <div style={{ maxWidth: 520, margin: "0 auto" }}>
+            {!monteur && <div style={{ fontSize: 12, color: ROOD, textAlign: "center", marginBottom: 6 }}>Kies bovenaan je naam om de timer te gebruiken.</div>}
+            {start == null
+              ? <button disabled={!monteur} onClick={startTimer} style={knop(monteur ? GROEN : "#b9c2bc")}>Start tijd</button>
+              : <button onClick={stop} style={knop(ROOD)}>Stop, {mmss(nu - start)} bezig</button>}
+          </div>
+        </div>
+      )}
+    </main>
+  );
+}
+
+// Inlogscherm met pincode. Dit is de zichtbare pagina.
+export default function WerkplaatsPagina() {
+  const [ingelogd, setIngelogd] = useState<Monteur | null>(null);
+  const [pin, setPin] = useState("");
+  const [bezig, setBezig] = useState(false);
+  const [fout, setFout] = useState("");
+  const [klaar, setKlaar] = useState(false);
+
+  // onthouden op het apparaat
+  useEffect(() => {
+    try {
+      const opg = localStorage.getItem("werkplaats-gebruiker");
+      if (opg) {
+        const g = JSON.parse(opg);
+        if (g && g.id && g.naam) setIngelogd({ id: g.id, naam: g.naam });
+      }
+    } catch {}
+    setKlaar(true);
+  }, []);
+
+  async function inloggen() {
+    const code = pin.trim();
+    if (!code) return;
+    setBezig(true); setFout("");
+    try {
+      const { data, error } = await supabase.from("app_gebruikers").select("id, naam, rol, actief").eq("pincode", code).limit(1);
+      if (error) { setFout("Er ging iets mis, probeer het nog eens."); setBezig(false); return; }
+      const g = data && data[0];
+      if (!g || !g.actief) { setFout("Onbekende of geblokkeerde code."); setPin(""); setBezig(false); return; }
+      const gebruiker = { id: g.id as string, naam: g.naam as string };
+      try { localStorage.setItem("werkplaats-gebruiker", JSON.stringify({ ...gebruiker, rol: g.rol })); } catch {}
+      setIngelogd(gebruiker);
+    } catch (e) { setFout(String(e)); }
+    finally { setBezig(false); }
+  }
+
+  function uitloggen() {
+    try { localStorage.removeItem("werkplaats-gebruiker"); } catch {}
+    setIngelogd(null); setPin("");
+  }
+
+  const wrapL: CSSProperties = { minHeight: "100vh", background: BG, color: TEKST, fontFamily: "system-ui, -apple-system, sans-serif", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 };
+
+  if (!klaar) return <main style={wrapL}><p style={{ color: GRIJS }}>Laden...</p></main>;
+
+  if (ingelogd) return <WerkplaatsApp ingelogd={ingelogd} onUitloggen={uitloggen} />;
+
+  return (
+    <main style={wrapL}>
+      <div style={{ background: "#fff", border: `1px solid ${RAND}`, borderRadius: 18, padding: 28, maxWidth: 360, width: "100%", boxShadow: KAART_SCHADUW }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+          <div style={{ width: 10, height: 10, borderRadius: "50%", background: GROEN }} />
+          <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", color: GROEN }}>Revisio</span>
+        </div>
+        <h1 style={{ fontSize: 22, fontWeight: 800, color: GROEN, margin: "6px 0 4px" }}>Werkplaats</h1>
+        <div style={{ fontSize: 13.5, color: GRIJS, marginBottom: 18 }}>Voer je pincode in om in te loggen.</div>
+        <input
+          inputMode="numeric"
+          type="password"
+          value={pin}
+          onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
+          onKeyDown={(e) => { if (e.key === "Enter") inloggen(); }}
+          placeholder="Pincode"
+          style={{ width: "100%", boxSizing: "border-box", border: `1.5px solid ${RAND}`, borderRadius: 10, padding: "14px 14px", fontSize: 20, letterSpacing: 6, textAlign: "center", marginBottom: 12 }}
+        />
+        {fout && <div style={{ fontSize: 13, color: ROOD, marginBottom: 12 }}>{fout}</div>}
+        <button disabled={bezig || !pin} onClick={inloggen} style={{ width: "100%", background: pin ? GROEN : "#b9c2bc", color: "#fff", border: "none", borderRadius: 12, padding: "15px", fontSize: 16, fontWeight: 700, cursor: pin ? "pointer" : "default" }}>
+          {bezig ? "Bezig..." : "Inloggen"}
+        </button>
+      </div>
+    </main>
+  );
+}
