@@ -171,6 +171,10 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
   const [deelLink, setDeelLink] = useState("");
   const [deelCode, setDeelCode] = useState("");
   const [lightbox, setLightbox] = useState<{ fotos: string[]; start: number } | null>(null);
+  const [vulPct, setVulPct] = useState(0);
+  const [rijdt, setRijdt] = useState(false);
+  const huidigPctRef = useRef(0);
+  const rijdtRef = useRef(false);
   const [klusStart, setKlusStart] = useState<{ naam: string; tijd: string } | null>(null);
 
   // Alleen-lezen weergave
@@ -402,6 +406,32 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
   const isGedaan = (id: string) => voortgang.some((v) => v.stap === id);
   const eindcontroleCompleet = checklist.filter((c) => c.vast).every((c) => c.status);
   const huidigPct = STADIA.filter((s) => isGedaan(s.id)).reduce((m, s) => Math.max(m, s.pct), 0);
+  huidigPctRef.current = huidigPct;
+  rijdtRef.current = rijdt;
+
+  // Carburateur-icoon laat de voortgangsbalk traag oplopen bij het openen.
+  useEffect(() => {
+    if (!open) { setVulPct(0); setRijdt(false); return; }
+    let raf = 0; let start: number | null = null;
+    setVulPct(0); setRijdt(true);
+    const tick = (ts: number) => {
+      if (start == null) start = ts;
+      const doel = huidigPctRef.current;
+      const p = Math.min(1, (ts - start) / 8500);
+      setVulPct(doel * p);
+      if (p < 1) raf = requestAnimationFrame(tick);
+      else { setVulPct(doel); setRijdt(false); }
+    };
+    const to = setTimeout(() => { raf = requestAnimationFrame(tick); }, 300);
+    return () => { clearTimeout(to); cancelAnimationFrame(raf); setRijdt(false); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open?.id]);
+
+  // Na het lopen volgt de balk de echte stand als je stadia afvinkt.
+  useEffect(() => {
+    if (open && !rijdtRef.current) setVulPct(huidigPct);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [huidigPct]);
 
   async function markeerStap(stapId: string) {
     if (!open) return;
@@ -813,10 +843,12 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
           <div style={kaart}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
               <span style={kopstijl}>Voortgang</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: GROEN }}>{huidigPct}%</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: GROEN }}>{Math.round(vulPct)}%</span>
             </div>
-            <div style={{ height: 8, background: GROEN_BG, borderRadius: 999, overflow: "hidden", margin: "0 0 12px" }}>
-              <div style={{ height: "100%", width: `${huidigPct}%`, background: GROEN, borderRadius: 999, transition: "width .3s ease" }} />
+            <div style={{ position: "relative", height: 44, margin: "2px 0 8px" }}>
+              <div style={{ position: "absolute", left: 0, right: 0, top: "50%", transform: "translateY(-50%)", height: 8, background: GROEN_BG, borderRadius: 999 }} />
+              <div style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", height: 8, width: `${vulPct}%`, background: GROEN, borderRadius: 999, transition: rijdt ? "none" : "width .5s ease" }} />
+              <img src="/icon.png" alt="" style={{ position: "absolute", left: `${vulPct}%`, top: "50%", transform: "translate(-50%, -50%)", width: 40, height: 40, borderRadius: "50%", boxShadow: "0 0 0 2px #fff, 0 3px 9px rgba(0,0,0,0.3)", zIndex: 2, transition: rijdt ? "none" : "left .5s ease" }} />
             </div>
             <div style={{ display: "flex", gap: 6, padding: "0 1px" }}>
               {STADIA.map((s) => {
