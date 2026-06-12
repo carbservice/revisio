@@ -1,8 +1,9 @@
 "use client";
 
-// Klantportal: begeleidende, goed leesbare weergave van de revisie.
-// Wit logo op groene kop, persoonlijke begroeting, verticale voortgang
-// die per stadium meeloopt, met thumbnails per fase.
+// Klantportal: begeleidende weergave van de revisie. Wit logo op groene
+// kop, persoonlijke begroeting, en een bewegende verticale voortgangsbalk
+// die per stadium meeloopt. Elke fase is een eigen blok (lezen van boven
+// naar beneden), met aanklikbare thumbnails.
 // Toegang via /volg?t=token of /volg?nr=ORDERNR&code=CODE.
 
 import { Suspense, useEffect, useState, CSSProperties } from "react";
@@ -36,6 +37,7 @@ function Inner() {
   const [data, setData] = useState<Data | null>(null);
   const [fout, setFout] = useState("");
   const [laden, setLaden] = useState(true);
+  const [logoOk, setLogoOk] = useState(true);
 
   useEffect(() => {
     const qs = t ? `t=${encodeURIComponent(t)}` : `nr=${encodeURIComponent(nr)}&code=${encodeURIComponent(code)}`;
@@ -57,26 +59,32 @@ function Inner() {
     padding: "40px 16px",
   };
   const kaart: CSSProperties = {
-    width: "100%",
-    maxWidth: 620,
-    background: "#ffffff",
-    border: `1px solid ${RAND}`,
-    borderRadius: 22,
-    overflow: "hidden",
-    boxShadow: "0 20px 55px rgba(26,60,46,0.16)",
+    width: "100%", maxWidth: 620, background: "#ffffff", border: `1px solid ${RAND}`,
+    borderRadius: 22, overflow: "hidden", boxShadow: "0 20px 55px rgba(26,60,46,0.16)",
   };
   const body: CSSProperties = { padding: "30px 32px 36px" };
   const labelStijl: CSSProperties = { fontSize: 12.5, letterSpacing: 1.5, textTransform: "uppercase", color: GROEN, fontWeight: 700 };
 
-  // Wit logo op groene kop (tekst-woordmerk; later vervangbaar door een afbeelding).
   const logoKop = (
-    <div style={{ background: `linear-gradient(150deg, ${GROEN_LICHT} 0%, ${GROEN} 70%)`, padding: "26px 24px", textAlign: "center" }}>
-      <div style={{ fontSize: 30, fontWeight: 600, color: "#fff", lineHeight: 1.05, letterSpacing: 0.5 }}>Carburateur</div>
-      <div style={{ fontSize: 11, letterSpacing: 6, textTransform: "uppercase", color: "rgba(255,255,255,0.88)", marginTop: 2 }}>Service</div>
+    <div style={{ background: `linear-gradient(150deg, ${GROEN_LICHT} 0%, ${GROEN} 70%)`, padding: "24px 24px", textAlign: "center" }}>
+      {logoOk ? (
+        <img src="/logo-wit.png" alt="Carburateur Service" onError={() => setLogoOk(false)} style={{ height: 52, maxWidth: "82%", objectFit: "contain", display: "inline-block" }} />
+      ) : (
+        <>
+          <div style={{ fontSize: 30, fontWeight: 600, color: "#fff", lineHeight: 1.05, letterSpacing: 0.5 }}>Carburateur</div>
+          <div style={{ fontSize: 11, letterSpacing: 6, textTransform: "uppercase", color: "rgba(255,255,255,0.88)", marginTop: 2 }}>Service</div>
+        </>
+      )}
     </div>
   );
 
   const fontLink = <link href="https://fonts.googleapis.com/css2?family=Karma:wght@300;400;500;600;700&display=swap" rel="stylesheet" />;
+  const stijl = (
+    <style>{`
+      @keyframes volgVloei { from { background-position: 0 0 } to { background-position: 0 22px } }
+      @keyframes volgPuls { 0%,100% { box-shadow: 0 0 0 4px rgba(47,143,91,0.20) } 50% { box-shadow: 0 0 0 9px rgba(47,143,91,0.06) } }
+    `}</style>
+  );
 
   if (laden) return <main style={wrap}>{fontLink}<p style={{ color: GRIJS, fontSize: 17, marginTop: 50 }}>Laden…</p></main>;
 
@@ -97,24 +105,24 @@ function Inner() {
   const pct = Math.max(0, Math.min(100, data.pct || 0));
   const klaar = pct >= 100;
   const stapData = (st: string) => data.stappen.find((s) => s.stap === st);
+  let huidigeIndex = -1;
+  STADIA.forEach((st, i) => { if (stapData(st.stap)) huidigeIndex = i; });
 
   const u = new Date().getHours();
   const groet = u < 12 ? "Goedemorgen" : u < 18 ? "Goedemiddag" : "Goedenavond";
 
   return (
     <main style={wrap}>
-      {fontLink}
+      {fontLink}{stijl}
       <div style={kaart}>
         {logoKop}
         <div style={body}>
 
-          {/* Persoonlijke ontvangst */}
           <div style={{ fontSize: 23, fontWeight: 600, color: GROEN }}>{groet}{data.klant ? `, ${data.klant}` : ""}</div>
           <p style={{ fontSize: 16, lineHeight: 1.6, color: TEKST, marginTop: 8 }}>
             Welkom bij het volgsysteem van uw carburateur-revisie. Hieronder ziet u precies waar we mee bezig zijn.
           </p>
 
-          {/* Wat we van u hebben */}
           <div style={{ marginTop: 24, fontSize: 18, color: TEKST }}>
             Uw offertenummer: <span style={{ fontWeight: 700, color: GROEN }}>{data.nummer}</span>
           </div>
@@ -132,7 +140,6 @@ function Inner() {
             </div>
           )}
 
-          {/* Stand van zaken */}
           <div style={{ marginTop: 30, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
             <span style={{ fontSize: 18, fontWeight: 700, color: TEKST }}>
               {klaar ? "Uw revisie is klaar" : "We zijn druk bezig met deze revisie"}
@@ -140,39 +147,62 @@ function Inner() {
             <span style={{ fontSize: 32, fontWeight: 700, color: GROEN, fontVariantNumeric: "tabular-nums" }}>{pct}%</span>
           </div>
 
-          {/* Verticale voortgang per stadium */}
+          {/* Verticale, bewegende voortgang per stadium */}
           <div style={{ marginTop: 22 }}>
             {STADIA.map((st, i) => {
               const s = stapData(st.stap);
               const done = !!s;
               const volgendeDone = i < STADIA.length - 1 && !!stapData(STADIA[i + 1].stap);
               const laatste = i === STADIA.length - 1;
+              const huidig = done && i === huidigeIndex && !klaar;
               return (
-                <div key={st.stap} style={{ position: "relative", paddingLeft: 42, paddingBottom: laatste ? 0 : 30 }}>
-                  {!laatste && <div style={{ position: "absolute", left: 10, top: 28, bottom: 0, width: 8, borderRadius: 4, background: volgendeDone ? GROEN_LICHT : SPOOR }} />}
-                  <div style={{ position: "absolute", left: 0, top: 1, width: 28, height: 28, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 800, color: "#fff", background: done ? GROEN_LICHT : "#fff", border: done ? "none" : `2px solid ${RAND}`, boxShadow: done ? "0 0 0 4px rgba(47,143,91,0.15)" : "none" }}>{done ? "✓" : ""}</div>
-
-                  <div style={{ fontSize: 19, fontWeight: 700, color: done ? GROEN : "#a8a59c", paddingTop: 2 }}>{st.label}</div>
-                  {done && s!.bericht && <div style={{ fontSize: 16, lineHeight: 1.6, color: TEKST, marginTop: 6 }}>{s!.bericht}</div>}
-                  {!done && <div style={{ fontSize: 15, color: "#a8a59c", marginTop: 4 }}>Nog te doen</div>}
-
-                  {done && s!.fotos.length > 0 && (
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14 }}>
-                      {s!.fotos.map((url, j) => (
-                        <a key={j} href={url} target="_blank" rel="noreferrer">
-                          <img src={url} alt="" style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 12, border: `1px solid ${RAND}`, display: "block" }} />
-                        </a>
-                      ))}
-                    </div>
+                <div key={st.stap} style={{ position: "relative", paddingLeft: 50, paddingBottom: laatste ? 0 : 16 }}>
+                  {!laatste && (
+                    <div style={{
+                      position: "absolute", left: 12, top: 32, bottom: 0, width: 8, borderRadius: 4,
+                      background: volgendeDone
+                        ? "repeating-linear-gradient(180deg, #2f8f5b 0, #2f8f5b 6px, #3aa66b 6px, #3aa66b 11px)"
+                        : SPOOR,
+                      backgroundSize: volgendeDone ? "100% 22px" : undefined,
+                      animation: volgendeDone ? "volgVloei 1.1s linear infinite" : undefined,
+                    }} />
                   )}
+                  <div style={{
+                    position: "absolute", left: 0, top: 2, width: 32, height: 32, borderRadius: "50%",
+                    display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800, color: "#fff",
+                    background: done ? GROEN_LICHT : "#fff", border: done ? "none" : `2px solid ${RAND}`,
+                    boxShadow: huidig ? "0 0 0 5px rgba(47,143,91,0.18)" : (done ? "0 0 0 4px rgba(47,143,91,0.12)" : "none"),
+                    animation: huidig ? "volgPuls 1.8s ease-in-out infinite" : undefined,
+                  }}>{done ? "✓" : ""}</div>
+
+                  {/* Eigen blok per stap */}
+                  <div style={{
+                    background: done ? "#f4f9f5" : "#f8f8f6",
+                    border: `1px solid ${done ? "#d2e6d8" : "#ececE8"}`,
+                    borderLeft: `4px solid ${done ? GROEN_LICHT : RAND}`,
+                    borderRadius: 12, padding: "13px 16px",
+                  }}>
+                    <div style={{ fontSize: 19, fontWeight: 700, color: done ? GROEN : "#a8a59c" }}>{st.label}</div>
+                    {done && s!.bericht && <div style={{ fontSize: 16, lineHeight: 1.6, color: TEKST, marginTop: 6 }}>{s!.bericht}</div>}
+                    {!done && <div style={{ fontSize: 15, color: "#a8a59c", marginTop: 4 }}>Nog te doen</div>}
+
+                    {done && s!.fotos.length > 0 && (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14 }}>
+                        {s!.fotos.map((url, j) => (
+                          <a key={j} href={url} target="_blank" rel="noreferrer">
+                            <img src={url} alt="" style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 12, border: `1px solid ${RAND}`, display: "block" }} />
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })}
           </div>
 
-          {/* Overige gedeelde foto's */}
           {data.algemeneFotos.length > 0 && (
-            <div style={{ marginTop: 30, borderTop: `1px solid ${RAND}`, paddingTop: 22 }}>
+            <div style={{ marginTop: 28, borderTop: `1px solid ${RAND}`, paddingTop: 22 }}>
               <div style={{ ...labelStijl, marginBottom: 12 }}>Extra foto's</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
                 {data.algemeneFotos.map((url, j) => (
