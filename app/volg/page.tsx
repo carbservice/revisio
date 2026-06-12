@@ -1,8 +1,8 @@
 "use client";
 
-// Klantportal: rustige, goed leesbare weergave van de revisievoortgang.
-// Lichte kaart, donkere tekst (hoog contrast), groen alleen als accent.
-// Grote letters — de doelgroep is wat ouder.
+// Klantportal: begeleidende, goed leesbare weergave van de revisie.
+// Wit logo op groene kop, persoonlijke begroeting, verticale voortgang
+// die per stadium meeloopt, met thumbnails per fase.
 // Toegang via /volg?t=token of /volg?nr=ORDERNR&code=CODE.
 
 import { Suspense, useEffect, useState, CSSProperties } from "react";
@@ -14,6 +14,7 @@ const TEKST = "#23211c";
 const GRIJS = "#5a574f";
 const RAND = "#dcd8cc";
 const GROEN_BG = "#e7f0ea";
+const SPOOR = "#e1e7dd";
 
 const STADIA = [
   { stap: "ontvangen", label: "Ontvangen op de werkbank", pct: 20 },
@@ -47,13 +48,13 @@ function Inner() {
 
   const wrap: CSSProperties = {
     minHeight: "100vh",
-    background: "#eef1ea",
+    background: "linear-gradient(170deg, #f1f7f1 0%, #dde9df 55%, #cfe0d3 100%)",
     color: TEKST,
     fontFamily: "'Karma', 'Times New Roman', serif",
     display: "flex",
     alignItems: "flex-start",
     justifyContent: "center",
-    padding: "44px 18px",
+    padding: "40px 16px",
   };
   const kaart: CSSProperties = {
     width: "100%",
@@ -61,10 +62,19 @@ function Inner() {
     background: "#ffffff",
     border: `1px solid ${RAND}`,
     borderRadius: 22,
-    padding: "38px 34px",
-    boxShadow: "0 18px 50px rgba(26,60,46,0.12)",
+    overflow: "hidden",
+    boxShadow: "0 20px 55px rgba(26,60,46,0.16)",
   };
+  const body: CSSProperties = { padding: "30px 32px 36px" };
   const labelStijl: CSSProperties = { fontSize: 12.5, letterSpacing: 1.5, textTransform: "uppercase", color: GROEN, fontWeight: 700 };
+
+  // Wit logo op groene kop (tekst-woordmerk; later vervangbaar door een afbeelding).
+  const logoKop = (
+    <div style={{ background: `linear-gradient(150deg, ${GROEN_LICHT} 0%, ${GROEN} 70%)`, padding: "26px 24px", textAlign: "center" }}>
+      <div style={{ fontSize: 30, fontWeight: 600, color: "#fff", lineHeight: 1.05, letterSpacing: 0.5 }}>Carburateur</div>
+      <div style={{ fontSize: 11, letterSpacing: 6, textTransform: "uppercase", color: "rgba(255,255,255,0.88)", marginTop: 2 }}>Service</div>
+    </div>
+  );
 
   const fontLink = <link href="https://fonts.googleapis.com/css2?family=Karma:wght@300;400;500;600;700&display=swap" rel="stylesheet" />;
 
@@ -74,10 +84,12 @@ function Inner() {
     <main style={wrap}>
       {fontLink}
       <div style={kaart}>
-        <div style={labelStijl}>Carburateur Service</div>
-        <h1 style={{ fontSize: 28, fontWeight: 700, margin: "12px 0 12px", color: GROEN }}>Revisie niet gevonden</h1>
-        <p style={{ fontSize: 17, lineHeight: 1.6, color: TEKST }}>{fout || "Controleer uw ordernummer en code en probeer het opnieuw."}</p>
-        <a href="/" style={{ display: "inline-block", marginTop: 20, color: GROEN, fontSize: 16, fontWeight: 700, textDecoration: "none", borderBottom: `2px solid ${GROEN}`, paddingBottom: 2 }}>← Terug naar start</a>
+        {logoKop}
+        <div style={body}>
+          <h1 style={{ fontSize: 26, fontWeight: 700, margin: "0 0 12px", color: GROEN }}>Revisie niet gevonden</h1>
+          <p style={{ fontSize: 17, lineHeight: 1.6, color: TEKST }}>{fout || "Controleer uw ordernummer en code en probeer het opnieuw."}</p>
+          <a href="/" style={{ display: "inline-block", marginTop: 20, color: GROEN, fontSize: 16, fontWeight: 700, textDecoration: "none", borderBottom: `2px solid ${GROEN}`, paddingBottom: 2 }}>← Terug naar start</a>
+        </div>
       </div>
     </main>
   );
@@ -86,91 +98,97 @@ function Inner() {
   const klaar = pct >= 100;
   const stapData = (st: string) => data.stappen.find((s) => s.stap === st);
 
+  const u = new Date().getHours();
+  const groet = u < 12 ? "Goedemorgen" : u < 18 ? "Goedemiddag" : "Goedenavond";
+
   return (
     <main style={wrap}>
       {fontLink}
-      <style>{`@keyframes volgShimmer { 0% { background-position: -180% 0 } 100% { background-position: 180% 0 } }`}</style>
-
       <div style={kaart}>
-        <div style={labelStijl}>Carburateur Service · Volg uw revisie</div>
+        {logoKop}
+        <div style={body}>
 
-        <div style={{ fontSize: 40, fontWeight: 600, letterSpacing: 0.5, margin: "14px 0 2px", color: GROEN }}>{data.nummer}</div>
-        {data.klant && <div style={{ fontSize: 20, fontWeight: 600, color: TEKST }}>{data.klant}</div>}
+          {/* Persoonlijke ontvangst */}
+          <div style={{ fontSize: 23, fontWeight: 600, color: GROEN }}>{groet}{data.klant ? `, ${data.klant}` : ""}</div>
+          <p style={{ fontSize: 16, lineHeight: 1.6, color: TEKST, marginTop: 8 }}>
+            Welkom bij het volgsysteem van uw carburateur-revisie. Hieronder ziet u precies waar we mee bezig zijn.
+          </p>
 
-        {data.voertuig && (
-          <div style={{ marginTop: 20 }}>
-            <div style={labelStijl}>Kenmerk</div>
-            <div style={{ fontSize: 17, color: TEKST, marginTop: 3 }}>{data.voertuig}</div>
+          {/* Wat we van u hebben */}
+          <div style={{ marginTop: 24, fontSize: 18, color: TEKST }}>
+            Uw offertenummer: <span style={{ fontWeight: 700, color: GROEN }}>{data.nummer}</span>
           </div>
-        )}
-        {data.klacht && (
-          <div style={{ marginTop: 16, background: GROEN_BG, borderRadius: 12, padding: "15px 17px" }}>
-            <div style={labelStijl}>Uw vraag</div>
-            <div style={{ fontSize: 17, lineHeight: 1.55, color: TEKST, marginTop: 4 }}>{data.klacht}</div>
-          </div>
-        )}
-
-        {/* Algehele voortgang */}
-        <div style={{ marginTop: 32 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
-            <span style={{ fontSize: 18, fontWeight: 700, color: TEKST }}>{data.stadium || "In behandeling"}</span>
-            <span style={{ fontSize: 30, fontWeight: 700, color: GROEN, fontVariantNumeric: "tabular-nums" }}>{pct}%</span>
-          </div>
-          <div style={{ position: "relative", height: 18, borderRadius: 999, background: "#e4e9e0", overflow: "hidden", border: `1px solid ${RAND}` }}>
-            <div style={{ position: "absolute", inset: 0, width: `${pct}%`, borderRadius: 999, background: `linear-gradient(90deg, ${GROEN}, ${GROEN_LICHT})`, transition: "width 1.1s cubic-bezier(.22,1,.36,1)" }}>
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(100deg, transparent 25%, rgba(255,255,255,0.4) 50%, transparent 75%)", backgroundSize: "200% 100%", animation: "volgShimmer 2.4s linear infinite" }} />
+          {data.voertuig && (
+            <div style={{ marginTop: 16 }}>
+              <div style={labelStijl}>Kenmerk</div>
+              <div style={{ fontSize: 17, color: TEKST, marginTop: 3 }}>{data.voertuig}</div>
             </div>
+          )}
+          {data.klacht && (
+            <div style={{ marginTop: 14, background: GROEN_BG, borderRadius: 12, padding: "15px 17px" }}>
+              <div style={labelStijl}>Klacht</div>
+              <div style={{ fontSize: 12.5, color: GRIJS, marginTop: 2, marginBottom: 6 }}>(wat u aan ons heeft doorgegeven)</div>
+              <div style={{ fontSize: 17, lineHeight: 1.55, color: TEKST }}>{data.klacht}</div>
+            </div>
+          )}
+
+          {/* Stand van zaken */}
+          <div style={{ marginTop: 30, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+            <span style={{ fontSize: 18, fontWeight: 700, color: TEKST }}>
+              {klaar ? "Uw revisie is klaar" : "We zijn druk bezig met deze revisie"}
+            </span>
+            <span style={{ fontSize: 32, fontWeight: 700, color: GROEN, fontVariantNumeric: "tabular-nums" }}>{pct}%</span>
           </div>
-        </div>
 
-        {/* Stadia onder elkaar */}
-        <div style={{ marginTop: 36 }}>
-          <div style={{ ...labelStijl, marginBottom: 20 }}>De stadia van uw revisie</div>
-          {STADIA.map((st, i) => {
-            const s = stapData(st.stap);
-            const done = !!s;
-            const laatste = i === STADIA.length - 1;
-            return (
-              <div key={st.stap} style={{ position: "relative", paddingLeft: 38, paddingBottom: laatste ? 0 : 30 }}>
-                {!laatste && <div style={{ position: "absolute", left: 10, top: 28, bottom: 0, width: 2, background: done ? GROEN_LICHT : RAND }} />}
-                <div style={{ position: "absolute", left: 0, top: 1, width: 22, height: 22, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "#fff", background: done ? GROEN_LICHT : "#fff", border: done ? "none" : `2px solid ${RAND}` }}>{done ? "✓" : ""}</div>
+          {/* Verticale voortgang per stadium */}
+          <div style={{ marginTop: 22 }}>
+            {STADIA.map((st, i) => {
+              const s = stapData(st.stap);
+              const done = !!s;
+              const volgendeDone = i < STADIA.length - 1 && !!stapData(STADIA[i + 1].stap);
+              const laatste = i === STADIA.length - 1;
+              return (
+                <div key={st.stap} style={{ position: "relative", paddingLeft: 42, paddingBottom: laatste ? 0 : 30 }}>
+                  {!laatste && <div style={{ position: "absolute", left: 10, top: 28, bottom: 0, width: 8, borderRadius: 4, background: volgendeDone ? GROEN_LICHT : SPOOR }} />}
+                  <div style={{ position: "absolute", left: 0, top: 1, width: 28, height: 28, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 800, color: "#fff", background: done ? GROEN_LICHT : "#fff", border: done ? "none" : `2px solid ${RAND}`, boxShadow: done ? "0 0 0 4px rgba(47,143,91,0.15)" : "none" }}>{done ? "✓" : ""}</div>
 
-                <div style={{ fontSize: 19, fontWeight: 700, color: done ? GROEN : "#a8a59c" }}>{st.label}</div>
-                {done && s!.bericht && <div style={{ fontSize: 16, lineHeight: 1.6, color: TEKST, marginTop: 6 }}>{s!.bericht}</div>}
-                {!done && <div style={{ fontSize: 15, color: "#a8a59c", marginTop: 4 }}>Nog te doen</div>}
+                  <div style={{ fontSize: 19, fontWeight: 700, color: done ? GROEN : "#a8a59c", paddingTop: 2 }}>{st.label}</div>
+                  {done && s!.bericht && <div style={{ fontSize: 16, lineHeight: 1.6, color: TEKST, marginTop: 6 }}>{s!.bericht}</div>}
+                  {!done && <div style={{ fontSize: 15, color: "#a8a59c", marginTop: 4 }}>Nog te doen</div>}
 
-                {done && s!.fotos.length > 0 && (
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14 }}>
-                    {s!.fotos.map((url, j) => (
-                      <a key={j} href={url} target="_blank" rel="noreferrer">
-                        <img src={url} alt="" style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 12, border: `1px solid ${RAND}`, display: "block" }} />
-                      </a>
-                    ))}
-                  </div>
-                )}
+                  {done && s!.fotos.length > 0 && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14 }}>
+                      {s!.fotos.map((url, j) => (
+                        <a key={j} href={url} target="_blank" rel="noreferrer">
+                          <img src={url} alt="" style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 12, border: `1px solid ${RAND}`, display: "block" }} />
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Overige gedeelde foto's */}
+          {data.algemeneFotos.length > 0 && (
+            <div style={{ marginTop: 30, borderTop: `1px solid ${RAND}`, paddingTop: 22 }}>
+              <div style={{ ...labelStijl, marginBottom: 12 }}>Extra foto's</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                {data.algemeneFotos.map((url, j) => (
+                  <a key={j} href={url} target="_blank" rel="noreferrer">
+                    <img src={url} alt="" style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 12, border: `1px solid ${RAND}`, display: "block" }} />
+                  </a>
+                ))}
               </div>
-            );
-          })}
-        </div>
-
-        {/* Overige gedeelde foto's */}
-        {data.algemeneFotos.length > 0 && (
-          <div style={{ marginTop: 30, borderTop: `1px solid ${RAND}`, paddingTop: 22 }}>
-            <div style={{ ...labelStijl, marginBottom: 12 }}>Extra foto's</div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-              {data.algemeneFotos.map((url, j) => (
-                <a key={j} href={url} target="_blank" rel="noreferrer">
-                  <img src={url} alt="" style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 12, border: `1px solid ${RAND}`, display: "block" }} />
-                </a>
-              ))}
             </div>
-          </div>
-        )}
+          )}
 
-        <div style={{ marginTop: 32, paddingTop: 20, borderTop: `1px solid ${RAND}`, fontSize: 15, color: GRIJS, lineHeight: 1.6, textAlign: "center" }}>
-          {klaar
-            ? "Uw revisie is klaar, afgesteld en gecontroleerd. We nemen contact met u op."
-            : "U ziet hier de laatste stand die onze werkplaats heeft gedeeld. Bedankt voor uw vertrouwen."}
+          <div style={{ marginTop: 30, paddingTop: 20, borderTop: `1px solid ${RAND}`, fontSize: 15, color: GRIJS, lineHeight: 1.6, textAlign: "center" }}>
+            {klaar
+              ? "Uw revisie is klaar, afgesteld en gecontroleerd. We nemen contact met u op."
+              : "U ziet hier de laatste stand die onze werkplaats heeft gedeeld. Bedankt voor uw vertrouwen."}
+          </div>
         </div>
       </div>
     </main>
@@ -179,7 +197,7 @@ function Inner() {
 
 export default function VolgPagina() {
   return (
-    <Suspense fallback={<main style={{ minHeight: "100vh", background: "#eef1ea" }} />}>
+    <Suspense fallback={<main style={{ minHeight: "100vh", background: "#eef3ec" }} />}>
       <Inner />
     </Suspense>
   );
