@@ -8,6 +8,7 @@ import { GROEN, GROEN_BG, GOUD, GOUD_BG, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG, 
 import { duur, mmss, dagenGeleden } from "@/lib/format";
 import type { Klus, Monteur, Regel, Veld, Check, Artikel } from "@/lib/types";
 import DashboardNav from "@/app/components/DashboardNav";
+import ScrollNaarBoven from "@/app/components/ScrollNaarBoven";
 import BlokOpmerkingen from "./components/BlokOpmerkingen";
 import BlokArtikelen from "./components/BlokArtikelen";
 import BlokEindcontrole from "./components/BlokEindcontrole";
@@ -36,7 +37,7 @@ const SECTIES = [
   { titel: "Sproeierbezetting", cat: "sproeier" },
 ];
 const EIGEN: Record<string, string> = { afstelling: "eigen_afstelling", sproeier: "eigen_sproeier" };
-const STANDAARD_ARTIKELEN = ["Vacuumleiding"];
+const STANDAARD_ARTIKELEN = ["Vacuumleiding", "Benzineleiding", "Membraandoek", "Klemmen"];
 const CHECKLIST_DEFAULT = [
   "CO schroef open?",
   "Stationair schroef correct?",
@@ -607,6 +608,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
 
   return (
     <main style={wrap}>
+      <ScrollNaarBoven bottom={open ? 96 : 24} />
       {open && popup && (
         <div onClick={() => { setPopup(false); if (start == null) setTimerPopup(true); }} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 18, padding: 24, maxWidth: 460, width: "100%", boxShadow: "0 20px 60px rgba(0,0,0,0.35)" }}>

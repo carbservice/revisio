@@ -9,6 +9,7 @@ import AuthGate from "@/app/components/AuthGate";
 import DashboardNav from "@/app/components/DashboardNav";
 import LaadScherm from "@/app/components/LaadScherm";
 import { uitCache, haalEnCache } from "@/lib/cache";
+import ScrollNaarBoven from "@/app/components/ScrollNaarBoven";
 
 const GROEN_LICHT = "#a9c0b4";
 
@@ -354,6 +355,7 @@ function Dashboard() {
       <div style={{ maxWidth: 1120, margin: "0 auto" }}>
 
         <DashboardNav />
+        <ScrollNaarBoven />
 
         <div style={{ marginBottom: 18 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

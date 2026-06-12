@@ -9,6 +9,7 @@ import AuthGate from "@/app/components/AuthGate";
 import DashboardNav from "@/app/components/DashboardNav";
 import LaadScherm from "@/app/components/LaadScherm";
 import { uitCache, haalEnCache } from "@/lib/cache";
+import ScrollNaarBoven from "@/app/components/ScrollNaarBoven";
 
 const MAAND = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
 function maandLabel(ym: string) {
@@ -86,6 +87,7 @@ function WerkplaatsDashboard() {
   return (
     <main style={wrap}>
       <DashboardNav />
+      <ScrollNaarBoven />
       <h1 style={{ fontSize: 26, fontWeight: 800, color: GROEN, margin: "10px 0 2px" }}>Werkplaats</h1>
       <div style={{ fontSize: 13.5, color: GRIJS, marginBottom: 18 }}>Live uit de werkplaats-app · {maandLabel(data.maand)} vergeleken met {maandLabel(data.vorige_maand)}</div>
 
