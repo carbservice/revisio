@@ -6,6 +6,8 @@ import { useEffect, useState, CSSProperties } from "react";
 import { GROEN, GOUD, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG } from "@/lib/theme";
 import { datumKort } from "@/lib/format";
 import AuthGate from "@/app/components/AuthGate";
+import DashboardNav from "@/app/components/DashboardNav";
+import LaadScherm from "@/app/components/LaadScherm";
 
 const MAAND = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
 function maandLabel(ym: string) {
@@ -56,7 +58,12 @@ function WerkplaatsDashboard() {
   const kopstijl: CSSProperties = { fontSize: 12.5, color: GRIJS, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 12 };
   const klikRij: CSSProperties = { display: "flex", justifyContent: "space-between", gap: 12, padding: "8px 0", borderTop: `1px solid ${RAND}`, textDecoration: "none", color: TEKST, cursor: "pointer" };
 
-  if (laden) return <main style={wrap}><p style={{ color: GRIJS }}>Laden...</p></main>;
+  if (laden) return (
+    <main style={wrap}>
+      <DashboardNav />
+      <LaadScherm apis={[{ naam: "Werkplaats-stats", klaar: false }]} />
+    </main>
+  );
   if (fout) return <main style={wrap}><div style={kaart}><p style={{ color: ROOD }}>Let op: {fout}</p></div></main>;
 
   const retour = data.retour || { deze_maand: 0, vorige_maand: 0, totaal: 0, lijst: [] };
@@ -76,7 +83,7 @@ function WerkplaatsDashboard() {
 
   return (
     <main style={wrap}>
-      <a href="/dashboard" style={{ color: GROEN, fontWeight: 700, fontSize: 14, textDecoration: "none" }}>← Dashboard</a>
+      <DashboardNav />
       <h1 style={{ fontSize: 26, fontWeight: 800, color: GROEN, margin: "10px 0 2px" }}>Werkplaats</h1>
       <div style={{ fontSize: 13.5, color: GRIJS, marginBottom: 18 }}>Live uit de werkplaats-app · {maandLabel(data.maand)} vergeleken met {maandLabel(data.vorige_maand)}</div>
 

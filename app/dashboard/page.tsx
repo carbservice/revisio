@@ -6,6 +6,8 @@ import { useEffect, useState, CSSProperties, SVGProps } from "react";
 import { GROEN, GROEN_BG, GOUD, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG } from "@/lib/theme";
 import { euro } from "@/lib/format";
 import AuthGate from "@/app/components/AuthGate";
+import DashboardNav from "@/app/components/DashboardNav";
+import LaadScherm from "@/app/components/LaadScherm";
 
 const GROEN_LICHT = "#a9c0b4";
 
@@ -189,8 +191,28 @@ function Dashboard() {
     try { localStorage.setItem("revisio-periode", k); } catch {}
   }
 
-  if (fout) return <div style={{ padding: 24, color: "#b00" }}>Fout bij ophalen: {fout}</div>;
-  if (!data || !data.status) return <div style={{ padding: 24, color: GRIJS }}>Cijfers laden...</div>;
+  const buiten: CSSProperties = { minHeight: "100vh", background: BG, padding: "28px 16px", fontFamily: "system-ui, -apple-system, sans-serif", color: TEKST };
+  const apis = [
+    { naam: "Moneybird-cijfers", klaar: (data != null && !!data.status) || !!fout },
+    { naam: "Werkplaats-stats", klaar: wp != null },
+  ];
+
+  if (fout) return (
+    <main style={buiten}>
+      <div style={{ maxWidth: 1120, margin: "0 auto" }}>
+        <DashboardNav />
+        <div style={{ padding: 24, color: ROOD }}>Fout bij ophalen: {fout}</div>
+      </div>
+    </main>
+  );
+  if (!apis.every((a) => a.klaar)) return (
+    <main style={buiten}>
+      <div style={{ maxWidth: 1120, margin: "0 auto" }}>
+        <DashboardNav />
+        <LaadScherm apis={apis} />
+      </div>
+    </main>
+  );
 
   const s = data.status;
   const maandIdx = Math.min(maandKeuze, data.maanden.length - 1);
@@ -327,6 +349,8 @@ function Dashboard() {
         .rk:hover .naar-boven { opacity: 1; }
       `}</style>
       <div style={{ maxWidth: 1120, margin: "0 auto" }}>
+
+        <DashboardNav />
 
         <div style={{ marginBottom: 18 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
