@@ -3,11 +3,10 @@
 // Revisio CEO dashboard. app/dashboard/page.tsx
 
 import { useEffect, useState, CSSProperties, SVGProps } from "react";
-import { GROEN, GROEN_BG, GOUD, ROOD, ROOD_BG, TEKST, GRIJS } from "@/lib/theme";
+import { GROEN, GROEN_BG, GOUD, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG } from "@/lib/theme";
+import { euro } from "@/lib/format";
 
 const GROEN_LICHT = "#a9c0b4";
-const RAND = "#e7e3da";
-const BG = "#f4f5f1";
 
 const LOON = [
   { naam: "Lukas (de Esch)", perMaand: 1087.81 },
@@ -36,12 +35,6 @@ const DEFAULT_VOLGORDE = [
   "topKosten", "vooruitblik",
 ];
 
-function euro(n: number) {
-  return new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
-}
-function euro2(n: number) {
-  return new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
-}
 function procent(n: number) { return `${Math.round(n)}%`; }
 function uur(min: number | null) {
   if (min == null) return "—";
@@ -276,7 +269,7 @@ export default function Dashboard() {
         return (<>{kaartKop(GROEN, "doel", "Closing rate")}<div style={waardeGroot}>{rate == null ? "—" : procent(rate)}</div><div style={sub}>{c ? `${c.gewonnen} van ${c.verstuurd} offertes gewonnen` : "geen offertes"}</div>{actief.loopt && <div style={{ fontSize: 11.5, color: GRIJS, marginTop: 6, fontStyle: "italic" }}>loopt nog op</div>}</>);
       }
       case "btw":
-        return data.btw ? (<>{kaartKop(GROEN, "bon", "Btw dit kwartaal")}<div style={waardeGroot}>{euro2(data.btw.afTeDragen)}</div><div style={sub}>af te dragen, richtbedrag</div><div style={{ fontSize: 11.5, color: GRIJS, marginTop: 3 }}>exact in Moneybird btw-overzicht</div></>) : null;
+        return data.btw ? (<>{kaartKop(GROEN, "bon", "Btw dit kwartaal")}<div style={waardeGroot}>{euro(data.btw.afTeDragen)}</div><div style={sub}>af te dragen, richtbedrag</div><div style={{ fontSize: 11.5, color: GRIJS, marginTop: 3 }}>exact in Moneybird btw-overzicht</div></>) : null;
       case "ib": {
         const reserve = Math.max(0, actief.cijfers.nettowinst) * (IB_PCT / 100);
         return (<>{kaartKop(GROEN, "spaarpot", "Opzij voor IB (richtbedrag)")}<div style={waardeGroot}>{euro(reserve)}</div><div style={sub}>{IB_PCT}% van de winst van {actief.huidigLabel}</div><div style={{ fontSize: 11.5, color: GRIJS, marginTop: 3 }}>percentage afstemmen met je boekhouder</div></>);
@@ -339,10 +332,10 @@ export default function Dashboard() {
           <span style={{ fontSize: 11.5, color: GRIJS }}>live uit Moneybird, {s.ytdLabel}</span>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 14 }}>
-          <StatusTegel kleur={GROEN} icon="bank" titel="Saldo (zonder btw-pot)" waarde={euro2(s.saldoExclBtw)} onder="alle rekeningen, btw-spaarpot eraf" />
-          <StatusTegel kleur={GOUD} icon="spaarpot" titel="Btw-spaarpot" waarde={euro2(s.btwPot)} onder="gereserveerd voor de Belastingdienst" />
-          <StatusTegel kleur={GROEN} icon="inkomend" titel="Te ontvangen" waarde={euro2(s.teOntvangen)} onder="openstaande facturen" />
-          <StatusTegel kleur={GOUD} icon="uitgaand" titel="Te betalen" waarde={euro2(s.teBetalen)} onder="openstaande inkoop" />
+          <StatusTegel kleur={GROEN} icon="bank" titel="Saldo (zonder btw-pot)" waarde={euro(s.saldoExclBtw)} onder="alle rekeningen, btw-spaarpot eraf" />
+          <StatusTegel kleur={GOUD} icon="spaarpot" titel="Btw-spaarpot" waarde={euro(s.btwPot)} onder="gereserveerd voor de Belastingdienst" />
+          <StatusTegel kleur={GROEN} icon="inkomend" titel="Te ontvangen" waarde={euro(s.teOntvangen)} onder="openstaande facturen" />
+          <StatusTegel kleur={GOUD} icon="uitgaand" titel="Te betalen" waarde={euro(s.teBetalen)} onder="openstaande inkoop" />
           <StatusTegel kleur={GROEN} icon="euro" titel="Omzet dit jaar" waarde={euro(s.omzet)} onder={s.ytdLabel} />
           <StatusTegel kleur={GROEN} icon="up" titel="Nettowinst dit jaar" waarde={euro(s.nettowinst)} onder={`${procent(s.netto_pct)} marge, ${s.ytdLabel}`} />
         </div>

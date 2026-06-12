@@ -3,11 +3,10 @@
 // Revisio CEO dashboard. app/dashboard/page.tsx
 
 import { useEffect, useState } from "react";
-import { GROEN, GOUD, TEKST, GRIJS } from "@/lib/theme";
+import { GROEN, GOUD, TEKST, GRIJS, RAND, BG } from "@/lib/theme";
+import { euro } from "@/lib/format";
 
 const BLAUW = "#185fa5";
-const RAND = "#e7e3da";
-const BG = "#f7f6f2";
 
 // CONFIG maandtegels: pas titel, cijfer, kleur of symbool aan.
 const TEGELS = [
@@ -27,12 +26,6 @@ const JAAR_CELLEN = [
 
 const VOORUITBLIK = ["Omzet", "Kosten", "Aantal offertes", "Closing rate"];
 
-function euro(n: number) {
-  return new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
-}
-function euro2(n: number) {
-  return new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
-}
 function procent(n: number) {
   return `${Math.round(n)}%`;
 }
@@ -86,7 +79,7 @@ export default function Dashboard() {
                   <div style={{ width: 34, height: 34, borderRadius: 9, background: BLAUW, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 600 }}>€</div>
                   <div style={{ fontSize: 14, color: GRIJS }}>Te ontvangen</div>
                 </div>
-                <div style={{ fontSize: 24, fontWeight: 700 }}>{euro2(data.operationeel.teOntvangen.bedrag)}</div>
+                <div style={{ fontSize: 24, fontWeight: 700 }}>{euro(data.operationeel.teOntvangen.bedrag)}</div>
                 <div style={{ fontSize: 13, color: GRIJS, marginTop: 2 }}>{data.operationeel.teOntvangen.aantal} facturen</div>
               </div>
               <div style={kaart}>
@@ -94,7 +87,7 @@ export default function Dashboard() {
                   <div style={{ width: 34, height: 34, borderRadius: 9, background: GOUD, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 600 }}>€</div>
                   <div style={{ fontSize: 14, color: GRIJS }}>Te betalen</div>
                 </div>
-                <div style={{ fontSize: 24, fontWeight: 700 }}>{euro2(data.operationeel.teBetalen.bedrag)}</div>
+                <div style={{ fontSize: 24, fontWeight: 700 }}>{euro(data.operationeel.teBetalen.bedrag)}</div>
                 <div style={{ fontSize: 13, color: GRIJS, marginTop: 2 }}>{data.operationeel.teBetalen.aantal} inkoopfacturen</div>
               </div>
             </section>

@@ -3,11 +3,8 @@
 // Werkplaats-managementoverzicht. app/dashboard/werkplaats/page.tsx
 
 import { useEffect, useState, CSSProperties } from "react";
-import { GROEN, GOUD, ROOD, ROOD_BG, TEKST, GRIJS } from "@/lib/theme";
+import { GROEN, GOUD, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG } from "@/lib/theme";
 import { datumKort } from "@/lib/format";
-
-const RAND = "#e7e3da";
-const BG = "#f4f5f1";
 
 const MAAND = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
 function maandLabel(ym: string) {

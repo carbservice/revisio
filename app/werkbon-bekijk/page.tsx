@@ -5,12 +5,9 @@
 
 import { useEffect, useState, CSSProperties } from "react";
 import { supabase } from "@/lib/supabase";
-import { GROEN, GROEN_BG, ROOD, ROOD_BG, TEKST, GRIJS } from "@/lib/theme";
+import { GROEN, GROEN_BG, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG } from "@/lib/theme";
 import { euro, duur, datumKort, datumTijd, datumStempel } from "@/lib/format";
 import { Veld, Check, Artikel, Regel } from "@/lib/types";
-
-const RAND = "#e7e3da";
-const BG = "#f4f5f1";
 
 const VELD_TYPES: { type: string; label: string; eenheid: string; categorie: string }[] = [
   { type: "vlotterhoogte",        label: "Vlotterhoogte",               eenheid: "mm",           categorie: "afstelling" },

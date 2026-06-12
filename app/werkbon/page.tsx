@@ -3,10 +3,7 @@
 // Klantpagina, Volg je revisie. app/werkbon/page.tsx
 
 import { useEffect, useState, CSSProperties } from "react";
-import { GROEN, ROOD, TEKST, GRIJS } from "@/lib/theme";
-
-const RAND = "#e7e3da";
-const BG = "#f4f5f1";
+import { GROEN, ROOD, TEKST, GRIJS, RAND, BG } from "@/lib/theme";
 
 const STAP_VOLGORDE = ["ontvangen", "gestart", "akkoord", "klaar", "ophalen"];
 const STAP_LABEL: Record<string, string> = {
