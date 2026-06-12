@@ -10,7 +10,7 @@ import { GROEN } from "@/lib/theme";
 
 const items = [
   { href: "/dashboard", label: "📊 Cijfers" },
-  { href: "/dashboard/werkplaats", label: "🔧 Werkplaats" },
+  { href: "/dashboard/werkplaats", label: "🔧 Werkplaats Dashboard" },
   { href: "/werkplaats", label: "🧾 Werkbonnen" },
 ];
 
