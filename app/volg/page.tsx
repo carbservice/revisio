@@ -217,8 +217,7 @@ function Inner() {
                     borderRadius: 12, padding: "13px 16px",
                   }}>
                     <div style={{ fontSize: 19, fontWeight: 700, color: done ? GROEN : "#9a978e" }}>{st.label}</div>
-                    {st.omschrijving && <div style={{ fontSize: 15, lineHeight: 1.55, color: done ? GRIJS : "#a8a59c", marginTop: 4 }}>{st.omschrijving}</div>}
-                    {done && s!.bericht && <div style={{ fontSize: 15.5, lineHeight: 1.6, color: TEKST, marginTop: 8 }}>{s!.bericht}</div>}
+                    {st.omschrijving && <div style={{ fontSize: 16, lineHeight: 1.6, color: done ? TEKST : "#a8a59c", marginTop: 5 }}>{st.omschrijving}</div>}
                     {!done && <div style={{ display: "inline-block", fontSize: 12.5, fontWeight: 700, color: "#8d8a81", background: "#efefea", borderRadius: 999, padding: "3px 11px", marginTop: 8 }}>Nog te doen</div>}
 
                     {done && s!.fotos.length > 0 && (
