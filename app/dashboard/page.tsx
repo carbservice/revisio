@@ -8,6 +8,7 @@ import { euro } from "@/lib/format";
 import AuthGate from "@/app/components/AuthGate";
 import DashboardNav from "@/app/components/DashboardNav";
 import LaadScherm from "@/app/components/LaadScherm";
+import { uitCache, haalEnCache } from "@/lib/cache";
 
 const GROEN_LICHT = "#a9c0b4";
 
@@ -139,17 +140,19 @@ function Dashboard() {
   const [maandKeuze, setMaandKeuze] = useState<number>(999);
 
   useEffect(() => {
-    fetch("/api/dashboard")
-      .then((r) => r.json())
+    const c = uitCache("/api/dashboard");
+    if (c) { if (c.fout) setFout(c.fout); else setData(c); }
+    haalEnCache("/api/dashboard")
       .then((d) => (d.fout ? setFout(d.fout) : setData(d)))
-      .catch((e) => setFout(String(e)));
+      .catch((e) => { if (!c) setFout(String(e)); });
   }, []);
 
   useEffect(() => {
-    fetch("/api/werkplaats-stats", { cache: "no-store" })
-      .then((r) => r.json())
+    const c = uitCache("/api/werkplaats-stats");
+    if (c) setWp(c);
+    haalEnCache("/api/werkplaats-stats", { cache: "no-store" })
       .then((d) => setWp(d))
-      .catch(() => setWp({ fout: "kon niet laden" }));
+      .catch(() => { if (!uitCache("/api/werkplaats-stats")) setWp({ fout: "kon niet laden" }); });
   }, []);
 
   useEffect(() => {

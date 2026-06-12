@@ -11,12 +11,13 @@ import { GROEN } from "@/lib/theme";
 const items = [
   { href: "/dashboard", label: "📊 Cijfers" },
   { href: "/dashboard/werkplaats", label: "🔧 Werkplaats" },
+  { href: "/werkplaats", label: "🧾 Werkbonnen" },
 ];
 
 export default function DashboardNav() {
   const pad = usePathname();
   return (
-    <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
       {items.map((it) => {
         const actief = pad === it.href;
         return (
@@ -25,17 +26,18 @@ export default function DashboardNav() {
             href={it.href}
             prefetch
             style={{
-              flex: 1,
+              flex: "1 1 110px",
               textAlign: "center",
               textDecoration: "none",
               background: actief ? GROEN : "#fff",
               color: actief ? "#fff" : GROEN,
               border: `1.5px solid ${GROEN}`,
               borderRadius: 12,
-              padding: "15px 16px",
-              fontSize: 16,
+              padding: "13px 12px",
+              fontSize: 15,
               fontWeight: 700,
               letterSpacing: 0.2,
+              whiteSpace: "nowrap",
             }}
           >
             {it.label}

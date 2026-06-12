@@ -8,6 +8,7 @@ import { datumKort } from "@/lib/format";
 import AuthGate from "@/app/components/AuthGate";
 import DashboardNav from "@/app/components/DashboardNav";
 import LaadScherm from "@/app/components/LaadScherm";
+import { uitCache, haalEnCache } from "@/lib/cache";
 
 const MAAND = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
 function maandLabel(ym: string) {
@@ -47,10 +48,11 @@ function WerkplaatsDashboard() {
   const [zoek, setZoek] = useState("");
 
   useEffect(() => {
-    fetch("/api/werkplaats-stats", { cache: "no-store" })
-      .then((r) => r.json())
+    const c = uitCache("/api/werkplaats-stats");
+    if (c) { if (c.fout) setFout(c.fout); else setData(c); setLaden(false); }
+    haalEnCache("/api/werkplaats-stats", { cache: "no-store" })
       .then((d) => { if (d.fout) setFout(d.fout); else setData(d); setLaden(false); })
-      .catch((e) => { setFout(String(e)); setLaden(false); });
+      .catch((e) => { if (!c) { setFout(String(e)); setLaden(false); } });
   }, []);
 
   const wrap: CSSProperties = { minHeight: "100vh", background: BG, color: TEKST, fontFamily: "system-ui, -apple-system, sans-serif", padding: "28px 18px", maxWidth: 1000, margin: "0 auto" };

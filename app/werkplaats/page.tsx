@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { GROEN, GROEN_BG, GOUD, GOUD_BG, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG, KAART_BG, VELD_BG, VELD_TEKST, VELD_RAND, KAART_SCHADUW } from "@/lib/theme";
 import { duur, mmss, dagenGeleden } from "@/lib/format";
 import type { Klus, Monteur, Regel, Veld, Check, Artikel } from "@/lib/types";
+import DashboardNav from "@/app/components/DashboardNav";
 import BlokOpmerkingen from "./components/BlokOpmerkingen";
 import BlokArtikelen from "./components/BlokArtikelen";
 import BlokEindcontrole from "./components/BlokEindcontrole";
@@ -121,7 +122,7 @@ function bedragNum(s: string) {
   return isNaN(n) ? 0 : n;
 }
 
-function WerkplaatsApp({ ingelogd, onUitloggen }: { ingelogd: Monteur; onUitloggen: () => void }) {
+function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; isAdmin: boolean; onUitloggen: () => void }) {
   const [monteur, setMonteur] = useState<Monteur | null>(ingelogd);
   const [klussen, setKlussen] = useState<Klus[]>([]);
   const [totalen, setTotalen] = useState<Record<string, number>>({});
@@ -666,6 +667,7 @@ function WerkplaatsApp({ ingelogd, onUitloggen }: { ingelogd: Monteur; onUitlogg
       )}
 
       <h1 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 14px" }}>Werkplaats</h1>
+      {isAdmin && <DashboardNav />}
       {fout && <div style={{ ...kaart, color: ROOD, borderColor: ROOD }}>Let op: {fout}</div>}
 
       <div style={{ ...kaart, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
@@ -889,11 +891,12 @@ export default function WerkplaatsPagina() {
   const [fout, setFout] = useState("");
   const [verstuurd, setVerstuurd] = useState(false);
   const [klaar, setKlaar] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Koppel een ingelogd e-mailadres aan een monteur in app_gebruikers.
   // Geen match of niet actief: meteen weer uitloggen en toegang weigeren.
   async function koppelGebruiker(authEmail: string | undefined | null) {
-    if (!authEmail) { setIngelogd(null); return; }
+    if (!authEmail) { setIngelogd(null); setIsAdmin(false); return; }
     const adres = authEmail.toLowerCase();
     const { data, error } = await supabase.from("app_gebruikers").select("id, naam, rol, actief, email").ilike("email", adres).limit(1);
     const g = data && data[0];
@@ -901,11 +904,12 @@ export default function WerkplaatsPagina() {
     if (error || !match || !g!.actief) {
       setFout(error ? "Er ging iets mis, probeer het nog eens." : "Dit e-mailadres heeft geen toegang. Vraag de beheerder om je toe te voegen.");
       await supabase.auth.signOut();
-      setIngelogd(null);
+      setIngelogd(null); setIsAdmin(false);
       return;
     }
     setFout("");
     setIngelogd({ id: g!.id as string, naam: g!.naam as string });
+    setIsAdmin(g!.rol === "admin");
   }
 
   // Bij laden de bestaande sessie ophalen en luisteren naar in-/uitloggen.
@@ -944,7 +948,7 @@ export default function WerkplaatsPagina() {
 
   if (!klaar) return <main style={wrapL}><p style={{ color: GRIJS }}>Laden...</p></main>;
 
-  if (ingelogd) return <WerkplaatsApp ingelogd={ingelogd} onUitloggen={uitloggen} />;
+  if (ingelogd) return <WerkplaatsApp ingelogd={ingelogd} isAdmin={isAdmin} onUitloggen={uitloggen} />;
 
   return (
     <main style={wrapL}>
