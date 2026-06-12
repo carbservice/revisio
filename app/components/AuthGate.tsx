@@ -5,11 +5,15 @@
 // De kinderen worden pas gerenderd (en hun data dus pas opgehaald) zodra de
 // toegang is goedgekeurd.
 
-import { useEffect, useState, ReactNode, CSSProperties } from "react";
+import { useEffect, useState, ReactNode, CSSProperties, createContext, useContext } from "react";
 import { supabase } from "@/lib/supabase";
 import { GROEN, GRIJS, RAND, BG, TEKST, ROOD, KAART_SCHADUW } from "@/lib/theme";
 
 type Status = "laden" | "uit" | "geen-toegang" | "ok";
+
+// Stelt de ingelogde gebruiker beschikbaar aan de beschermde pagina-inhoud.
+const GebruikerContext = createContext<{ naam: string; uitloggen: () => void }>({ naam: "", uitloggen: () => {} });
+export function useGebruiker() { return useContext(GebruikerContext); }
 
 export default function AuthGate({ requireAdmin = false, children }: { requireAdmin?: boolean; children: ReactNode }) {
   const [status, setStatus] = useState<Status>("laden");
@@ -68,7 +72,7 @@ export default function AuthGate({ requireAdmin = false, children }: { requireAd
     setEmail(""); setCode(""); setVerstuurd(false); setStatus("uit");
   }
 
-  if (status === "ok") return <>{children}</>;
+  if (status === "ok") return <GebruikerContext.Provider value={{ naam, uitloggen }}>{children}</GebruikerContext.Provider>;
 
   const wrap: CSSProperties = { minHeight: "100vh", background: BG, color: TEKST, fontFamily: "system-ui, -apple-system, sans-serif", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 };
   const kaart: CSSProperties = { background: "#fff", border: `1px solid ${RAND}`, borderRadius: 18, padding: 28, maxWidth: 380, width: "100%", boxShadow: KAART_SCHADUW };

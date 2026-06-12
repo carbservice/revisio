@@ -5,12 +5,12 @@
 import { useEffect, useState, CSSProperties, SVGProps } from "react";
 import { GROEN, GROEN_BG, GOUD, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG } from "@/lib/theme";
 import { euro } from "@/lib/format";
-import AuthGate from "@/app/components/AuthGate";
+import AuthGate, { useGebruiker } from "@/app/components/AuthGate";
+import PaginaKop from "@/app/components/PaginaKop";
 import DashboardNav from "@/app/components/DashboardNav";
 import LaadScherm from "@/app/components/LaadScherm";
 import { uitCache, haalEnCache } from "@/lib/cache";
 import ScrollNaarBoven from "@/app/components/ScrollNaarBoven";
-import Systeemstatus from "@/app/components/Systeemstatus";
 
 const GROEN_LICHT = "#a9c0b4";
 
@@ -133,6 +133,7 @@ export default function DashboardPagina() {
 }
 
 function Dashboard() {
+  const { naam, uitloggen } = useGebruiker();
   const [data, setData] = useState<any>(null);
   const [fout, setFout] = useState("");
   const [wp, setWp] = useState<any>(null);
@@ -357,16 +358,7 @@ function Dashboard() {
 
         <DashboardNav />
         <ScrollNaarBoven />
-
-        <div style={{ marginBottom: 18 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{ width: 11, height: 11, borderRadius: "50%", background: GROEN }} />
-            <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", color: GROEN }}>Revisio</span>
-          </div>
-          <h1 style={{ margin: "8px 0 0", fontSize: 26, fontWeight: 700 }}>{groet()} Cyriel</h1>
-        </div>
-
-        <Systeemstatus />
+        <PaginaKop naam={naam} onUitloggen={uitloggen} titel="Cijfers" />
 
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
           <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Hoe staan we er nu voor</h2>

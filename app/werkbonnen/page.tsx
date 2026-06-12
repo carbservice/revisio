@@ -9,7 +9,7 @@ import { duur, mmss, dagenGeleden } from "@/lib/format";
 import type { Klus, Monteur, Regel, Veld, Check, Artikel } from "@/lib/types";
 import DashboardNav from "@/app/components/DashboardNav";
 import ScrollNaarBoven from "@/app/components/ScrollNaarBoven";
-import Systeemstatus from "@/app/components/Systeemstatus";
+import PaginaKop from "@/app/components/PaginaKop";
 import BlokOpmerkingen from "./components/BlokOpmerkingen";
 import BlokArtikelen from "./components/BlokArtikelen";
 import BlokEindcontrole from "./components/BlokEindcontrole";
@@ -685,22 +685,19 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
         </div>
       )}
 
-      <h1 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 14px" }}>Werkplaats Werkbonnen</h1>
       {isAdmin && <DashboardNav />}
-      <Systeemstatus />
-      {fout && <div style={{ ...kaart, color: ROOD, borderColor: ROOD }}>Let op: {fout}</div>}
-
-      <div style={{ ...kaart, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
-        <div style={{ fontSize: 13.5 }}>Ingelogd als <span style={{ fontWeight: 700, color: GROEN }}>{ingelogd.naam}</span></div>
-        <button onClick={onUitloggen} style={{ border: `1px solid ${RAND}`, background: "#fff", color: GRIJS, borderRadius: 999, padding: "7px 14px", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>Uitloggen</button>
-      </div>
-
-      {!open && (
-        <>
+      <PaginaKop naam={ingelogd.naam} onUitloggen={onUitloggen} titel="Werkplaats Werkbonnen">
+        {!open && (
           <div style={kaart}>
             <input value={zoek} onChange={(e) => setZoek(e.target.value)} placeholder="Zoek op offertenummer, klant of voertuig" style={{ ...inp, fontSize: 15 }} />
             {q && <div style={{ fontSize: 12, color: GRIJS, marginTop: 8 }}>{zichtbaar.length} {zichtbaar.length === 1 ? "klus" : "klussen"} gevonden{zichtbaar.length ? ", tik op Bekijk werkbon om alleen te lezen" : ""}.</div>}
           </div>
+        )}
+      </PaginaKop>
+      {fout && <div style={{ ...kaart, color: ROOD, borderColor: ROOD }}>Let op: {fout}</div>}
+
+      {!open && (
+        <>
 
           {!q && (
             <div style={{ ...kaart, display: "flex", gap: 8 }}>

@@ -5,12 +5,12 @@
 import { useEffect, useState, CSSProperties } from "react";
 import { GROEN, GOUD, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG } from "@/lib/theme";
 import { datumKort } from "@/lib/format";
-import AuthGate from "@/app/components/AuthGate";
+import AuthGate, { useGebruiker } from "@/app/components/AuthGate";
+import PaginaKop from "@/app/components/PaginaKop";
 import DashboardNav from "@/app/components/DashboardNav";
 import LaadScherm from "@/app/components/LaadScherm";
 import { uitCache, haalEnCache } from "@/lib/cache";
 import ScrollNaarBoven from "@/app/components/ScrollNaarBoven";
-import Systeemstatus from "@/app/components/Systeemstatus";
 
 const MAAND = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
 function maandLabel(ym: string) {
@@ -44,6 +44,7 @@ export default function WerkplaatsDashboardPagina() {
 }
 
 function WerkplaatsDashboard() {
+  const { naam, uitloggen } = useGebruiker();
   const [data, setData] = useState<any>(null);
   const [laden, setLaden] = useState(true);
   const [fout, setFout] = useState("");
@@ -89,10 +90,15 @@ function WerkplaatsDashboard() {
     <main style={wrap}>
       <DashboardNav />
       <ScrollNaarBoven />
-      <h1 style={{ fontSize: 26, fontWeight: 800, color: GROEN, margin: "10px 0 2px" }}>Werkplaats</h1>
-      <div style={{ fontSize: 13.5, color: GRIJS, marginBottom: 18 }}>Live uit de werkplaats-app · {maandLabel(data.maand)} vergeleken met {maandLabel(data.vorige_maand)}</div>
-
-      <Systeemstatus />
+      <PaginaKop naam={naam} onUitloggen={uitloggen} titel="Werkplaats">
+        <div style={{ fontSize: 13.5, color: GRIJS, margin: "-6px 0 14px" }}>Live uit de werkplaats-app · {maandLabel(data.maand)} vergeleken met {maandLabel(data.vorige_maand)}</div>
+        <input
+          value={zoek}
+          onChange={(e) => setZoek(e.target.value)}
+          placeholder="Zoek op nummer, klant of voertuig..."
+          style={{ width: "100%", boxSizing: "border-box", border: `1.5px solid ${RAND}`, borderRadius: 10, padding: "12px 14px", fontSize: 14, marginBottom: 18 }}
+        />
+      </PaginaKop>
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginBottom: 14 }}>
         {tegel("Op de plank nu", String(data.plank.totaal), data.plank.alert ? ROOD : GROEN,
@@ -109,12 +115,6 @@ function WerkplaatsDashboard() {
           <span style={kopstijl}>Werkbonnen</span>
           <span style={{ fontSize: 12.5, color: GRIJS }}>{bonnenGefilterd.length} van {bonnen.length}</span>
         </div>
-        <input
-          value={zoek}
-          onChange={(e) => setZoek(e.target.value)}
-          placeholder="Zoek op nummer, klant of voertuig..."
-          style={{ width: "100%", boxSizing: "border-box", border: `1.5px solid ${RAND}`, borderRadius: 10, padding: "11px 13px", fontSize: 14, marginBottom: 6 }}
-        />
         {bonnen.length === 0 && <div style={{ fontSize: 13, color: GRIJS, paddingTop: 8 }}>Nog geen werkbonnen met ingevulde gegevens.</div>}
         {bonnen.length > 0 && bonnenGefilterd.length === 0 && <div style={{ fontSize: 13, color: GRIJS, paddingTop: 8 }}>Niets gevonden voor "{zoek}".</div>}
         {bonnenGefilterd.map((b: any) => (
