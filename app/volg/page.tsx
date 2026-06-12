@@ -18,8 +18,8 @@ const GROEN_BG = "#e7f0ea";
 const SPOOR = "#e1e7dd";
 
 const STADIA = [
-  { stap: "ontvangen", label: "Ontvangen", omschrijving: "Intake en eerste check — is alles goed aangekomen?", pct: 20 },
-  { stap: "gestart", label: "Diagnose", omschrijving: "Inspectie & analyse — is alles gangbaar?", pct: 40 },
+  { stap: "ontvangen", label: "Ontvangen", omschrijving: "Intake en eerste check (is het goed aangekomen?)", pct: 20 },
+  { stap: "gestart", label: "Diagnose", omschrijving: "Inspectie & analyse (is alles gangbaar?)", pct: 40 },
   { stap: "voor_ultrasoon", label: "Reviseren", omschrijving: "Aan de slag met de carburateurrevisie: demontage, ultrasoonreiniging en onderdelen plaatsen.", pct: 60 },
   { stap: "na_ultrasoon", label: "Afbouwen & aftesten", omschrijving: "We bouwen de carburateur af en zetten deze daarna onder vacuüm en benzinedruk.", pct: 80 },
   { stap: "schoon", label: "Klaar om te verzenden of op te halen", omschrijving: "Uw revisie is afgerond, gecontroleerd en klaar.", pct: 100 },

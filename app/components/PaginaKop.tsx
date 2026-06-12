@@ -17,7 +17,7 @@ export default function PaginaKop({ naam, onUitloggen, titel, children }: { naam
     <>
       <Systeemstatus />
       <div style={ingelogd}>
-        <div style={{ fontSize: 13.5 }}>Ingelogd als <span style={{ fontWeight: 700, color: GROEN }}>{naam || "—"}</span></div>
+        <div style={{ fontSize: 13.5 }}>Ingelogd als <span style={{ fontWeight: 700, color: GROEN }}>{naam || "gebruiker"}</span></div>
         <button onClick={onUitloggen} style={{ border: `1px solid ${RAND}`, background: "#fff", color: GRIJS, borderRadius: 999, padding: "7px 14px", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>Uitloggen</button>
       </div>
       <h1 style={{ fontSize: 24, fontWeight: 800, color: GROEN, margin: "0 0 14px" }}>{titel}</h1>
