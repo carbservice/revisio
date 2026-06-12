@@ -72,7 +72,7 @@ export default function AuthGate({ requireAdmin = false, children }: { requireAd
         <h1 style={{ fontSize: 20, fontWeight: 800, color: GROEN, margin: "0 0 10px" }}>Geen toegang</h1>
         <p style={{ fontSize: 14, lineHeight: 1.5, color: TEKST }}>Hoi {naam || "daar"}, dit onderdeel is alleen voor beheerders. Vraag een admin als je hier toegang voor nodig hebt.</p>
         <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-          <a href="/werkplaats" style={{ flex: 1, textAlign: "center", textDecoration: "none", background: GROEN, color: "#fff", borderRadius: 12, padding: "12px", fontSize: 14, fontWeight: 700 }}>Naar de werkplaats</a>
+          <a href="/werkbonnen" style={{ flex: 1, textAlign: "center", textDecoration: "none", background: GROEN, color: "#fff", borderRadius: 12, padding: "12px", fontSize: 14, fontWeight: 700 }}>Naar de werkbonnen</a>
           <button onClick={uitloggen} style={{ background: "#fff", color: GRIJS, border: `1px solid ${RAND}`, borderRadius: 12, padding: "12px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Uitloggen</button>
         </div>
       </div>
