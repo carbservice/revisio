@@ -459,7 +459,7 @@ function WerkplaatsApp({ ingelogd, onUitloggen }: { ingelogd: Monteur; onUitlogg
 
   // Upload meerdere foto's tegelijk (verkleind), losstaand van een stadium.
   // Ze krijgen stadium "algemeen" zodat ze in het foto-overzicht meetellen.
-  async function uploadMeerdereFotos(files: FileList) {
+  async function uploadMeerdereFotos(files: File[]) {
     if (!open || files.length === 0) return;
     setBulkBezig(true); setBulkMelding("");
     let gelukt = 0, mislukt = 0;
@@ -825,7 +825,7 @@ function WerkplaatsApp({ ingelogd, onUitloggen }: { ingelogd: Monteur; onUitlogg
             <div style={{ fontSize: 12, color: GRIJS, marginBottom: 10 }}>Upload hier in één keer alle foto's van deze klus. Ze worden automatisch verkleind.</div>
             <label style={{ display: "block", textAlign: "center", background: bulkBezig ? "#cdbe8a" : GOUD, color: "#fff", borderRadius: 12, padding: "13px", fontSize: 15, fontWeight: 700, cursor: bulkBezig ? "default" : "pointer" }}>
               {bulkBezig ? "Bezig met uploaden..." : "Alle foto's uploaden"}
-              <input type="file" accept="image/*" multiple disabled={bulkBezig} style={{ display: "none" }} onChange={(e) => { const fs = e.target.files; if (fs && fs.length) uploadMeerdereFotos(fs); e.currentTarget.value = ""; }} />
+              <input type="file" accept="image/*" multiple disabled={bulkBezig} style={{ display: "none" }} onChange={(e) => { const arr = e.target.files ? Array.from(e.target.files) : []; e.currentTarget.value = ""; if (arr.length) uploadMeerdereFotos(arr); }} />
             </label>
             {bulkMelding && <div style={{ fontSize: 13, color: GROEN, fontWeight: 600, marginTop: 10 }}>{bulkMelding}</div>}
 
@@ -843,12 +843,15 @@ function WerkplaatsApp({ ingelogd, onUitloggen }: { ingelogd: Monteur; onUitlogg
                 </div>
               );
             })}
-            {fotos.filter((f) => f.stap === "algemeen").length > 0 && (
+            {fotos.length > 0 && (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
-                {fotos.filter((f) => f.stap === "algemeen").map((f) => (
-                  <div key={f.id} style={{ position: "relative" }}>
-                    <img src={f.url} alt="" style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8, border: `1px solid ${RAND}` }} />
+                {fotos.map((f) => (
+                  <div key={f.id} style={{ position: "relative", width: 80 }}>
+                    <a href={f.url} target="_blank" rel="noreferrer">
+                      <img src={f.url} alt="" style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8, border: `1px solid ${RAND}`, display: "block" }} />
+                    </a>
                     <button onClick={() => verwijderFoto(f.id)} style={{ position: "absolute", top: -6, right: -6, width: 22, height: 22, borderRadius: 999, border: "none", background: ROOD, color: "#fff", fontSize: 13, cursor: "pointer" }}>×</button>
+                    <div style={{ fontSize: 10, color: GRIJS, textAlign: "center", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.stap === "algemeen" ? "Algemeen" : (STADIA.find((s) => s.id === f.stap)?.kort || f.stap)}</div>
                   </div>
                 ))}
               </div>
