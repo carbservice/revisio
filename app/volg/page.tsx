@@ -23,7 +23,7 @@ const STADIA = [
   { stap: "gestart", label: "Diagnose", omschrijving: "Inspectie & analyse (is alles gangbaar?)", pct: 40 },
   { stap: "voor_ultrasoon", label: "Reviseren", omschrijving: "Aan de slag met de carburateurrevisie: demontage, ultrasoonreiniging en onderdelen plaatsen.", pct: 60 },
   { stap: "na_ultrasoon", label: "Afbouwen & aftesten", omschrijving: "We bouwen de carburateur af en zetten deze daarna onder vacuüm en benzinedruk.", pct: 80 },
-  { stap: "schoon", label: "Klaar om te verzenden of op te halen", omschrijving: "Uw revisie is afgerond, gecontroleerd en klaar.", pct: 100 },
+  { stap: "schoon", label: "Klaar om te verzenden of op te halen", omschrijving: "Je revisie is afgerond, gecontroleerd en klaar.", pct: 100 },
 ];
 
 type Stap = { stap: string; label: string; pct: number; bericht: string; gedaan_op: string | null; fotos: string[] };
@@ -130,7 +130,7 @@ function Inner() {
         {logoKop}
         <div style={body}>
           <h1 style={{ fontSize: 26, fontWeight: 700, margin: "0 0 12px", color: GROEN }}>Revisie niet gevonden</h1>
-          <p style={{ fontSize: 17, lineHeight: 1.6, color: TEKST }}>{fout || "Controleer uw ordernummer en code en probeer het opnieuw."}</p>
+          <p style={{ fontSize: 17, lineHeight: 1.6, color: TEKST }}>{fout || "Controleer je ordernummer en code en probeer het opnieuw."}</p>
           <a href="/" style={{ display: "inline-block", marginTop: 20, color: GROEN, fontSize: 16, fontWeight: 700, textDecoration: "none", borderBottom: `2px solid ${GROEN}`, paddingBottom: 2 }}>← Terug naar start</a>
         </div>
       </div>
@@ -142,6 +142,9 @@ function Inner() {
   const stapData = (st: string) => data.stappen.find((s) => s.stap === st);
   let huidigeIndex = -1;
   STADIA.forEach((st, i) => { if (stapData(st.stap)) huidigeIndex = i; });
+  // % dat met het icoon meeloopt en optelt naar het huidige stadium.
+  const doelCenter = huidigeIndex >= 0 ? (centers[huidigeIndex] || 0) : 0;
+  const toonPct = doelCenter > 0 ? Math.round(pct * Math.min(1, vul / doelCenter)) : 0;
 
   const u = new Date().getHours();
   const groet = u < 12 ? "Goedemorgen" : u < 18 ? "Goedemiddag" : "Goedenavond";
@@ -155,11 +158,11 @@ function Inner() {
 
           <div style={{ fontSize: 23, fontWeight: 600, color: GROEN }}>{groet}{data.klant ? `, ${data.klant}` : ""}</div>
           <p style={{ fontSize: 16, lineHeight: 1.6, color: TEKST, marginTop: 8 }}>
-            Welkom bij het volgsysteem van uw carburateur-revisie. Hieronder ziet u precies waar we mee bezig zijn.
+            Welkom bij het volgsysteem van je carburateur-revisie. Hieronder zie je precies waar we mee bezig zijn.
           </p>
 
           <div style={{ marginTop: 24, fontSize: 18, color: TEKST }}>
-            Uw offertenummer: <span style={{ fontWeight: 700, color: GROEN }}>{data.nummer}</span>
+            Je offertenummer: <span style={{ fontWeight: 700, color: GROEN }}>{data.nummer}</span>
           </div>
           {data.voertuig && (
             <div style={{ marginTop: 16 }}>
@@ -170,16 +173,15 @@ function Inner() {
           {data.klacht && (
             <div style={{ marginTop: 14, background: GROEN_BG, borderRadius: 12, padding: "15px 17px" }}>
               <div style={labelStijl}>Klacht</div>
-              <div style={{ fontSize: 12.5, color: GRIJS, marginTop: 2, marginBottom: 6 }}>(wat u aan ons heeft doorgegeven)</div>
+              <div style={{ fontSize: 12.5, color: GRIJS, marginTop: 2, marginBottom: 6 }}>(wat je aan ons hebt doorgegeven)</div>
               <div style={{ fontSize: 17, lineHeight: 1.55, color: TEKST }}>{data.klacht}</div>
             </div>
           )}
 
-          <div style={{ marginTop: 30, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
-            <span style={{ fontSize: 18, fontWeight: 700, color: TEKST }}>
-              {klaar ? "Uw revisie is klaar" : "We zijn druk bezig met deze revisie"}
+          <div style={{ marginTop: 30 }}>
+            <span style={{ fontSize: 19, fontWeight: 700, color: TEKST }}>
+              {klaar ? "Je revisie is klaar." : `Je revisie is momenteel op ${pct}%, we zijn druk bezig.`}
             </span>
-            <span style={{ fontSize: 32, fontWeight: 700, color: GROEN, fontVariantNumeric: "tabular-nums" }}>{pct}%</span>
           </div>
 
           {/* Verticale voortgang: het icoon zakt langzaam naar het huidige
@@ -190,7 +192,12 @@ function Inner() {
                 <div style={{ position: "absolute", left: 13, top: centers[0], height: Math.max(0, (centers[centers.length - 1] || 0) - (centers[0] || 0)), width: 6, borderRadius: 3, background: SPOOR }} />
                 <div style={{ position: "absolute", left: 13, top: centers[0], height: Math.max(0, vul - (centers[0] || 0)), width: 6, borderRadius: 3, background: "linear-gradient(180deg, #2f8f5b, #3aa66b)", boxShadow: "0 0 12px rgba(47,143,91,0.45)" }} />
                 {vul > (centers[0] || 0) - 1 && (
-                  <img src="/icon.png" alt="" style={{ position: "absolute", left: -8, top: vul - 24, width: 48, height: 48, borderRadius: "50%", zIndex: 3, boxShadow: "0 0 0 3px #ffffff, 0 4px 13px rgba(0,0,0,0.38)" }} />
+                  <>
+                    <img src="/icon.png" alt="" style={{ position: "absolute", left: -8, top: vul - 24, width: 48, height: 48, borderRadius: "50%", zIndex: 3, boxShadow: "0 0 0 3px #ffffff, 0 4px 13px rgba(0,0,0,0.38)" }} />
+                    <div style={{ position: "absolute", left: -10, top: vul + 27, width: 52, textAlign: "center", zIndex: 4 }}>
+                      <span style={{ display: "inline-block", background: GROEN, color: "#fff", fontSize: 13, fontWeight: 800, borderRadius: 999, padding: "2px 9px", boxShadow: "0 2px 6px rgba(0,0,0,0.28)" }}>{toonPct}%</span>
+                    </div>
+                  </>
                 )}
               </>
             )}
@@ -246,8 +253,8 @@ function Inner() {
 
           <div style={{ marginTop: 30, paddingTop: 20, borderTop: `1px solid ${RAND}`, fontSize: 15, color: GRIJS, lineHeight: 1.6, textAlign: "center" }}>
             {klaar
-              ? "Uw revisie is klaar, afgesteld en gecontroleerd. We nemen contact met u op."
-              : "U ziet hier de laatste stand die onze werkplaats heeft gedeeld. Bedankt voor uw vertrouwen."}
+              ? "Je revisie is klaar, afgesteld en gecontroleerd. We nemen contact met je op."
+              : "Je ziet hier de laatste stand die onze werkplaats heeft gedeeld. Bedankt voor je vertrouwen."}
           </div>
         </div>
       </div>
