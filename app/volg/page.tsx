@@ -63,7 +63,7 @@ function Inner() {
         const cs = dotRefs.current.map((d) => (d ? d.getBoundingClientRect().top - cTop + d.offsetHeight / 2 : 0));
         setCenters(cs);
         const doel = cs[huidige] || 0;
-        const p = Math.min(1, (ts - start) / 6000);
+        const p = Math.min(1, (ts - start) / 8500);
         setVul(doel * p);
         if (p < 1) raf = requestAnimationFrame(tick);
         else setVul(doel);
@@ -190,7 +190,7 @@ function Inner() {
                 <div style={{ position: "absolute", left: 13, top: centers[0], height: Math.max(0, (centers[centers.length - 1] || 0) - (centers[0] || 0)), width: 6, borderRadius: 3, background: SPOOR }} />
                 <div style={{ position: "absolute", left: 13, top: centers[0], height: Math.max(0, vul - (centers[0] || 0)), width: 6, borderRadius: 3, background: "linear-gradient(180deg, #2f8f5b, #3aa66b)", boxShadow: "0 0 12px rgba(47,143,91,0.45)" }} />
                 {vul > (centers[0] || 0) - 1 && (
-                  <img src="/icon.png" alt="" style={{ position: "absolute", left: 0, top: vul - 16, width: 32, height: 32, borderRadius: "50%", zIndex: 3, boxShadow: "0 2px 8px rgba(0,0,0,0.3)" }} />
+                  <img src="/icon.png" alt="" style={{ position: "absolute", left: -8, top: vul - 24, width: 48, height: 48, borderRadius: "50%", zIndex: 3, boxShadow: "0 0 0 3px #ffffff, 0 4px 13px rgba(0,0,0,0.38)" }} />
                 )}
               </>
             )}
