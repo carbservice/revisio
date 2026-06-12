@@ -671,7 +671,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
 
       <h1 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 14px" }}>Werkplaats Werkbonnen</h1>
       {isAdmin && <DashboardNav />}
-      {isAdmin && <Systeemstatus />}
+      <Systeemstatus />
       {fout && <div style={{ ...kaart, color: ROOD, borderColor: ROOD }}>Let op: {fout}</div>}
 
       <div style={{ ...kaart, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>

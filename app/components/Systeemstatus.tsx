@@ -58,7 +58,7 @@ export default function Systeemstatus() {
           <span
             key={r.kort}
             title={r.ok ? `live${r.ms != null ? ` · ${r.ms} ms` : ""}` : "offline"}
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "7px 13px", borderRadius: 999, border: `1px solid ${r.ok ? RAND : ROOD}`, background: r.ok ? "#fff" : ROOD_BG, fontSize: 13, fontWeight: 600, color: r.ok ? TEKST : ROOD }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "7px 13px", borderRadius: 999, border: `1px solid ${r.ok ? RAND : ROOD}`, background: r.ok ? "#fff" : ROOD_BG, fontSize: 13, fontWeight: 600, color: r.ok ? TEKST : ROOD, whiteSpace: "nowrap", lineHeight: 1 }}
           >
             <span style={{
               width: 9, height: 9, borderRadius: "50%", flexShrink: 0,
@@ -66,8 +66,8 @@ export default function Systeemstatus() {
               boxShadow: r.ok ? `0 0 0 2px ${GROEN_BG}, 0 0 7px ${GROEN}` : `0 0 0 2px ${ROOD_BG}, 0 0 7px ${ROOD}`,
               animation: r.ok ? "revled 2.4s ease-in-out infinite" : "none",
             }} />
-            <span style={{ fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.4, color: r.ok ? GROEN : ROOD }}>{r.ok ? "live" : "offline"}</span>
-            {r.kort}
+            <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.4, lineHeight: 1, color: r.ok ? GROEN : ROOD }}>{r.ok ? "live" : "offline"}</span>
+            <span style={{ lineHeight: 1 }}>{r.kort}</span>
           </span>
         ))}
 
