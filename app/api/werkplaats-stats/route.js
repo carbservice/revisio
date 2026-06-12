@@ -5,6 +5,38 @@ import { supabase } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 
+const MB_ADMIN = process.env.MONEYBIRD_ADMIN;
+const MB_TOKEN = process.env.MONEYBIRD_TOKEN;
+
+// Map klus_id (= Moneybird estimate-id) naar ordernummer/klant/kenmerk.
+// Faalt stil terug op een lege map, zodat het dashboard altijd laadt.
+async function moneybirdMap() {
+  try {
+    if (!MB_ADMIN || !MB_TOKEN) return {};
+    const map = {};
+    let page = 1;
+    while (true) {
+      const res = await fetch(
+        `https://moneybird.com/api/v2/${MB_ADMIN}/estimates.json?filter=${encodeURIComponent("period:this_year,state:accepted")}&per_page=100&page=${page}`,
+        { headers: { Authorization: `Bearer ${MB_TOKEN}` }, cache: "no-store" }
+      );
+      if (!res.ok) break;
+      const batch = await res.json();
+      (batch || []).forEach((e) => {
+        const c = e.contact;
+        const klant = c ? (c.company_name || [c.firstname, c.lastname].filter(Boolean).join(" ") || "") : "";
+        const voertuig = (e.reference || "").replace(/\s*,\s*,+/g, ", ").replace(/\s{2,}/g, " ").trim();
+        map[e.id] = { nummer: e.estimate_id || "", klant, voertuig };
+      });
+      if (!batch || batch.length < 100) break;
+      page++;
+    }
+    return map;
+  } catch {
+    return {};
+  }
+}
+
 function ym(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`; }
 function maandVan(s) { if (!s) return ""; const d = new Date(s); return isNaN(d.getTime()) ? "" : ym(d); }
 function dagenTussen(a, b) {
@@ -31,6 +63,7 @@ export async function GET() {
     const { data: opmerkingAll } = await supabase.from("werkbon_opmerking").select("klus_id, bijgewerkt_op");
     const { data: fotosAll } = await supabase.from("klus_fotos").select("klus_id, geupload_op");
     const { data: linksAll } = await supabase.from("werkbon_links").select("klus_id, nummer, klant, voertuig");
+    const mb = await moneybirdMap();
 
     const ontvangen = {}, klaar = {};
     (voortgang || []).forEach((v) => {
@@ -134,9 +167,10 @@ export async function GET() {
 
     const bonnen = Object.values(bonMap).map((b) => {
       const link = linkVan[b.klus_id] || {};
-      let nummer = link.nummer || "";
-      let klant = link.klant || "";
-      const voertuig = link.voertuig || "";
+      const mbi = mb[b.klus_id] || {};
+      let nummer = mbi.nummer || link.nummer || "";
+      let klant = mbi.klant || link.klant || "";
+      const voertuig = mbi.voertuig || link.voertuig || "";
       if ((!nummer || !klant) && labels[b.klus_id]) {
         const lbl = String(labels[b.klus_id]);
         const sp = lbl.indexOf(" ");
