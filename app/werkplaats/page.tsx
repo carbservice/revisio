@@ -5,8 +5,14 @@
 import { useEffect, useState, useRef, CSSProperties } from "react";
 import { supabase } from "@/lib/supabase";
 import { GROEN, GROEN_BG, GOUD, GOUD_BG, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG, KAART_BG, VELD_BG, VELD_TEKST, VELD_RAND, KAART_SCHADUW } from "@/lib/theme";
-import { euro, duur, mmss, dagenGeleden, datumKort, datumTijd, datumStempel } from "@/lib/format";
+import { duur, mmss, dagenGeleden } from "@/lib/format";
 import type { Klus, Monteur, Regel, Veld, Check, Artikel } from "@/lib/types";
+import BlokOpmerkingen from "./components/BlokOpmerkingen";
+import BlokArtikelen from "./components/BlokArtikelen";
+import BlokEindcontrole from "./components/BlokEindcontrole";
+import BlokTijd from "./components/BlokTijd";
+import BlokAfstelling from "./components/BlokAfstelling";
+import WerkbonBekijk from "./components/WerkbonBekijk";
 
 const VELD_TYPES: { type: string; label: string; eenheid: string; categorie: string; opties?: string[] }[] = [
   { type: "vlotterhoogte",        label: "Vlotterhoogte",               eenheid: "mm",           categorie: "afstelling" },
@@ -528,144 +534,6 @@ function WerkplaatsApp({ ingelogd, onUitloggen }: { ingelogd: Monteur; onUitlogg
   const toggle = (a: boolean, kleur: string): CSSProperties => ({ border: `1px solid ${a ? kleur : RAND}`, background: a ? kleur : "#fff", color: a ? "#fff" : TEKST, borderRadius: 8, padding: "8px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer" });
   const kopstijl: CSSProperties = { fontSize: 13, color: GRIJS, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, margin: "2px 0 12px" };
 
-  function veldRij(v: Veld) {
-    const isEigen = v.veld_type.startsWith("eigen");
-    const opties = cfgVan(v.veld_type)?.opties;
-    return (
-      <div key={v.key} style={{ marginBottom: 9 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-          {isEigen
-            ? <input value={v.label} onChange={(e) => updVeld(v.key, "label", e.target.value)} placeholder="naam veld" style={{ ...inpG, fontWeight: 600 }} />
-            : <div style={{ fontSize: 13.5, fontWeight: 600 }}>{v.positie > 1 ? `${v.label} ${v.positie}` : v.label}{v.eenheid ? ` (${v.eenheid})` : ""}</div>}
-          {(isEigen || v.positie > 1) && <button onClick={() => verwijderVeld(v.key)} style={{ border: "none", background: "transparent", color: GRIJS, fontSize: 18, cursor: "pointer", padding: "0 6px" }}>×</button>}
-        </div>
-        {opties
-          ? <div style={{ display: "flex", gap: 8 }}>
-              {opties.map((o) => (
-                <button key={o} onClick={() => updVeld(v.key, "binnenkomst", v.binnenkomst === o ? "" : o)} style={toggle(v.binnenkomst === o, statusKleur(o))}>{o}</button>
-              ))}
-            </div>
-          : <div style={{ display: "flex", gap: 8 }}>
-              <input value={v.binnenkomst} onChange={(e) => updVeld(v.key, "binnenkomst", e.target.value)} placeholder="binnenkomst" style={inpG} />
-              <input value={v.afleveren} onChange={(e) => updVeld(v.key, "afleveren", e.target.value)} placeholder="afleveren" style={inpG} />
-            </div>}
-      </div>
-    );
-  }
-
-  function blokAfstelling() {
-    return SECTIES.map((sec) => (
-      <div key={sec.cat} style={kaart}>
-        <div style={kopstijl}>{sec.titel}</div>
-        {VELD_TYPES.filter((c) => c.categorie === sec.cat).map((c) => {
-          const vs = velden.filter((v) => v.veld_type === c.type).sort((a, b) => a.positie - b.positie);
-          return (
-            <div key={c.type} style={{ marginBottom: 8 }}>
-              {vs.map(veldRij)}
-              <button style={plus} onClick={() => voegVeldToe(c.type, c.label, c.eenheid)}>+ {c.label}</button>
-            </div>
-          );
-        })}
-        {(() => {
-          const et = EIGEN[sec.cat];
-          const eigen = velden.filter((v) => v.veld_type === et).sort((a, b) => a.positie - b.positie);
-          return (
-            <div style={{ marginTop: 6, borderTop: `1px solid ${RAND}`, paddingTop: 8 }}>
-              {eigen.map(veldRij)}
-              <button style={plus} onClick={() => voegVeldToe(et, "", "")}>+ Extra veld</button>
-            </div>
-          );
-        })()}
-      </div>
-    ));
-  }
-
-  function blokTijd() {
-    return (
-      <div style={kaart}>
-        <div style={kopstijl}>Tijd</div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <input inputMode="numeric" value={handMin} onChange={(e) => setHandMin(e.target.value.replace(/\D/g, ""))} placeholder="minuten" style={{ ...inp, maxWidth: 100 }} />
-          <input value={notitie} onChange={(e) => setNotitie(e.target.value)} placeholder="notitie" style={inp} />
-          <button disabled={!monteur} onClick={handmatig} style={{ border: "none", background: monteur ? GOUD : "#cdbe8a", color: "#fff", borderRadius: 10, padding: "0 16px", fontWeight: 700, cursor: "pointer" }}>+</button>
-        </div>
-        <div style={{ display: "flex", justifyContent: "space-between", margin: "12px 0 4px" }}>
-          <span style={{ fontSize: 13, color: GRIJS, fontWeight: 600 }}>Geschreven tijd</span>
-          <span style={{ fontWeight: 700 }}>Totaal {duur(totaal)}</span>
-        </div>
-        {regels.map((r) => (
-          <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "7px 0", borderTop: `1px solid ${RAND}` }}>
-            <div><div style={{ fontSize: 14, fontWeight: 600 }}>{r.monteur_naam} · {duur(r.minuten)}</div>{r.aangemaakt_op && <div style={{ fontSize: 11, color: GRIJS, marginTop: 1 }}>{datumStempel(r.aangemaakt_op)}</div>}{r.notitie && <div style={{ fontSize: 12.5, color: GRIJS, marginTop: 1 }}>{r.notitie}</div>}</div>
-            <button onClick={() => verwijder(r.id)} style={{ border: "none", background: "transparent", color: GRIJS, fontSize: 18, cursor: "pointer", padding: "0 6px" }}>×</button>
-          </div>
-        ))}
-        {klusStart && (
-          <div style={{ fontSize: 12, color: GRIJS, marginTop: 10, borderTop: `1px solid ${RAND}`, paddingTop: 8 }}>
-            Gestart door {klusStart.naam}, {datumTijd(klusStart.tijd)}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  function blokArtikelen() {
-    return (
-      <div style={kaart}>
-        <div style={kopstijl}>Extra artikelen</div>
-        <div style={{ fontSize: 12, color: GRIJS, marginBottom: 10 }}>Onderdelen uit het schap, met bedrag. Vul alleen in wat je erbij pakt.</div>
-        {artikelen.map((a) => (
-          <div key={a.key} style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
-            {a.vast
-              ? <div style={{ flex: 1, fontSize: 13.5, fontWeight: 600 }}>{a.naam}</div>
-              : <input value={a.naam} onChange={(e) => updArtikel(a.key, "naam", e.target.value)} placeholder="artikel (bijv. slangklem, boutjes)" style={inpG} />}
-            <div style={{ display: "flex", alignItems: "center", gap: 4, width: 110 }}>
-              <span style={{ color: GRIJS, fontSize: 14 }}>€</span>
-              <input inputMode="decimal" value={a.bedrag} onChange={(e) => updArtikel(a.key, "bedrag", e.target.value.replace(/[^0-9,.]/g, ""))} placeholder="0,00" style={{ ...inpG, textAlign: "right" }} />
-            </div>
-            {!a.vast && <button onClick={() => setArtikelen((as) => as.filter((x) => x.key !== a.key))} style={{ border: "none", background: "transparent", color: GRIJS, fontSize: 18, cursor: "pointer" }}>×</button>}
-          </div>
-        ))}
-        <button style={plus} onClick={() => setArtikelen((as) => [...as, { key: key(), naam: "", bedrag: "", vast: false }])}>+ Extra artikel</button>
-        {artikelenTotaal > 0 && (
-          <div style={{ display: "flex", justifyContent: "space-between", borderTop: `1px solid ${RAND}`, marginTop: 10, paddingTop: 8, fontSize: 13.5 }}>
-            <span style={{ fontWeight: 700 }}>Totaal extra</span>
-            <span style={{ fontWeight: 700 }}>{euro(artikelenTotaal)}</span>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  function blokOpmerkingen() {
-    return (
-      <div style={kaart}>
-        <div style={kopstijl}>Opmerkingen</div>
-        <textarea value={opmerking} onChange={(e) => setOpmerking(e.target.value)} placeholder="Bijzonderheden over deze klus..." style={{ ...inp, minHeight: 80, resize: "vertical" }} />
-      </div>
-    );
-  }
-
-  function blokEindcontrole() {
-    return (
-      <div style={kaart}>
-        <div style={kopstijl}>Eindcontrole</div>
-        {checklist.map((c) => (
-          <div key={c.key} style={{ padding: "9px 0", borderTop: `1px solid ${RAND}` }}>
-            {c.vast
-              ? <div style={{ fontSize: 13.5, fontWeight: 600 }}>{c.naam}</div>
-              : <div style={{ display: "flex", gap: 6 }}><input value={c.naam} onChange={(e) => updCheck(c.key, "naam", e.target.value)} placeholder="eigen controlepunt" style={inpG} /><button onClick={() => setChecklist((cs) => cs.filter((x) => x.key !== c.key))} style={{ border: "none", background: "transparent", color: GRIJS, fontSize: 18, cursor: "pointer" }}>×</button></div>}
-            <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
-              <button onClick={() => updCheck(c.key, "status", c.status === "goed" ? "" : "goed")} style={toggle(c.status === "goed", GROEN)}>Goed</button>
-              <button onClick={() => updCheck(c.key, "status", c.status === "afgekeurd" ? "" : "afgekeurd")} style={toggle(c.status === "afgekeurd", ROOD)}>Afgekeurd</button>
-            </div>
-            {c.status === "afgekeurd" && <input value={c.notitie} onChange={(e) => updCheck(c.key, "notitie", e.target.value)} placeholder="wat is er mis?" style={{ ...inpG, marginTop: 6 }} />}
-          </div>
-        ))}
-        <button style={{ ...plus, marginTop: 10 }} onClick={() => setChecklist((cs) => [...cs, { key: key(), naam: "", status: "", notitie: "", vast: false }])}>+ Eigen controlepunt</button>
-      </div>
-    );
-  }
-
   if (laden) return <main style={wrap}><p style={{ color: GRIJS }}>Laden...</p></main>;
 
   const stapInfo = stapPopup ? STADIA.find((s) => s.id === stapPopup) : null;
@@ -679,146 +547,28 @@ function WerkplaatsApp({ ingelogd, onUitloggen }: { ingelogd: Monteur; onUitlogg
 
   // Alleen-lezen werkbon
   if (bekijk) {
-    const bTotaal = bekijkRegels.reduce((s, r) => s + (r.minuten || 0), 0);
-    const ingevuld = bekijkVelden.filter((v) => v.binnenkomst.trim() || v.afleveren.trim());
-    const checksIngevuld = bekijkChecklist.filter((c) => c.status);
-    const artIngevuld = bekijkArtikelen.filter((a) => a.naam.trim() && bedragNum(a.bedrag) > 0);
-    const artTotaal = artIngevuld.reduce((s, a) => s + bedragNum(a.bedrag), 0);
-    const bPct = STADIA.filter((s) => bekijkVoortgang.some((x) => x.stap === s.id)).reduce((m, s) => Math.max(m, s.pct), 0);
     return (
-      <main style={wrap}>
-        <button onClick={() => setBekijk(null)} style={{ border: "none", background: "transparent", color: GROEN, fontWeight: 700, fontSize: 14, cursor: "pointer", padding: "4px 0", marginBottom: 6 }}>← Terug naar klussen</button>
-
-        <div style={kaart}>
-          <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
-            <span style={{ display: "inline-block", fontSize: 11, fontWeight: 700, color: GRIJS, background: BG, border: `1px solid ${RAND}`, borderRadius: 999, padding: "3px 10px" }}>Alleen lezen</span>
-            {bekijkRetour && bekijkRetour.is && <span style={{ display: "inline-block", fontSize: 11, fontWeight: 800, color: "#fff", background: ROOD, borderRadius: 999, padding: "3px 10px" }}>RETOUR</span>}
-          </div>
-          <div style={{ fontSize: 28, fontWeight: 800, color: GROEN, letterSpacing: 0.5, lineHeight: 1.1 }}>{bekijk.nummer}</div>
-          <div style={{ fontSize: 21, fontWeight: 700, marginTop: 4 }}>{bekijk.klant}</div>
-          {bekijk.voertuig && <div style={{ fontSize: 13.5, color: GRIJS, marginTop: 8 }}>{bekijk.voertuig}</div>}
-          {bekijk.klacht && <div style={{ fontSize: 14, lineHeight: 1.45, background: GROEN_BG, color: GROEN, borderRadius: 10, padding: "12px 14px", marginTop: 10 }}><span style={{ fontWeight: 800 }}>Klacht: </span>{bekijk.klacht}</div>}
-          {bekijkRetour && bekijkRetour.is && bekijkRetour.reden && <div style={{ fontSize: 13.5, lineHeight: 1.45, background: ROOD_BG, color: ROOD, borderRadius: 10, padding: "12px 14px", marginTop: 10 }}><span style={{ fontWeight: 800 }}>Reden retour: </span>{bekijkRetour.reden}</div>}
-        </div>
-
-        {bekijkLaden && <div style={{ ...kaart, color: GRIJS }}>Werkbon laden...</div>}
-
-        <div style={kaart}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-            <span style={kopstijl}>Voortgang</span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: GROEN }}>{bPct}%</span>
-          </div>
-          <div style={{ height: 8, background: GROEN_BG, borderRadius: 999, overflow: "hidden", margin: "0 0 10px" }}>
-            <div style={{ height: "100%", width: `${bPct}%`, background: GROEN, borderRadius: 999 }} />
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-            {STADIA.map((s) => {
-              const v = bekijkVoortgang.find((x) => x.stap === s.id);
-              const done = !!v;
-              return (
-                <div key={s.id} style={{ border: `1px solid ${done ? GROEN : RAND}`, background: done ? GROEN : "#fff", color: done ? "#fff" : GRIJS, borderRadius: 8, padding: "7px 10px", fontSize: 11.5, fontWeight: 700 }}>
-                  {done ? "✓ " : ""}{s.kort}{done && v.gedaan_op ? ` · ${datumKort(v.gedaan_op)}` : ""}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div style={kaart}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-            <span style={kopstijl}>Geschreven tijd</span>
-            <span style={{ fontWeight: 700 }}>Totaal {duur(bTotaal)}</span>
-          </div>
-          {bekijkRegels.length === 0 && <div style={{ fontSize: 13, color: GRIJS }}>Nog geen tijd geschreven.</div>}
-          {bekijkRegels.map((r) => (
-            <div key={r.id} style={{ padding: "7px 0", borderTop: `1px solid ${RAND}` }}>
-              <div style={{ fontSize: 14, fontWeight: 600 }}>{r.monteur_naam} · {duur(r.minuten)}</div>
-              {r.aangemaakt_op && <div style={{ fontSize: 11, color: GRIJS, marginTop: 1 }}>{datumStempel(r.aangemaakt_op)}</div>}
-              {r.notitie && <div style={{ fontSize: 12.5, color: GRIJS, marginTop: 1 }}>{r.notitie}</div>}
-            </div>
-          ))}
-        </div>
-
-        {SECTIES.map((sec) => {
-          const lijst = ingevuld.filter((v) => catVan(v.veld_type) === sec.cat).sort((a, b) => a.positie - b.positie);
-          if (lijst.length === 0) return null;
-          return (
-            <div key={sec.cat} style={kaart}>
-              <div style={kopstijl}>{sec.titel}</div>
-              {lijst.map((v) => (
-                <div key={v.key} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "7px 0", borderTop: `1px solid ${RAND}` }}>
-                  <span style={{ fontSize: 13.5, fontWeight: 600 }}>{v.positie > 1 ? `${v.label} ${v.positie}` : v.label}{v.eenheid ? ` (${v.eenheid})` : ""}</span>
-                  <span style={{ fontSize: 13.5, color: GRIJS, textAlign: "right" }}>{v.binnenkomst}{v.binnenkomst && v.afleveren ? "  →  " : ""}{v.afleveren}</span>
-                </div>
-              ))}
-            </div>
-          );
-        })}
-
-        {artIngevuld.length > 0 && (
-          <div style={kaart}>
-            <div style={kopstijl}>Extra artikelen</div>
-            {artIngevuld.map((a) => (
-              <div key={a.key} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "7px 0", borderTop: `1px solid ${RAND}` }}>
-                <span style={{ fontSize: 13.5 }}>{a.naam}</span>
-                <span style={{ fontSize: 13.5, fontWeight: 600 }}>{euro(bedragNum(a.bedrag))}</span>
-              </div>
-            ))}
-            <div style={{ display: "flex", justifyContent: "space-between", borderTop: `1px solid ${RAND}`, marginTop: 6, paddingTop: 8, fontSize: 13.5 }}>
-              <span style={{ fontWeight: 700 }}>Totaal extra</span>
-              <span style={{ fontWeight: 700 }}>{euro(artTotaal)}</span>
-            </div>
-          </div>
-        )}
-
-        {bekijkOpmerking.trim() && (
-          <div style={kaart}>
-            <div style={kopstijl}>Opmerkingen</div>
-            <div style={{ fontSize: 13.5, lineHeight: 1.5, whiteSpace: "pre-wrap" }}>{bekijkOpmerking}</div>
-          </div>
-        )}
-
-        <div style={kaart}>
-          <div style={kopstijl}>Eindcontrole</div>
-          {checksIngevuld.length === 0 && <div style={{ fontSize: 13, color: GRIJS }}>Nog niet ingevuld.</div>}
-          {checksIngevuld.map((c) => (
-            <div key={c.key} style={{ padding: "8px 0", borderTop: `1px solid ${RAND}` }}>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-                <span style={{ fontSize: 13.5 }}>{c.naam}</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: c.status === "goed" ? GROEN : ROOD, whiteSpace: "nowrap" }}>{c.status === "goed" ? "Goed" : "Afgekeurd"}</span>
-              </div>
-              {c.status === "afgekeurd" && c.notitie && <div style={{ fontSize: 12.5, color: ROOD, marginTop: 3 }}>{c.notitie}</div>}
-            </div>
-          ))}
-        </div>
-
-        {bekijkFotos.length > 0 && (
-          <div style={kaart}>
-            <div style={kopstijl}>Foto's</div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {bekijkFotos.map((f) => (
-                <a key={f.id} href={f.url} target="_blank" rel="noreferrer">
-                  <img src={f.url} alt="" style={{ width: 84, height: 84, objectFit: "cover", borderRadius: 8, border: `1px solid ${RAND}` }} />
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {bekijkLog.length > 0 && (
-          <div style={kaart}>
-            <div style={kopstijl}>Logboek (wie deed wat)</div>
-            {bekijkLog.map((l, i) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", gap: 10, padding: "6px 0", borderTop: `1px solid ${RAND}` }}>
-                <span style={{ fontSize: 12.5 }}>{l.monteur_naam || "Onbekend"} · {l.actie}{l.detail ? ` (${l.detail})` : ""}</span>
-                <span style={{ fontSize: 12, color: GRIJS, whiteSpace: "nowrap" }}>{datumTijd(l.gedaan_op)}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div style={{ height: 20 }} />
-      </main>
+      <WerkbonBekijk
+        bekijk={bekijk}
+        onTerug={() => setBekijk(null)}
+        bekijkLaden={bekijkLaden}
+        bekijkVelden={bekijkVelden}
+        bekijkChecklist={bekijkChecklist}
+        bekijkArtikelen={bekijkArtikelen}
+        bekijkOpmerking={bekijkOpmerking}
+        bekijkRetour={bekijkRetour}
+        bekijkVoortgang={bekijkVoortgang}
+        bekijkFotos={bekijkFotos}
+        bekijkRegels={bekijkRegels}
+        bekijkLog={bekijkLog}
+        STADIA={STADIA}
+        SECTIES={SECTIES}
+        catVan={catVan}
+        bedragNum={bedragNum}
+        wrap={wrap}
+        kaart={kaart}
+        kopstijl={kopstijl}
+      />
     );
   }
 
@@ -1032,11 +782,11 @@ function WerkplaatsApp({ ingelogd, onUitloggen }: { ingelogd: Monteur; onUitlogg
 
           {limiet && <div style={{ ...kaart, background: GOUD_BG, borderColor: GOUD, color: "#6b5410", fontSize: 13.5 }}>{limiet}</div>}
 
-          {blokTijd()}
-          {blokAfstelling()}
-          {blokArtikelen()}
-          {blokOpmerkingen()}
-          {blokEindcontrole()}
+          <BlokTijd handMin={handMin} setHandMin={setHandMin} notitie={notitie} setNotitie={setNotitie} monteur={monteur} handmatig={handmatig} totaal={totaal} regels={regels} verwijder={verwijder} klusStart={klusStart} kaart={kaart} kopstijl={kopstijl} inp={inp} />
+          <BlokAfstelling velden={velden} updVeld={updVeld} verwijderVeld={verwijderVeld} voegVeldToe={voegVeldToe} SECTIES={SECTIES} VELD_TYPES={VELD_TYPES} EIGEN={EIGEN} cfgVan={cfgVan} statusKleur={statusKleur} kaart={kaart} kopstijl={kopstijl} inpG={inpG} plus={plus} toggle={toggle} />
+          <BlokArtikelen artikelen={artikelen} artikelenTotaal={artikelenTotaal} updArtikel={updArtikel} onVerwijder={(k) => setArtikelen((as) => as.filter((x) => x.key !== k))} onToevoegen={() => setArtikelen((as) => [...as, { key: key(), naam: "", bedrag: "", vast: false }])} kaart={kaart} kopstijl={kopstijl} inpG={inpG} plus={plus} />
+          <BlokOpmerkingen opmerking={opmerking} setOpmerking={setOpmerking} kaart={kaart} kopstijl={kopstijl} inp={inp} />
+          <BlokEindcontrole checklist={checklist} updCheck={updCheck} onVerwijder={(k) => setChecklist((cs) => cs.filter((x) => x.key !== k))} onToevoegen={() => setChecklist((cs) => [...cs, { key: key(), naam: "", status: "", notitie: "", vast: false }])} kaart={kaart} kopstijl={kopstijl} inpG={inpG} plus={plus} toggle={toggle} />
 
           <button onClick={() => bewaarWerkbon(false)} disabled={bezig} style={knop(opgeslagen ? GOUD : GROEN)}>
             {bezig ? "Opslaan..." : opgeslagen ? "Werkbon opgeslagen" : "Werkbon opslaan"}
