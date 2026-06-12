@@ -5,20 +5,12 @@
 
 import { useEffect, useState, CSSProperties } from "react";
 import { supabase } from "@/lib/supabase";
+import { GROEN, GROEN_BG, ROOD, ROOD_BG, TEKST, GRIJS } from "@/lib/theme";
+import { euro, duur, datumKort, datumTijd, datumStempel } from "@/lib/format";
+import { Veld, Check, Artikel, Regel } from "@/lib/types";
 
-const GROEN = "#1a3c2e";
-const GROEN_BG = "#e7f0ea";
-const ROOD = "#a23b2e";
-const ROOD_BG = "#f5e7e0";
-const TEKST = "#23211c";
-const GRIJS = "#7a7770";
 const RAND = "#e7e3da";
 const BG = "#f4f5f1";
-
-type Veld = { key: string; veld_type: string; label: string; eenheid: string; positie: number; binnenkomst: string; afleveren: string };
-type Check = { key: string; naam: string; status: string; notitie: string; vast: boolean };
-type Artikel = { key: string; naam: string; bedrag: string; vast: boolean };
-type Regel = { id: string; monteur_naam: string; minuten: number; notitie: string | null; aangemaakt_op: string };
 
 const VELD_TYPES: { type: string; label: string; eenheid: string; categorie: string }[] = [
   { type: "vlotterhoogte",        label: "Vlotterhoogte",               eenheid: "mm",           categorie: "afstelling" },
@@ -64,33 +56,6 @@ const key = () => `v${_k++}`;
 const cfgVan = (t: string) => VELD_TYPES.find((x) => x.type === t);
 const catVan = (t: string) => cfgVan(t)?.categorie || (t === "eigen_sproeier" ? "sproeier" : "afstelling");
 
-function euro(n: number) {
-  return new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
-}
-function duur(min: number) {
-  const u = Math.floor(min / 60), m = min % 60;
-  if (u && m) return `${u}u ${m}m`;
-  if (u) return `${u}u`;
-  return `${m}m`;
-}
-function datumKort(d: string) {
-  if (!d) return "";
-  const dt = new Date(d);
-  if (isNaN(dt.getTime())) return "";
-  return dt.toLocaleDateString("nl-NL", { day: "numeric", month: "short" });
-}
-function datumTijd(d: string) {
-  if (!d) return "";
-  const dt = new Date(d);
-  if (isNaN(dt.getTime())) return "";
-  return dt.toLocaleString("nl-NL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-}
-function datumStempel(d: string) {
-  if (!d) return "";
-  const dt = new Date(d);
-  if (isNaN(dt.getTime())) return "";
-  return dt.toLocaleString("nl-NL", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
-}
 function bedragNum(s: string) {
   const n = parseFloat((s || "").replace(",", ".").replace(/[^0-9.]/g, ""));
   return isNaN(n) ? 0 : n;

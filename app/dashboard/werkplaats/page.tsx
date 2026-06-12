@@ -3,14 +3,9 @@
 // Werkplaats-managementoverzicht. app/dashboard/werkplaats/page.tsx
 
 import { useEffect, useState, CSSProperties } from "react";
+import { GROEN, GOUD, ROOD, ROOD_BG, TEKST, GRIJS } from "@/lib/theme";
+import { datumKort } from "@/lib/format";
 
-const GROEN = "#1a3c2e";
-const GOUD = "#b8962e";
-const ROOD = "#a23b2e";
-const ROOD_BG = "#f5e7e0";
-const GROEN_BG = "#e7f0ea";
-const TEKST = "#23211c";
-const GRIJS = "#7a7770";
 const RAND = "#e7e3da";
 const BG = "#f4f5f1";
 
@@ -26,12 +21,6 @@ function uur(min: number | null) {
   if (u && m) return `${u}u ${m}m`;
   if (u) return `${u}u`;
   return `${m}m`;
-}
-function datumKort(d: string) {
-  if (!d) return "";
-  const dt = new Date(d);
-  if (isNaN(dt.getTime())) return "";
-  return dt.toLocaleDateString("nl-NL", { day: "numeric", month: "short" });
 }
 function datumVan(ms: number | null) {
   if (!ms) return "";

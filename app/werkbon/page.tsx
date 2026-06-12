@@ -3,13 +3,8 @@
 // Klantpagina, Volg je revisie. app/werkbon/page.tsx
 
 import { useEffect, useState, CSSProperties } from "react";
+import { GROEN, ROOD, TEKST, GRIJS } from "@/lib/theme";
 
-const GROEN = "#1a3c2e";
-const GROEN_BG = "#e7f0ea";
-const GOUD = "#b8962e";
-const ROOD = "#a23b2e";
-const TEKST = "#23211c";
-const GRIJS = "#7a7770";
 const RAND = "#e7e3da";
 const BG = "#f4f5f1";
 

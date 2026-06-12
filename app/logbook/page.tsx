@@ -3,12 +3,9 @@
 // Revisio CEO dashboard. app/dashboard/page.tsx
 
 import { useEffect, useState } from "react";
+import { GROEN, GOUD, TEKST, GRIJS } from "@/lib/theme";
 
-const GROEN = "#1a3c2e";
-const GOUD = "#b8962e";
 const BLAUW = "#185fa5";
-const TEKST = "#23211c";
-const GRIJS = "#7a7770";
 const RAND = "#e7e3da";
 const BG = "#f7f6f2";
 
