@@ -890,6 +890,7 @@ export default function WerkplaatsPagina() {
   const [bezig, setBezig] = useState(false);
   const [fout, setFout] = useState("");
   const [verstuurd, setVerstuurd] = useState(false);
+  const [code, setCode] = useState("");
   const [klaar, setKlaar] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -934,14 +935,25 @@ export default function WerkplaatsPagina() {
     if (!adres) return;
     setBezig(true); setFout("");
     const { error } = await supabase.auth.signInWithOtp({ email: adres, options: { emailRedirectTo: `${window.location.origin}/werkbonnen` } });
-    if (error) setFout("Inloglink versturen mislukt: " + error.message);
+    if (error) setFout("Versturen mislukt: " + error.message);
     else setVerstuurd(true);
     setBezig(false);
   }
 
+  // Inloggen met de 6-cijferige code uit de mail (geen link klikken nodig).
+  async function bevestigCode() {
+    const c = code.replace(/\D/g, "");
+    if (c.length < 6) return;
+    setBezig(true); setFout("");
+    const { error } = await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token: c, type: "email" });
+    if (error) setFout("Code klopt niet of is verlopen. Vraag eventueel een nieuwe aan.");
+    setBezig(false);
+    // Bij succes pikt onAuthStateChange de sessie op en logt je in.
+  }
+
   async function uitloggen() {
     await supabase.auth.signOut();
-    setIngelogd(null); setEmail(""); setVerstuurd(false); setFout("");
+    setIngelogd(null); setEmail(""); setVerstuurd(false); setCode(""); setFout("");
   }
 
   const wrapL: CSSProperties = { minHeight: "100vh", background: BG, color: TEKST, fontFamily: "system-ui, -apple-system, sans-serif", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 };
@@ -961,17 +973,29 @@ export default function WerkplaatsPagina() {
 
         {verstuurd ? (
           <>
-            <div style={{ fontSize: 13.5, color: TEKST, lineHeight: 1.5, margin: "12px 0 18px" }}>
-              We hebben een inloglink gestuurd naar <span style={{ fontWeight: 700 }}>{email.trim()}</span>. Open je mail en tik op de link om in te loggen.
+            <div style={{ fontSize: 13.5, color: TEKST, lineHeight: 1.5, margin: "12px 0 14px" }}>
+              We hebben een <span style={{ fontWeight: 700 }}>inlogcode</span> gestuurd naar <span style={{ fontWeight: 700 }}>{email.trim()}</span>. Typ de code hieronder in. (Op de computer kun je ook gewoon de link in de mail openen.)
             </div>
+            <input
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              onKeyDown={(e) => { if (e.key === "Enter") bevestigCode(); }}
+              placeholder="000000"
+              style={{ width: "100%", boxSizing: "border-box", border: `1.5px solid ${RAND}`, borderRadius: 10, padding: "14px", fontSize: 22, letterSpacing: 8, textAlign: "center", marginBottom: 12 }}
+            />
             {fout && <div style={{ fontSize: 13, color: ROOD, marginBottom: 12 }}>{fout}</div>}
-            <button onClick={() => { setVerstuurd(false); setFout(""); }} style={{ width: "100%", background: "#fff", color: GROEN, border: `1px solid ${RAND}`, borderRadius: 12, padding: "13px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+            <button disabled={bezig || code.length < 6} onClick={bevestigCode} style={{ width: "100%", background: code.length >= 6 ? GROEN : "#b9c2bc", color: "#fff", border: "none", borderRadius: 12, padding: "15px", fontSize: 16, fontWeight: 700, cursor: code.length >= 6 ? "pointer" : "default", marginBottom: 10 }}>
+              {bezig ? "Bezig..." : "Inloggen"}
+            </button>
+            <button onClick={() => { setVerstuurd(false); setCode(""); setFout(""); }} style={{ width: "100%", background: "#fff", color: GROEN, border: `1px solid ${RAND}`, borderRadius: 12, padding: "13px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
               Ander e-mailadres gebruiken
             </button>
           </>
         ) : (
           <>
-            <div style={{ fontSize: 13.5, color: GRIJS, marginBottom: 18 }}>Vul je e-mailadres in, dan sturen we je een inloglink.</div>
+            <div style={{ fontSize: 13.5, color: GRIJS, marginBottom: 18 }}>Vul je e-mailadres in, dan sturen we je een inlogcode.</div>
             <input
               type="email"
               inputMode="email"
@@ -984,7 +1008,7 @@ export default function WerkplaatsPagina() {
             />
             {fout && <div style={{ fontSize: 13, color: ROOD, marginBottom: 12 }}>{fout}</div>}
             <button disabled={bezig || !email.trim()} onClick={inloggen} style={{ width: "100%", background: email.trim() ? GROEN : "#b9c2bc", color: "#fff", border: "none", borderRadius: 12, padding: "15px", fontSize: 16, fontWeight: 700, cursor: email.trim() ? "pointer" : "default" }}>
-          {bezig ? "Versturen..." : "Stuur inloglink"}
+          {bezig ? "Versturen..." : "Stuur inlogcode"}
         </button>
           </>
         )}

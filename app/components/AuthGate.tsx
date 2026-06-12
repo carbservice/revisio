@@ -18,6 +18,7 @@ export default function AuthGate({ requireAdmin = false, children }: { requireAd
   const [bezig, setBezig] = useState(false);
   const [fout, setFout] = useState("");
   const [verstuurd, setVerstuurd] = useState(false);
+  const [code, setCode] = useState("");
 
   async function check(authEmail: string | undefined | null) {
     if (!authEmail) { setStatus("uit"); return; }
@@ -53,9 +54,18 @@ export default function AuthGate({ requireAdmin = false, children }: { requireAd
     setBezig(false);
   }
 
+  async function bevestigCode() {
+    const c = code.replace(/\D/g, "");
+    if (c.length < 6) return;
+    setBezig(true); setFout("");
+    const { error } = await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token: c, type: "email" });
+    if (error) setFout("Code klopt niet of is verlopen. Vraag eventueel een nieuwe aan.");
+    setBezig(false);
+  }
+
   async function uitloggen() {
     await supabase.auth.signOut();
-    setEmail(""); setVerstuurd(false); setStatus("uit");
+    setEmail(""); setCode(""); setVerstuurd(false); setStatus("uit");
   }
 
   if (status === "ok") return <>{children}</>;
@@ -87,15 +97,18 @@ export default function AuthGate({ requireAdmin = false, children }: { requireAd
         <h1 style={{ fontSize: 22, fontWeight: 800, color: GROEN, margin: "6px 0 4px" }}>Inloggen</h1>
         {verstuurd ? (
           <>
-            <p style={{ fontSize: 13.5, color: TEKST, lineHeight: 1.5, margin: "12px 0 18px" }}>We hebben een inloglink gestuurd naar <span style={{ fontWeight: 700 }}>{email.trim()}</span>. Open je mail en tik op de link.</p>
-            <button onClick={() => { setVerstuurd(false); setFout(""); }} style={{ width: "100%", background: "#fff", color: GROEN, border: `1px solid ${RAND}`, borderRadius: 12, padding: "13px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Ander e-mailadres</button>
+            <p style={{ fontSize: 13.5, color: TEKST, lineHeight: 1.5, margin: "12px 0 14px" }}>We hebben een <span style={{ fontWeight: 700 }}>inlogcode</span> gestuurd naar <span style={{ fontWeight: 700 }}>{email.trim()}</span>. Typ de code hieronder in (of open op de computer de link in de mail).</p>
+            <input inputMode="numeric" autoComplete="one-time-code" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))} onKeyDown={(e) => { if (e.key === "Enter") bevestigCode(); }} placeholder="000000" style={{ width: "100%", boxSizing: "border-box", border: `1.5px solid ${RAND}`, borderRadius: 10, padding: "14px", fontSize: 22, letterSpacing: 8, textAlign: "center", marginBottom: 12 }} />
+            {fout && <div style={{ fontSize: 13, color: ROOD, marginBottom: 12 }}>{fout}</div>}
+            <button disabled={bezig || code.length < 6} onClick={bevestigCode} style={{ width: "100%", background: code.length >= 6 ? GROEN : "#b9c2bc", color: "#fff", border: "none", borderRadius: 12, padding: "15px", fontSize: 16, fontWeight: 700, cursor: code.length >= 6 ? "pointer" : "default", marginBottom: 10 }}>{bezig ? "Bezig..." : "Inloggen"}</button>
+            <button onClick={() => { setVerstuurd(false); setCode(""); setFout(""); }} style={{ width: "100%", background: "#fff", color: GROEN, border: `1px solid ${RAND}`, borderRadius: 12, padding: "13px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Ander e-mailadres</button>
           </>
         ) : (
           <>
-            <p style={{ fontSize: 13.5, color: GRIJS, margin: "8px 0 16px" }}>Alleen voor beheerders. Vul je e-mailadres in voor een inloglink.</p>
+            <p style={{ fontSize: 13.5, color: GRIJS, margin: "8px 0 16px" }}>Alleen voor beheerders. Vul je e-mailadres in voor een inlogcode.</p>
             <input type="email" inputMode="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") inloggen(); }} placeholder="naam@bedrijf.nl" style={{ width: "100%", boxSizing: "border-box", border: `1.5px solid ${RAND}`, borderRadius: 10, padding: "14px", fontSize: 16, marginBottom: 12 }} />
             {fout && <div style={{ fontSize: 13, color: ROOD, marginBottom: 12 }}>{fout}</div>}
-            <button disabled={bezig || !email.trim()} onClick={inloggen} style={{ width: "100%", background: email.trim() ? GROEN : "#b9c2bc", color: "#fff", border: "none", borderRadius: 12, padding: "15px", fontSize: 16, fontWeight: 700, cursor: email.trim() ? "pointer" : "default" }}>{bezig ? "Versturen..." : "Stuur inloglink"}</button>
+            <button disabled={bezig || !email.trim()} onClick={inloggen} style={{ width: "100%", background: email.trim() ? GROEN : "#b9c2bc", color: "#fff", border: "none", borderRadius: 12, padding: "15px", fontSize: 16, fontWeight: 700, cursor: email.trim() ? "pointer" : "default" }}>{bezig ? "Versturen..." : "Stuur inlogcode"}</button>
           </>
         )}
       </div>
