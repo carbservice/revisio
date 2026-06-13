@@ -945,12 +945,12 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
           </button>
           <div style={{ fontSize: 12, color: GRIJS, textAlign: "center", marginTop: 8 }}>{autoMelding || "De werkbon slaat zichzelf automatisch op terwijl je werkt."}</div>
 
-          <div style={{ height: 100 }} />
+          <div style={{ height: "calc(100px + env(safe-area-inset-bottom))" }} />
         </>
       )}
 
       {open && (
-        <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 30, background: "#fff", borderTop: `1px solid ${RAND}`, padding: "10px 14px", boxShadow: "0 -4px 16px rgba(0,0,0,0.08)" }}>
+        <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 30, background: "#fff", borderTop: `1px solid ${RAND}`, padding: "10px 14px", paddingBottom: "calc(10px + env(safe-area-inset-bottom))", boxShadow: "0 -4px 16px rgba(0,0,0,0.08)" }}>
           <div style={{ maxWidth: 520, margin: "0 auto" }}>
             {!monteur && <div style={{ fontSize: 12, color: ROOD, textAlign: "center", marginBottom: 6 }}>Kies bovenaan je naam om de timer te gebruiken.</div>}
             {start == null
