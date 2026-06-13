@@ -170,6 +170,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
   const [bulkMelding, setBulkMelding] = useState("");
   const [deelLink, setDeelLink] = useState("");
   const [gekopieerd, setGekopieerd] = useState(false);
+  const [carburateur, setCarburateur] = useState(1); // welke carburateur van de offerte (technische werkbon)
   const [deelCode, setDeelCode] = useState("");
   const [lightbox, setLightbox] = useState<{ fotos: string[]; start: number } | null>(null);
   const [vulPct, setVulPct] = useState(0);
@@ -282,16 +283,24 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
     else setKlusStart(null);
   }
 
-  async function laadWerkbon(klusId: string) {
-    const { data: m } = await supabase.from("werkbon_meting").select("moment, veld_type, label, positie, waarde, eenheid").eq("klus_id", klusId);
+  // De technische werkbon (afstelling, sproeiers, checklist, artikelen) staat
+  // per carburateur apart, zodat twee monteurs op dezelfde offerte elkaar niet
+  // overschrijven. Carburateur 1 gebruikt de gewone klus-id, carburateur 2 een
+  // afgeleide sleutel (#2). Stadia en foto's blijven gedeeld (gecombineerde
+  // voortgang voor de klant).
+  const werkbonSleutel = (klusId: string, carbNr: number) => (carbNr === 2 ? `${klusId}#2` : klusId);
+
+  async function laadWerkbon(klusId: string, carbNr = 1) {
+    const sleutel = werkbonSleutel(klusId, carbNr);
+    const { data: m } = await supabase.from("werkbon_meting").select("moment, veld_type, label, positie, waarde, eenheid").eq("klus_id", sleutel);
     setVelden(uitMetingen(m || []));
-    const { data: c } = await supabase.from("werkbon_checklist").select("check_naam, status, notitie").eq("klus_id", klusId);
+    const { data: c } = await supabase.from("werkbon_checklist").select("check_naam, status, notitie").eq("klus_id", sleutel);
     setChecklist(uitChecklist(c || []));
-    const { data: a } = await supabase.from("werkbon_artikelen").select("naam, bedrag").eq("klus_id", klusId);
+    const { data: a } = await supabase.from("werkbon_artikelen").select("naam, bedrag").eq("klus_id", sleutel);
     setArtikelen(uitArtikelen(a || []));
-    const { data: o } = await supabase.from("werkbon_opmerking").select("tekst").eq("klus_id", klusId).limit(1);
+    const { data: o } = await supabase.from("werkbon_opmerking").select("tekst").eq("klus_id", sleutel).limit(1);
     setOpmerking(o && o[0] ? (o[0].tekst || "") : "");
-    const { data: ret } = await supabase.from("werkbon_retour").select("is_retour, reden").eq("klus_id", klusId).limit(1);
+    const { data: ret } = await supabase.from("werkbon_retour").select("is_retour, reden").eq("klus_id", sleutel).limit(1);
     if (ret && ret[0]) { setRetour(!!ret[0].is_retour); setRetourReden(ret[0].reden || ""); }
     else { setRetour(false); setRetourReden(""); }
   }
@@ -308,7 +317,18 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
     setOpen(k); setPopup(true); setTimerPopup(false); setHandMin(""); setNotitie(""); setOpgeslagen(false); setLimiet(""); setAutoMelding("");
     setDiagnoseLijst([]); setDiagTekst(""); setDiagFout("");
     setStapPopup(null); setStapNotitie(""); setFotoMelding(""); setDeelLink("");
-    laadKlusTijd(k.id); laadWerkbon(k.id); laadVoortgang(k.id);
+    setCarburateur(1);
+    laadKlusTijd(k.id); laadWerkbon(k.id, 1); laadVoortgang(k.id);
+  }
+
+  // Wisselen tussen carburateur 1 en 2: laad de technische werkbon van die
+  // carburateur en voorkom dat de pending auto-opslag de net geladen data wegschrijft.
+  function wisselCarburateur(n: number) {
+    if (!open || n === carburateur) return;
+    if (autoTimer.current) clearTimeout(autoTimer.current);
+    eersteLaad.current = true;
+    setCarburateur(n);
+    laadWerkbon(open.id, n);
   }
 
   async function openBekijk(k: Klus) {
@@ -609,30 +629,31 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
   async function bewaarWerkbon(auto = false) {
     if (!open) return;
     if (!auto) setBezig(true);
+    const sleutel = werkbonSleutel(open.id, carburateur); // technische werkbon per carburateur
     try {
-      await supabase.from("werkbon_meting").delete().eq("klus_id", open.id);
+      await supabase.from("werkbon_meting").delete().eq("klus_id", sleutel);
       const rows: any[] = [];
       velden.forEach((v) => {
         const naam = v.label || v.veld_type;
-        if (v.binnenkomst.trim()) rows.push({ klus_id: open.id, moment: "binnenkomst", veld_type: v.veld_type, label: naam, positie: v.positie, waarde: v.binnenkomst.trim(), eenheid: v.eenheid || null });
-        if (v.afleveren.trim()) rows.push({ klus_id: open.id, moment: "afleveren", veld_type: v.veld_type, label: naam, positie: v.positie, waarde: v.afleveren.trim(), eenheid: v.eenheid || null });
+        if (v.binnenkomst.trim()) rows.push({ klus_id: sleutel, moment: "binnenkomst", veld_type: v.veld_type, label: naam, positie: v.positie, waarde: v.binnenkomst.trim(), eenheid: v.eenheid || null });
+        if (v.afleveren.trim()) rows.push({ klus_id: sleutel, moment: "afleveren", veld_type: v.veld_type, label: naam, positie: v.positie, waarde: v.afleveren.trim(), eenheid: v.eenheid || null });
       });
       if (rows.length) await supabase.from("werkbon_meting").insert(rows);
 
-      await supabase.from("werkbon_checklist").delete().eq("klus_id", open.id);
-      const crows = checklist.filter((c) => c.naam.trim() && (c.status || c.notitie.trim())).map((c) => ({ klus_id: open.id, check_naam: c.naam.trim(), status: c.status || null, notitie: c.notitie.trim() || null }));
+      await supabase.from("werkbon_checklist").delete().eq("klus_id", sleutel);
+      const crows = checklist.filter((c) => c.naam.trim() && (c.status || c.notitie.trim())).map((c) => ({ klus_id: sleutel, check_naam: c.naam.trim(), status: c.status || null, notitie: c.notitie.trim() || null }));
       if (crows.length) await supabase.from("werkbon_checklist").insert(crows);
 
-      await supabase.from("werkbon_artikelen").delete().eq("klus_id", open.id);
-      const arows = artikelen.filter((a) => a.naam.trim() && bedragNum(a.bedrag) > 0).map((a) => ({ klus_id: open.id, naam: a.naam.trim(), bedrag: bedragNum(a.bedrag), monteur_naam: monteur?.naam || null }));
+      await supabase.from("werkbon_artikelen").delete().eq("klus_id", sleutel);
+      const arows = artikelen.filter((a) => a.naam.trim() && bedragNum(a.bedrag) > 0).map((a) => ({ klus_id: sleutel, naam: a.naam.trim(), bedrag: bedragNum(a.bedrag), monteur_naam: monteur?.naam || null }));
       if (arows.length) await supabase.from("werkbon_artikelen").insert(arows);
 
-      await supabase.from("werkbon_opmerking").upsert({ klus_id: open.id, tekst: opmerking.trim() || null, monteur_naam: monteur?.naam || null, bijgewerkt_op: new Date().toISOString() });
+      await supabase.from("werkbon_opmerking").upsert({ klus_id: sleutel, tekst: opmerking.trim() || null, monteur_naam: monteur?.naam || null, bijgewerkt_op: new Date().toISOString() });
 
       if (retour) {
-        await supabase.from("werkbon_retour").upsert({ klus_id: open.id, is_retour: true, reden: retourReden.trim() || null, monteur_naam: monteur?.naam || null, gemarkeerd_op: new Date().toISOString() });
+        await supabase.from("werkbon_retour").upsert({ klus_id: sleutel, is_retour: true, reden: retourReden.trim() || null, monteur_naam: monteur?.naam || null, gemarkeerd_op: new Date().toISOString() });
       } else {
-        await supabase.from("werkbon_retour").delete().eq("klus_id", open.id);
+        await supabase.from("werkbon_retour").delete().eq("klus_id", sleutel);
       }
 
       log(open.id, auto ? "werkbon automatisch opgeslagen" : "werkbon opgeslagen");
@@ -836,6 +857,16 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
             <div style={{ fontSize: 28, fontWeight: 800, color: GROEN, letterSpacing: 0.5, lineHeight: 1.1 }}>{open.nummer}</div>
             <div style={{ fontSize: 21, fontWeight: 700, marginTop: 4 }}>{open.klant}</div>
             {open.voertuig && <div style={{ fontSize: 13.5, color: GRIJS, marginTop: 8 }}>{open.voertuig}</div>}
+
+            <div style={{ marginTop: 12, padding: 12, border: `1px solid ${RAND}`, borderRadius: 10, background: GROEN_BG }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: GROEN }}>Carburateur van deze offerte</div>
+              <div style={{ fontSize: 12, color: GRIJS, margin: "3px 0 9px" }}>Alleen nodig als er meerdere carburateurs op één offerte staan. Afstelling, sproeiers, checklist en artikelen worden per carburateur apart bewaard. Voortgang en foto&apos;s deel je samen.</div>
+              <div style={{ display: "flex", gap: 8 }}>
+                {[1, 2].map((n) => (
+                  <button key={n} onClick={() => wisselCarburateur(n)} style={{ flex: 1, border: `1.5px solid ${carburateur === n ? GROEN : RAND}`, background: carburateur === n ? GROEN : "#fff", color: carburateur === n ? "#fff" : TEKST, borderRadius: 8, padding: "9px 0", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Carburateur {n}</button>
+                ))}
+              </div>
+            </div>
 
             <div style={{ marginTop: 12, padding: 12, border: `1.5px solid ${retour ? ROOD : RAND}`, borderRadius: 10, background: retour ? ROOD_BG : "#fff" }}>
               <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
