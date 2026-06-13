@@ -42,6 +42,7 @@ function Inner() {
   const [lightbox, setLightbox] = useState<{ fotos: string[]; start: number } | null>(null);
   const [vul, setVul] = useState(0);
   const [centers, setCenters] = useState<number[]>([]);
+  const [replay, setReplay] = useState(0);
   const tijdlijnRef = useRef<HTMLDivElement | null>(null);
   const dotRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -49,12 +50,13 @@ function Inner() {
   // en vult onderweg de groene bolletjes. We meten de posities live (de kaarten
   // hebben wisselende hoogtes door foto's).
   useEffect(() => {
-    if (!data) return;
+    if (!data || replay === 0) return;
     let raf = 0;
     let start: number | null = null;
     let huidige = -1;
     STADIA.forEach((st, i) => { if (data.stappen.find((s) => s.stap === st.stap)) huidige = i; });
     if (huidige < 0) return;
+    setVul(0); // icoon terug naar boven, daarna rijdt hij weer naar beneden
     const tick = (ts: number) => {
       if (start == null) start = ts;
       const cont = tijdlijnRef.current;
@@ -71,6 +73,21 @@ function Inner() {
     };
     const to = setTimeout(() => { raf = requestAnimationFrame(tick); }, 500);
     return () => { clearTimeout(to); cancelAnimationFrame(raf); };
+  }, [data, replay]);
+
+  // Speel de rit opnieuw af telkens als de tijdlijn (opnieuw) in beeld komt,
+  // bijvoorbeeld bij terugscrollen. Zo komt de carburateur steeds weer mee.
+  useEffect(() => {
+    const el = tijdlijnRef.current;
+    if (!el) return;
+    let inBeeld = false;
+    const obs = new IntersectionObserver((entries) => {
+      const e = entries[0];
+      if (e.isIntersecting && !inBeeld) { inBeeld = true; setReplay((r) => r + 1); }
+      else if (!e.isIntersecting && inBeeld) { inBeeld = false; }
+    }, { threshold: 0.12 });
+    obs.observe(el);
+    return () => obs.disconnect();
   }, [data]);
 
   useEffect(() => {
@@ -181,20 +198,20 @@ function Inner() {
             </div>
           )}
 
-          {/* Voortgang als groot, vriendelijk percentage */}
-          <div style={{ marginTop: 28, background: "#fff", border: `1px solid ${RAND}`, borderRadius: 16, padding: "22px 20px", textAlign: "center", boxShadow: "0 6px 18px rgba(26,60,46,0.07)" }}>
+          {/* Voortgang als groot, vriendelijk percentage (compact) */}
+          <div style={{ marginTop: 24, background: "#fff", border: `1px solid ${RAND}`, borderRadius: 16, padding: "15px 20px", textAlign: "center", boxShadow: "0 6px 18px rgba(26,60,46,0.07)" }}>
             {klaar ? (
               <>
-                <div style={{ fontSize: 24, fontWeight: 700, color: GROEN }}>Je revisie is klaar.</div>
-                {data.monteur && <div style={{ fontSize: 16, color: GRIJS, marginTop: 8 }}>Uitgevoerd door {data.monteur}.</div>}
+                <div style={{ fontSize: 23, fontWeight: 700, color: GROEN }}>Je revisie is klaar.</div>
+                {data.monteur && <div style={{ fontSize: 15.5, color: GRIJS, marginTop: 5 }}>Uitgevoerd door {data.monteur}.</div>}
               </>
             ) : (
               <>
-                <div style={{ fontSize: 17, color: TEKST }}>Je revisie is momenteel op</div>
-                <div style={{ fontSize: 50, fontWeight: 700, color: GROEN_LICHT, lineHeight: 1.02, margin: "2px 0 0" }}>{pct}%</div>
-                <div style={{ fontSize: 16, color: GRIJS, marginTop: 2 }}>van de 100%</div>
-                <div style={{ fontSize: 17, color: TEKST, marginTop: 10 }}>We zijn er druk mee.</div>
-                {data.monteur && <div style={{ fontSize: 15.5, color: GRIJS, marginTop: 8 }}>Onder behandeling van {data.monteur}.</div>}
+                <div style={{ fontSize: 16, color: TEKST }}>Je revisie is momenteel op</div>
+                <div style={{ fontSize: 42, fontWeight: 700, color: GROEN_LICHT, lineHeight: 1.05 }}>{pct}%</div>
+                <div style={{ fontSize: 15, color: GRIJS }}>van de 100%</div>
+                <div style={{ fontSize: 16, color: TEKST, marginTop: 7 }}>We zijn er druk mee.</div>
+                {data.monteur && <div style={{ fontSize: 15, color: GRIJS, marginTop: 5 }}>Onder behandeling van {data.monteur}.</div>}
               </>
             )}
           </div>

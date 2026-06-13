@@ -176,6 +176,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
   const huidigPctRef = useRef(0);
   const rijdtRef = useRef(false);
   const rafRef = useRef(0);
+  const voortgangRef = useRef<HTMLDivElement | null>(null);
   const [klusStart, setKlusStart] = useState<{ naam: string; tijd: string } | null>(null);
 
   // Alleen-lezen weergave
@@ -423,13 +424,27 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
     rafRef.current = requestAnimationFrame(tick);
   }
 
-  // Bij het openen van een klus: het icoon loopt traag van 0 naar het huidige %.
+  // Bij het openen/sluiten van een klus: zet de balk terug op 0. De rit zelf
+  // start zodra de balk in beeld komt (zie de observer hieronder).
   useEffect(() => {
     cancelAnimationFrame(rafRef.current);
-    if (!open) { setVulPct(0); setRijdt(false); rijdtRef.current = false; return; }
-    setVulPct(0); setRijdt(true); rijdtRef.current = true;
-    const to = setTimeout(() => rijdNaar(0, huidigPctRef.current, 8500), 300);
-    return () => { clearTimeout(to); cancelAnimationFrame(rafRef.current); };
+    setVulPct(0); setRijdt(false); rijdtRef.current = false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open?.id]);
+
+  // Laat de carburateur (opnieuw) van 0 naar het huidige % rijden zodra de
+  // voortgangsbalk in beeld komt, ook bij terugscrollen.
+  useEffect(() => {
+    const el = voortgangRef.current;
+    if (!el || !open) return;
+    let inBeeld = false;
+    const obs = new IntersectionObserver((entries) => {
+      const e = entries[0];
+      if (e.isIntersecting && !inBeeld) { inBeeld = true; rijdNaar(0, huidigPctRef.current, 8500); }
+      else if (!e.isIntersecting && inBeeld) { inBeeld = false; }
+    }, { threshold: 0.4 });
+    obs.observe(el);
+    return () => obs.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open?.id]);
 
@@ -847,7 +862,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
             )}
           </div>
 
-          <div style={kaart}>
+          <div ref={voortgangRef} style={kaart}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
               <span style={kopstijl}>Voortgang</span>
             </div>
