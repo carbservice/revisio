@@ -158,34 +158,44 @@ function Inner() {
 
           <div style={{ fontSize: 23, fontWeight: 600, color: GROEN }}>{groet}{data.klant ? `, ${data.klant}` : ""}</div>
           <p style={{ fontSize: 16, lineHeight: 1.6, color: TEKST, marginTop: 8 }}>
-            Welkom bij het volgsysteem van je carburateur-revisie. Hieronder zie je precies waar we mee bezig zijn.
+            Welkom bij Revisio, de app waarin je ziet wat er met jouw carburateurrevisie gebeurt.
           </p>
 
-          <div style={{ marginTop: 24, fontSize: 18, color: TEKST }}>
-            Je offertenummer: <span style={{ fontWeight: 700, color: GROEN }}>{data.nummer}</span>
+          {/* Groot offertenummer als eerste blikvanger */}
+          <div style={{ marginTop: 22, background: GROEN_BG, border: `1px solid ${RAND}`, borderRadius: 16, padding: "16px 20px", textAlign: "center" }}>
+            <div style={labelStijl}>Je offertenummer</div>
+            <div style={{ fontSize: 38, fontWeight: 700, color: GROEN, letterSpacing: 0.5, lineHeight: 1.1, marginTop: 4 }}>{data.nummer}</div>
           </div>
+
           {data.voertuig && (
-            <div style={{ marginTop: 16 }}>
-              <div style={labelStijl}>Kenmerk</div>
-              <div style={{ fontSize: 17, color: TEKST, marginTop: 3 }}>{data.voertuig}</div>
-            </div>
-          )}
-          {data.klacht && (
-            <div style={{ marginTop: 14, background: GROEN_BG, borderRadius: 12, padding: "15px 17px" }}>
-              <div style={labelStijl}>Klacht</div>
-              <div style={{ fontSize: 12.5, color: GRIJS, marginTop: 2, marginBottom: 6 }}>(wat je aan ons hebt doorgegeven)</div>
-              <div style={{ fontSize: 17, lineHeight: 1.55, color: TEKST }}>{data.klacht}</div>
+            <div style={{ marginTop: 18 }}>
+              <div style={labelStijl}>Deze revisie is voor</div>
+              <div style={{ fontSize: 18, fontWeight: 600, color: TEKST, marginTop: 4 }}>{data.voertuig}</div>
             </div>
           )}
 
-          <div style={{ marginTop: 30 }}>
-            <span style={{ fontSize: 19, fontWeight: 700, color: TEKST }}>
-              {klaar ? "Je revisie is klaar." : `Je revisie is momenteel op ${pct}%, we zijn druk bezig.`}
-            </span>
-            {data.monteur && (
-              <div style={{ fontSize: 16, color: GRIJS, marginTop: 6 }}>
-                {klaar ? `Je revisie is uitgevoerd door ${data.monteur}.` : `Je revisie is onder behandeling van ${data.monteur}.`}
-              </div>
+          {data.klacht && (
+            <div style={{ marginTop: 16, background: GROEN_BG, borderRadius: 12, padding: "15px 17px" }}>
+              <div style={{ fontSize: 14.5, fontWeight: 700, color: GROEN }}>De klacht die je ons hebt meegegeven</div>
+              <div style={{ fontSize: 17, lineHeight: 1.55, color: TEKST, marginTop: 6 }}>{data.klacht}</div>
+            </div>
+          )}
+
+          {/* Voortgang als groot, vriendelijk percentage */}
+          <div style={{ marginTop: 28, background: "#fff", border: `1px solid ${RAND}`, borderRadius: 16, padding: "22px 20px", textAlign: "center", boxShadow: "0 6px 18px rgba(26,60,46,0.07)" }}>
+            {klaar ? (
+              <>
+                <div style={{ fontSize: 24, fontWeight: 700, color: GROEN }}>Je revisie is klaar.</div>
+                {data.monteur && <div style={{ fontSize: 16, color: GRIJS, marginTop: 8 }}>Uitgevoerd door {data.monteur}.</div>}
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize: 17, color: TEKST }}>Je revisie is momenteel op</div>
+                <div style={{ fontSize: 50, fontWeight: 700, color: GROEN_LICHT, lineHeight: 1.02, margin: "2px 0 0" }}>{pct}%</div>
+                <div style={{ fontSize: 16, color: GRIJS, marginTop: 2 }}>van de 100%</div>
+                <div style={{ fontSize: 17, color: TEKST, marginTop: 10 }}>We zijn er druk mee.</div>
+                {data.monteur && <div style={{ fontSize: 15.5, color: GRIJS, marginTop: 8 }}>Onder behandeling van {data.monteur}.</div>}
+              </>
             )}
           </div>
 
@@ -244,6 +254,14 @@ function Inner() {
               );
             })}
           </div>
+
+          {/* Verwachting onderaan: geruststellende tijdsindicatie */}
+          {!klaar && (
+            <div style={{ marginTop: 26, background: `linear-gradient(150deg, ${GROEN_LICHT} 0%, ${GROEN} 75%)`, borderRadius: 16, padding: "18px 22px", color: "#fff" }}>
+              <div style={{ fontSize: 12.5, letterSpacing: 1.5, textTransform: "uppercase", color: "rgba(255,255,255,0.82)", fontWeight: 700 }}>Verwachting</div>
+              <div style={{ fontSize: 17, lineHeight: 1.55, marginTop: 5 }}>We verwachten binnen enkele dagen dat jouw carburateur compleet klaar is.</div>
+            </div>
+          )}
 
           {data.algemeneFotos.length > 0 && (
             <div style={{ marginTop: 28, borderTop: `1px solid ${RAND}`, paddingTop: 22 }}>
