@@ -6,7 +6,7 @@
 // naar beneden), met aanklikbare thumbnails.
 // Toegang via /volg?t=token of /volg?nr=ORDERNR&code=CODE.
 
-import { Suspense, useEffect, useRef, useState, CSSProperties } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState, CSSProperties } from "react";
 import { useSearchParams } from "next/navigation";
 import Lightbox from "@/app/components/Lightbox";
 
@@ -45,10 +45,30 @@ function Inner() {
   const [replay, setReplay] = useState(0);
   const tijdlijnRef = useRef<HTMLDivElement | null>(null);
   const dotRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const centersRef = useRef<number[]>([]);
+
+  // Meet de posities van de stadia-bolletjes. Doen we eenmalig en bij resize,
+  // niet elke frame: dat veroorzaakte gehaper tijdens het scrollen.
+  const meet = useCallback(() => {
+    const cont = tijdlijnRef.current;
+    if (!cont) return;
+    const cTop = cont.getBoundingClientRect().top;
+    const cs = dotRefs.current.map((d) => (d ? d.getBoundingClientRect().top - cTop + d.offsetHeight / 2 : 0));
+    centersRef.current = cs;
+    setCenters(cs);
+  }, []);
 
   // Het carburateur-icoon zakt langzaam langs de balk tot het huidige stadium
   // en vult onderweg de groene bolletjes. We meten de posities live (de kaarten
   // hebben wisselende hoogtes door foto's).
+  // Houd de metingen actueel bij dataladen en bij venster-resize.
+  useEffect(() => {
+    if (!data) return;
+    meet();
+    window.addEventListener("resize", meet);
+    return () => window.removeEventListener("resize", meet);
+  }, [data, meet]);
+
   useEffect(() => {
     if (!data || replay === 0) return;
     let raf = 0;
@@ -56,24 +76,19 @@ function Inner() {
     let huidige = -1;
     STADIA.forEach((st, i) => { if (data.stappen.find((s) => s.stap === st.stap)) huidige = i; });
     if (huidige < 0) return;
-    setVul(0); // icoon terug naar boven, daarna rijdt hij weer naar beneden
+    meet();      // verse meting bij de start van de rit
+    setVul(0);   // icoon terug naar boven, daarna rijdt hij weer naar beneden
     const tick = (ts: number) => {
       if (start == null) start = ts;
-      const cont = tijdlijnRef.current;
-      if (cont) {
-        const cTop = cont.getBoundingClientRect().top;
-        const cs = dotRefs.current.map((d) => (d ? d.getBoundingClientRect().top - cTop + d.offsetHeight / 2 : 0));
-        setCenters(cs);
-        const doel = cs[huidige] || 0;
-        const p = Math.min(1, (ts - start) / 8500);
-        setVul(doel * p);
-        if (p < 1) raf = requestAnimationFrame(tick);
-        else setVul(doel);
-      }
+      const doel = centersRef.current[huidige] || 0;
+      const p = Math.min(1, (ts - start) / 8500);
+      setVul(doel * p);
+      if (p < 1) raf = requestAnimationFrame(tick);
+      else setVul(doel);
     };
     const to = setTimeout(() => { raf = requestAnimationFrame(tick); }, 500);
     return () => { clearTimeout(to); cancelAnimationFrame(raf); };
-  }, [data, replay]);
+  }, [data, replay, meet]);
 
   // Speel de rit opnieuw af telkens als de tijdlijn (opnieuw) in beeld komt,
   // bijvoorbeeld bij terugscrollen. Zo komt de carburateur steeds weer mee.
