@@ -508,10 +508,9 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
   // Ze krijgen stadium "algemeen" zodat ze in het foto-overzicht meetellen.
   async function uploadMeerdereFotos(files: File[]) {
     if (!open || files.length === 0) return;
-    const ruimte = Math.max(0, 3 - fotos.filter((f) => f.stap === "algemeen").length);
-    if (ruimte === 0) { setBulkMelding("Maximaal 3 algemene foto's bereikt."); return; }
-    const teUploaden = files.slice(0, ruimte);
-    const overgeslagen = files.length - teUploaden.length;
+    // Onbeperkt: de algemene foto's zijn een dump per revisie (soms 100+).
+    // De max-3 geldt alleen per stadium, niet hier.
+    const teUploaden = files;
     setBulkBezig(true); setBulkMelding("");
     let gelukt = 0, mislukt = 0;
     for (let i = 0; i < teUploaden.length; i++) {
@@ -531,7 +530,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
       } catch { mislukt++; }
     }
     log(open.id, "meerdere foto's geupload", `${gelukt} gelukt${mislukt ? `, ${mislukt} mislukt` : ""}`);
-    setBulkMelding(`${gelukt} foto${gelukt === 1 ? "" : "'s"} geüpload${mislukt ? `, ${mislukt} mislukt` : ""}${overgeslagen ? `, ${overgeslagen} overgeslagen (max 3)` : ""}.`);
+    setBulkMelding(`${gelukt} foto${gelukt === 1 ? "" : "'s"} geüpload${mislukt ? `, ${mislukt} mislukt` : ""}.`);
     setBulkBezig(false);
     await laadVoortgang(open.id);
   }
@@ -907,15 +906,11 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
 
           <div style={kaart}>
             <div style={kopstijl}>Foto's</div>
-            <div style={{ fontSize: 12, color: GRIJS, marginBottom: 10 }}>Upload hier de algemene foto's van deze klus (maximaal 3). Ze worden automatisch verkleind.</div>
-            {fotos.filter((f) => f.stap === "algemeen").length >= 3 ? (
-              <div style={{ textAlign: "center", background: "#efece4", color: GRIJS, borderRadius: 12, padding: "13px", fontSize: 14, fontWeight: 700 }}>Maximaal 3 algemene foto's</div>
-            ) : (
-              <label style={{ display: "block", textAlign: "center", background: bulkBezig ? "#cdbe8a" : GOUD, color: "#fff", borderRadius: 12, padding: "13px", fontSize: 15, fontWeight: 700, cursor: bulkBezig ? "default" : "pointer" }}>
-                {bulkBezig ? "Bezig met uploaden..." : `Alle foto's uploaden (${fotos.filter((f) => f.stap === "algemeen").length}/3)`}
-                <input type="file" accept="image/*" multiple disabled={bulkBezig} style={{ display: "none" }} onChange={(e) => { const arr = e.target.files ? Array.from(e.target.files) : []; e.currentTarget.value = ""; if (arr.length) uploadMeerdereFotos(arr); }} />
-              </label>
-            )}
+            <div style={{ fontSize: 12, color: GRIJS, marginBottom: 10 }}>Upload hier alle algemene foto's van deze klus (geen limiet). Ze worden automatisch verkleind.</div>
+            <label style={{ display: "block", textAlign: "center", background: bulkBezig ? "#cdbe8a" : GOUD, color: "#fff", borderRadius: 12, padding: "13px", fontSize: 15, fontWeight: 700, cursor: bulkBezig ? "default" : "pointer" }}>
+              {bulkBezig ? "Bezig met uploaden..." : `Alle foto's uploaden${fotos.filter((f) => f.stap === "algemeen").length ? ` (${fotos.filter((f) => f.stap === "algemeen").length})` : ""}`}
+              <input type="file" accept="image/*" multiple disabled={bulkBezig} style={{ display: "none" }} onChange={(e) => { const arr = e.target.files ? Array.from(e.target.files) : []; e.currentTarget.value = ""; if (arr.length) uploadMeerdereFotos(arr); }} />
+            </label>
             {bulkMelding && <div style={{ fontSize: 13, color: GROEN, fontWeight: 600, marginTop: 10 }}>{bulkMelding}</div>}
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: 14, paddingTop: 10, borderTop: `1px solid ${RAND}` }}>
