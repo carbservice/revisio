@@ -1,13 +1,17 @@
 name: Database back-up
 
 # Maakt elke nacht een volledige dump van de Supabase-database en bewaart
-# die als artifact (te downloaden via het Actions-tabblad). Dit raakt de
-# repo of de live-app niet, dus er wordt geen Vercel-deploy getriggerd.
+# die als artifact (te downloaden via het Actions-tabblad). Raakt de repo
+# of de live-app niet aan.
+#
+# Verbindt via losse parameters plus PGPASSWORD, zodat speciale tekens in
+# het wachtwoord nooit de verbinding kunnen breken. Faalt hard (rood) als
+# de dump leeg is, zodat een mislukte back-up niet als groen wordt gemeld.
 
 on:
   schedule:
     - cron: "0 2 * * *" # elke nacht 02:00 UTC
-  workflow_dispatch: {} # handmatig starten kan ook (Actions-tab)
+  workflow_dispatch: {} # handmatig starten kan ook
 
 jobs:
   backup:
@@ -20,12 +24,25 @@ jobs:
 
       - name: Database dumpen
         env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: |
+          set -o pipefail
           mkdir -p backups
           DATUM=$(date -u +%Y-%m-%d_%H%M)
-          pg_dump "$SUPABASE_DB_URL" --no-owner --no-privileges | gzip > "backups/revisio-$DATUM.sql.gz"
+          BESTAND="backups/revisio-$DATUM.sql.gz"
+          pg_dump \
+            -h aws-0-eu-west-1.pooler.supabase.com \
+            -p 5432 \
+            -U postgres.ntcbrqoesjlgiawmkdsa \
+            -d postgres \
+            --no-owner --no-privileges | gzip > "$BESTAND"
           ls -lh backups
+          GROOTTE=$(stat -c%s "$BESTAND")
+          echo "Back-up grootte: $GROOTTE bytes"
+          if [ "$GROOTTE" -lt 1000 ]; then
+            echo "FOUT: de back-up is te klein, de dump is waarschijnlijk mislukt."
+            exit 1
+          fi
 
       - name: Back-up bewaren als artifact (90 dagen)
         uses: actions/upload-artifact@v4
