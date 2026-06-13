@@ -486,7 +486,8 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
     try {
       const { blob, ext: rawExt } = await verkleinFoto(file);
       const ext = (rawExt || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-      const pad = `${open.id}/${stap}/${Date.now()}.${ext}`;
+      const map = (open.nummer || open.id).replace(/[^a-zA-Z0-9_-]/g, "_");
+      const pad = `${map}/${stap}/${Date.now()}.${ext}`;
       const { error } = await supabase.storage.from("werkbon-fotos").upload(pad, blob, { contentType: blob.type || "image/jpeg" });
       if (error) { setFout(error.message); return; }
       const { data } = supabase.storage.from("werkbon-fotos").getPublicUrl(pad);
@@ -519,7 +520,8 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
       try {
         const { blob, ext: rawExt } = await verkleinFoto(file);
         const ext = (rawExt || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-        const pad = `${open.id}/algemeen/${Date.now()}-${i}.${ext}`;
+        const map = (open.nummer || open.id).replace(/[^a-zA-Z0-9_-]/g, "_");
+        const pad = `${map}/algemeen/${Date.now()}-${i}.${ext}`;
         const { error } = await supabase.storage.from("werkbon-fotos").upload(pad, blob, { contentType: blob.type || "image/jpeg" });
         if (error) { mislukt++; continue; }
         const { data } = supabase.storage.from("werkbon-fotos").getPublicUrl(pad);

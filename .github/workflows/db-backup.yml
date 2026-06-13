@@ -1,0 +1,35 @@
+name: Database back-up
+
+# Maakt elke nacht een volledige dump van de Supabase-database en bewaart
+# die als artifact (te downloaden via het Actions-tabblad). Dit raakt de
+# repo of de live-app niet, dus er wordt geen Vercel-deploy getriggerd.
+
+on:
+  schedule:
+    - cron: "0 2 * * *" # elke nacht 02:00 UTC
+  workflow_dispatch: {} # handmatig starten kan ook (Actions-tab)
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Postgres-client installeren
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Database dumpen
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          mkdir -p backups
+          DATUM=$(date -u +%Y-%m-%d_%H%M)
+          pg_dump "$SUPABASE_DB_URL" --no-owner --no-privileges | gzip > "backups/revisio-$DATUM.sql.gz"
+          ls -lh backups
+
+      - name: Back-up bewaren als artifact (90 dagen)
+        uses: actions/upload-artifact@v4
+        with:
+          name: revisio-db-backup
+          path: backups/*.sql.gz
+          retention-days: 90
