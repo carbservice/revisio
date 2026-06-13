@@ -169,6 +169,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
   const [bulkBezig, setBulkBezig] = useState(false);
   const [bulkMelding, setBulkMelding] = useState("");
   const [deelLink, setDeelLink] = useState("");
+  const [gekopieerd, setGekopieerd] = useState(false);
   const [deelCode, setDeelCode] = useState("");
   const [lightbox, setLightbox] = useState<{ fotos: string[]; start: number } | null>(null);
   const [vulPct, setVulPct] = useState(0);
@@ -915,7 +916,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
                 <div style={{ fontSize: 12, color: GRIJS, marginBottom: 4 }}>Of stuur de directe link:</div>
                 <div style={{ display: "flex", gap: 6 }}>
                   <input readOnly value={deelLink} onFocus={(e) => e.target.select()} style={inp} />
-                  <button onClick={() => navigator.clipboard?.writeText(deelLink)} style={{ border: "none", background: GROEN, color: "#fff", borderRadius: 8, padding: "0 12px", fontWeight: 700, cursor: "pointer" }}>Kopieer</button>
+                  <button onClick={async () => { try { await navigator.clipboard?.writeText(deelLink); } catch {} setGekopieerd(true); setTimeout(() => setGekopieerd(false), 1800); }} style={{ border: "none", background: gekopieerd ? GOUD : GROEN, color: "#fff", borderRadius: 8, padding: "0 12px", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", minWidth: 92 }}>{gekopieerd ? "Gekopieerd!" : "Kopieer"}</button>
                 </div>
               </div>
             )}
