@@ -407,7 +407,17 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
 
   const isGedaan = (id: string) => voortgang.some((v) => v.stap === id);
   const eindcontroleCompleet = checklist.filter((c) => c.vast).every((c) => c.status);
-  const huidigPct = STADIA.filter((s) => isGedaan(s.id)).reduce((m, s) => Math.max(m, s.pct), 0);
+  // Zelfde model als het klantportaal: het hoogst afgevinkte stadium is 'bezig'
+  // en telt nog niet mee, behalve ontvangst (voltooid feit, 20%) en het laatste
+  // stadium (klaar, 100%). Zo loopt de balk gelijk met wat de klant ziet.
+  const gedaanStadia = STADIA.filter((s) => isGedaan(s.id));
+  let huidigPct = 0;
+  if (gedaanStadia.length) {
+    const hoogste = gedaanStadia[gedaanStadia.length - 1];
+    if (hoogste.pct >= 100) huidigPct = 100;
+    else if (hoogste.id === "ontvangen") huidigPct = hoogste.pct;
+    else huidigPct = gedaanStadia.slice(0, -1).reduce((m, s) => Math.max(m, s.pct), 0);
+  }
   huidigPctRef.current = huidigPct;
 
   function rijdNaar(vanaf: number, naar: number, duur: number) {

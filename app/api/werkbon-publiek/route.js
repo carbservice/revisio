@@ -93,6 +93,9 @@ export async function GET(req) {
       const hoogste = stappen[stappen.length - 1];
       if (hoogste.pct >= 100) {
         pct = 100;
+      } else if (hoogste.stap === "ontvangen") {
+        // Ontvangst bevestigen (met foto) is een voltooid feit: meteen 20%.
+        pct = hoogste.pct;
       } else {
         actiefStap = hoogste.stap;
         pct = stappen.slice(0, -1).reduce((m, s) => Math.max(m, s.pct), 0);
