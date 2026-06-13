@@ -83,7 +83,21 @@ export async function GET(req) {
       fotos: fByStap[s.stap] || [],
     }));
 
-    const pct = stappen.reduce((m, s) => Math.max(m, s.pct), 0);
+    // "Actief stadium = bezig": het hoogst afgevinkte stadium telt als 'hier
+    // zijn we nu mee bezig' en nog niet als voltooid. Het percentage telt dus
+    // alleen de stadia die daarvoor liggen. Uitzondering: het laatste stadium
+    // (100%) betekent juist dat de revisie klaar is.
+    let actiefStap = null;
+    let pct = 0;
+    if (stappen.length) {
+      const hoogste = stappen[stappen.length - 1];
+      if (hoogste.pct >= 100) {
+        pct = 100;
+      } else {
+        actiefStap = hoogste.stap;
+        pct = stappen.slice(0, -1).reduce((m, s) => Math.max(m, s.pct), 0);
+      }
+    }
     const stadium = stappen.length ? stappen[stappen.length - 1].label : "";
 
     return Response.json({
@@ -93,6 +107,7 @@ export async function GET(req) {
       klacht: link.klacht || "",
       monteur,
       pct,
+      actiefStap,
       stadium,
       stappen,
       algemeneFotos: fByStap["algemeen"] || [],

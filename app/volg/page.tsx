@@ -27,7 +27,7 @@ const STADIA = [
 ];
 
 type Stap = { stap: string; label: string; pct: number; bericht: string; gedaan_op: string | null; fotos: string[] };
-type Data = { nummer: string; klant: string; voertuig: string; klacht: string; monteur: string; pct: number; stadium: string; stappen: Stap[]; algemeneFotos: string[]; gepubliceerd: boolean; fout?: string };
+type Data = { nummer: string; klant: string; voertuig: string; klacht: string; monteur: string; pct: number; actiefStap: string | null; stadium: string; stappen: Stap[]; algemeneFotos: string[]; gepubliceerd: boolean; fout?: string };
 
 function Inner() {
   const sp = useSearchParams();
@@ -251,17 +251,21 @@ function Inner() {
             {STADIA.map((st, i) => {
               const s = stapData(st.stap);
               const done = !!s;
+              const actief = data.actiefStap === st.stap;       // hier zijn we mee bezig
+              const voltooid = done && !actief;                  // echt afgerond stadium
               const laatste = i === STADIA.length - 1;
               const bereikt = done && centers[i] != null && vul >= centers[i] - 2;
+              const vink = voltooid && bereikt;                  // alleen voltooide stadia: vinkje
+              const dotGroen = vink || actief;                   // actief stadium ook groen (icoon staat erop)
               return (
                 <div key={st.stap} style={{ position: "relative", paddingLeft: 50, paddingBottom: laatste ? 0 : 16 }}>
                   <div ref={(el) => { dotRefs.current[i] = el; }} style={{
                     position: "absolute", left: 1, top: 2, width: 30, height: 30, borderRadius: "50%",
                     display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800, color: "#fff",
-                    background: bereikt ? GROEN_LICHT : "#fff", border: bereikt ? "none" : `2px solid ${RAND}`,
-                    boxShadow: bereikt ? "0 0 0 4px rgba(47,143,91,0.14)" : "none",
+                    background: dotGroen ? GROEN_LICHT : "#fff", border: dotGroen ? "none" : `2px solid ${RAND}`,
+                    boxShadow: dotGroen ? "0 0 0 4px rgba(47,143,91,0.14)" : "none",
                     transition: "background .35s ease, border .35s ease, box-shadow .35s ease", zIndex: 2,
-                  }}>{bereikt ? "✓" : ""}</div>
+                  }}>{vink ? "✓" : ""}</div>
 
                   {/* Eigen blok per stap */}
                   <div style={{
@@ -272,7 +276,9 @@ function Inner() {
                   }}>
                     <div style={{ fontSize: 19, fontWeight: 700, color: done ? GROEN : "#9a978e" }}>{st.label}</div>
                     {st.omschrijving && <div style={{ fontSize: 16, lineHeight: 1.6, color: done ? TEKST : "#a8a59c", marginTop: 5 }}>{st.omschrijving}</div>}
-                    {!done && <div style={{ display: "inline-block", fontSize: 12.5, fontWeight: 700, color: "#8d8a81", background: "#efefea", borderRadius: 999, padding: "3px 11px", marginTop: 8 }}>Nog te doen</div>}
+                    {actief
+                      ? <div style={{ display: "inline-block", fontSize: 12.5, fontWeight: 700, color: "#fff", background: GROEN_LICHT, borderRadius: 999, padding: "3px 11px", marginTop: 8 }}>We zijn hier nu mee bezig</div>
+                      : !done && <div style={{ display: "inline-block", fontSize: 12.5, fontWeight: 700, color: "#8d8a81", background: "#efefea", borderRadius: 999, padding: "3px 11px", marginTop: 8 }}>Nog te doen</div>}
 
                     {done && s!.fotos.length > 0 && (
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14 }}>
