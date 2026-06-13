@@ -27,7 +27,7 @@ const STADIA = [
 ];
 
 type Stap = { stap: string; label: string; pct: number; bericht: string; gedaan_op: string | null; fotos: string[] };
-type Data = { nummer: string; klant: string; voertuig: string; klacht: string; pct: number; stadium: string; stappen: Stap[]; algemeneFotos: string[]; gepubliceerd: boolean; fout?: string };
+type Data = { nummer: string; klant: string; voertuig: string; klacht: string; monteur: string; pct: number; stadium: string; stappen: Stap[]; algemeneFotos: string[]; gepubliceerd: boolean; fout?: string };
 
 function Inner() {
   const sp = useSearchParams();
@@ -182,6 +182,11 @@ function Inner() {
             <span style={{ fontSize: 19, fontWeight: 700, color: TEKST }}>
               {klaar ? "Je revisie is klaar." : `Je revisie is momenteel op ${pct}%, we zijn druk bezig.`}
             </span>
+            {data.monteur && (
+              <div style={{ fontSize: 16, color: GRIJS, marginTop: 6 }}>
+                {klaar ? `Je revisie is uitgevoerd door ${data.monteur}.` : `Je revisie is onder behandeling van ${data.monteur}.`}
+              </div>
+            )}
           </div>
 
           {/* Verticale voortgang: het icoon zakt langzaam naar het huidige

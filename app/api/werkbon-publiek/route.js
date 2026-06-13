@@ -44,6 +44,31 @@ export async function GET(req) {
       .not("gepubliceerd_op", "is", null)
       .order("geupload_op");
 
+    // Monteur-naam voor de klant: alleen de VOORNAAM, nooit de tijd. We lezen
+    // dezelfde bron als de tijd-string (tijdregels), maar geven uitsluitend de
+    // naam terug; valt terug op het werkbon-logspoor als er nog geen tijd is.
+    let volledigeNaam = "";
+    const { data: tr } = await supabase
+      .from("tijdregels")
+      .select("monteur_naam, aangemaakt_op")
+      .eq("klus_id", link.klus_id)
+      .not("monteur_naam", "is", null)
+      .order("aangemaakt_op")
+      .limit(1);
+    if (tr && tr[0] && tr[0].monteur_naam) {
+      volledigeNaam = tr[0].monteur_naam;
+    } else {
+      const { data: lg } = await supabase
+        .from("werkbon_log")
+        .select("monteur_naam, gedaan_op")
+        .eq("klus_id", link.klus_id)
+        .not("monteur_naam", "is", null)
+        .order("gedaan_op")
+        .limit(1);
+      if (lg && lg[0] && lg[0].monteur_naam) volledigeNaam = lg[0].monteur_naam;
+    }
+    const monteur = (volledigeNaam || "").trim().split(/\s+/)[0] || "";
+
     const vMap = {};
     (voortgang || []).forEach((v) => { vMap[v.stap] = v; });
     const fByStap = {};
@@ -66,6 +91,7 @@ export async function GET(req) {
       klant: link.klant,
       voertuig: link.voertuig,
       klacht: link.klacht || "",
+      monteur,
       pct,
       stadium,
       stappen,
