@@ -171,6 +171,8 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
   const [deelLink, setDeelLink] = useState("");
   const [gekopieerd, setGekopieerd] = useState(false);
   const [carburateur, setCarburateur] = useState(1); // welke carburateur van de offerte (technische werkbon)
+  const [klusLinkKop, setKlusLinkKop] = useState(false); // "Kopieer link"-bevestiging
+  const deepLinkGedaan = useRef(false); // deep-link uit de URL maar één keer openen
   const [deelCode, setDeelCode] = useState("");
   const [lightbox, setLightbox] = useState<{ fotos: string[]; start: number } | null>(null);
   const [vulPct, setVulPct] = useState(0);
@@ -221,6 +223,19 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
     const t = setInterval(() => setNu(Date.now()), 1000);
     return () => clearInterval(t);
   }, []);
+
+  // Deep-link: open automatisch de klus uit ?klus=<id> in de URL (zodra de
+  // klussen geladen zijn). Zo kun je een klus doorsturen naar een collega.
+  useEffect(() => {
+    if (deepLinkGedaan.current || !klussen.length || typeof window === "undefined") return;
+    const id = new URLSearchParams(window.location.search).get("klus");
+    deepLinkGedaan.current = true;
+    if (id) {
+      const k = klussen.find((x) => x.id === id);
+      if (k) openKlus(k);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [klussen]);
 
   useEffect(() => {
     if (start == null) return;
@@ -318,7 +333,14 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
     setDiagnoseLijst([]); setDiagTekst(""); setDiagFout("");
     setStapPopup(null); setStapNotitie(""); setFotoMelding(""); setDeelLink("");
     setCarburateur(1);
+    setKlusLinkKop(false);
+    if (typeof window !== "undefined") window.history.replaceState(null, "", `?klus=${encodeURIComponent(k.id)}`);
     laadKlusTijd(k.id); laadWerkbon(k.id, 1); laadVoortgang(k.id);
+  }
+
+  function sluitKlus() {
+    setOpen(null);
+    if (typeof window !== "undefined") window.history.replaceState(null, "", window.location.pathname);
   }
 
   // Wisselen tussen carburateur 1 en 2: laad de technische werkbon van die
@@ -856,10 +878,16 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
 
       {open && (
         <>
-          <button onClick={() => setOpen(null)} style={{ border: "none", background: "transparent", color: GROEN, fontWeight: 700, fontSize: 14, cursor: "pointer", padding: "4px 0", marginBottom: 6 }}>← Klussen</button>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+            <button onClick={sluitKlus} style={{ border: "none", background: "transparent", color: GROEN, fontWeight: 700, fontSize: 14, cursor: "pointer", padding: "4px 0" }}>← Klussen</button>
+            <button onClick={async () => { try { await navigator.clipboard?.writeText(window.location.href); } catch {} setKlusLinkKop(true); setTimeout(() => setKlusLinkKop(false), 1800); }} style={{ border: `1px solid ${RAND}`, background: klusLinkKop ? GOUD_BG : "#fff", color: klusLinkKop ? "#6b5410" : GROEN, fontWeight: 700, fontSize: 12.5, cursor: "pointer", borderRadius: 999, padding: "5px 12px" }}>{klusLinkKop ? "Gekopieerd!" : "🔗 Kopieer link"}</button>
+          </div>
 
           <div style={kaart}>
-            <div style={{ fontSize: 28, fontWeight: 800, color: GROEN, letterSpacing: 0.5, lineHeight: 1.1 }}>{open.nummer}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+              <div style={{ fontSize: 28, fontWeight: 800, color: GROEN, letterSpacing: 0.5, lineHeight: 1.1 }}>{open.nummer}</div>
+              {open.status === "gefactureerd" && <span style={{ fontSize: 11, fontWeight: 800, color: "#6b5410", background: GOUD_BG, border: `1px solid ${GOUD}`, borderRadius: 999, padding: "2px 10px", letterSpacing: 0.4 }}>GEFACTUREERD</span>}
+            </div>
             <div style={{ fontSize: 21, fontWeight: 700, marginTop: 4 }}>{open.klant}</div>
             {open.voertuig && <div style={{ fontSize: 13.5, color: GRIJS, marginTop: 8 }}>{open.voertuig}</div>}
 

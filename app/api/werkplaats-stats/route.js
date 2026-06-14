@@ -165,6 +165,7 @@ export async function GET() {
     (opmerkingAll || []).forEach((r) => raak(r.klus_id, r.bijgewerkt_op));
     (fotosAll || []).forEach((r) => raak(r.klus_id, r.geupload_op));
 
+    const mbGeladen = Object.keys(mb).length > 0; // Moneybird-fetch geslaagd?
     const bonnen = Object.values(bonMap).map((b) => {
       const link = linkVan[b.klus_id] || {};
       const mbi = mb[b.klus_id] || {};
@@ -187,6 +188,7 @@ export async function GET() {
         pct: pctVan[b.klus_id] || 0,
         fotos: fotoTel[b.klus_id] || 0,
         is_retour: !!retourVan[b.klus_id],
+        gefactureerd: mbGeladen && !mb[b.klus_id], // behandeld, maar niet meer geaccepteerd in Moneybird
         laatste: b.laatste,
       };
     }).sort((a, b) => (b.laatste || 0) - (a.laatste || 0));

@@ -123,6 +123,7 @@ function WerkplaatsDashboard() {
               <span style={{ fontSize: 14, fontWeight: 700 }}>{b.nummer}</span>
               {b.klant && <span style={{ fontSize: 14 }}> · {b.klant}</span>}
               {b.is_retour && <span style={{ fontSize: 10.5, fontWeight: 800, color: "#fff", background: ROOD, borderRadius: 999, padding: "2px 7px", marginLeft: 8 }}>RETOUR</span>}
+              {b.gefactureerd && <span style={{ fontSize: 10.5, fontWeight: 800, color: "#6b5410", background: "#f7f0db", border: "1px solid #c9a24b", borderRadius: 999, padding: "1px 7px", marginLeft: 8 }}>GEFACTUREERD</span>}
               {b.voertuig && <span style={{ display: "block", fontSize: 12, color: GRIJS, marginTop: 2 }}>{b.voertuig}</span>}
             </span>
             <span style={{ textAlign: "right", whiteSpace: "nowrap", flexShrink: 0 }}>
