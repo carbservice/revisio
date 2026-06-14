@@ -1,5 +1,12 @@
 // app/api/klussen/route.js
-// Geaccepteerde klussen (offertes) uit Moneybird voor de werkplaats-app.
+// Klussen voor de werkplaats-app. Twee bronnen, samengevoegd:
+//  1. Geaccepteerde offertes uit Moneybird (de actieve klussen).
+//  2. Klussen die wij zelf al behandeld hebben (staan in werkbon_links) maar
+//     niet meer geaccepteerd zijn in Moneybird, omdat ze inmiddels gefactureerd
+//     zijn. Zo blijft bv. Lude vindbaar en bewerkbaar na facturatie, ZONDER de
+//     hele Moneybird-factuurhistorie binnen te trekken.
+
+import { supabase } from "@/lib/supabase";
 
 const ADMIN = process.env.MONEYBIRD_ADMIN;
 const TOKEN = process.env.MONEYBIRD_TOKEN;
@@ -55,7 +62,36 @@ export async function GET() {
       bedrag: Number(e.total_price_incl_tax || 0),
       datum: e.accepted_at || e.estimate_date || "",
       getekend: e.accepted_at || "",
+      status: "geaccepteerd",
     }));
+
+    // Onze eigen behandelde klussen die niet (meer) geaccepteerd zijn: die zijn
+    // gefactureerd. We halen ze uit werkbon_links (alleen wat wij behandeld
+    // hebben), dus geen losse Moneybird-facturen.
+    const acceptedIds = new Set(klussen.map((k) => k.id));
+    try {
+      const { data: links } = await supabase
+        .from("werkbon_links")
+        .select("klus_id, nummer, klant, voertuig, klacht");
+      const gezien = new Set();
+      (links || []).forEach((l) => {
+        if (!l.klus_id || acceptedIds.has(l.klus_id) || gezien.has(l.klus_id)) return;
+        gezien.add(l.klus_id);
+        klussen.push({
+          id: l.klus_id,
+          nummer: l.nummer || "",
+          klant: l.klant || "",
+          voertuig: l.voertuig || "",
+          klacht: l.klacht || "",
+          bedrag: 0,
+          datum: "",
+          getekend: "",
+          status: "gefactureerd",
+        });
+      });
+    } catch {
+      // Lukt de Supabase-aanvraag niet, dan tonen we gewoon de Moneybird-klussen.
+    }
 
     klussen.sort((a, b) => (b.datum || "").localeCompare(a.datum || ""));
 

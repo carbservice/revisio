@@ -825,7 +825,10 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
               <div key={k.id} style={{ ...kaart, borderColor: alert ? ROOD : RAND, borderWidth: alert ? 1.5 : 1 }}>
                 <div onClick={() => openKlus(k)} style={{ cursor: "pointer" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-                    <div style={{ fontSize: 15, fontWeight: 800, color: GROEN }}>{k.nummer}</div>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                      <div style={{ fontSize: 15, fontWeight: 800, color: GROEN }}>{k.nummer}</div>
+                      {k.status === "gefactureerd" && <span style={{ fontSize: 10.5, fontWeight: 800, color: "#6b5410", background: GOUD_BG, border: `1px solid ${GOUD}`, borderRadius: 999, padding: "1px 8px", letterSpacing: 0.3 }}>GEFACTUREERD</span>}
+                    </div>
                     {alert && <span style={{ fontSize: 11.5, fontWeight: 800, color: ROOD, letterSpacing: 0.5 }}>ALERT</span>}
                   </div>
                   <div style={{ fontWeight: 700, marginTop: 1 }}>{k.klant}</div>
@@ -845,7 +848,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
               </div>
             );
           })}
-          {zichtbaar.length === 0 && <div style={{ color: GRIJS }}>{q ? "Niets gevonden voor deze zoekterm." : "Geen geaccepteerde klussen gevonden."}</div>}
+          {zichtbaar.length === 0 && <div style={{ color: GRIJS }}>{q ? "Niets gevonden voor deze zoekterm." : "Geen klussen gevonden."}</div>}
         </>
       )}
 
