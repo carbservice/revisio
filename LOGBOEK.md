@@ -108,3 +108,31 @@
 - Anthropic-key omdraaien, eigen domein (app.carbservice.nl), RLS echt dichtzetten.
 - "Bekijk werkbon (alleen lezen)" toont nu alleen carburateur 1.
 - Bij twee monteurs ziet de klant maar één naam ("onder behandeling van ...").
+
+## Dag 4 · 14 juni 2026 (backend en demo)
+**Backend-verbeteringen na de eerste echte klussen, plus een demo-omgeving voor de website.**
+
+### Demo-omgeving (/demo)
+- Zelflopende demo van het klantportaal: loopt automatisch door de stadia (Ontvangen tot Klaar) en begint opnieuw. Voor de website-banner.
+- Typemachine-intro en een Dubbele Dellorto DHLA 40 als voorbeeld.
+- Showcase-foto's uit public/demo/, met terugval op tijdelijke foto's.
+
+### Foto-onderzoek
+- Geverifieerd dat alle foto's van Lude zowel in de database als in de opslag staan; niets verloren. Genest per stadium, foto's van beide monteurs samen onder de offerte-map.
+
+### Klussen blijven vindbaar na facturatie (fase 1)
+- De monteur-app voegt nu onze eigen behandelde klussen toe (uit werkbon_links) die niet meer geaccepteerd zijn, met een GEFACTUREERD-label. Volledig bewerkbaar. Geen losse Moneybird-facturen.
+- Het label staat in de lijst, in de geopende werkbon en op het werkplaats-dashboard.
+
+### Interne foto's per carburateur
+- Onbeperkte interne fotostort per carburateur (50-100+ per monteur), opgeslagen in Supabase, nooit zichtbaar voor de klant. Stage-foto's (max 3) blijven de klant-foto's.
+
+### Deelbare klus-URL
+- Bij openen komt ?klus=<id> in de URL; opent automatisch weer en is via "Kopieer link" door te sturen naar een collega.
+
+### Aandachtspunt
+- Interne foto's vullen de opslag snel (gratis Supabase = 1 GB). Richting Supabase Pro bij dit volume; idee voor opslag-meter en opschoonscript.
+
+### Nog te doen
+- Fase 2: eigen klussen-tabel met opslaan-bij-openen (waterdicht).
+- RLS dichtzetten, Anthropic-key omdraaien, eigen domein, opslag-beheer.

@@ -16,11 +16,20 @@ Werkt het niet? Check je spam, of vraag een nieuwe code aan.
 4. Maak per stadium maximaal 3 foto's. Schone achtergrond, goed licht.
 5. Vul afstelling, sproeiers en extra artikelen in waar nodig. De werkbon slaat zichzelf automatisch op.
 
+## Foto's: voor de klant en intern
+Er zijn twee soorten foto's:
+- **Foto's per stadium (maximaal 3):** dit zijn de nette foto's die de klant ziet zodra je een update pusht. Schone achtergrond, goed licht.
+- **Interne foto's (onbeperkt):** onderaan de werkbon kun je zoveel foto's uploaden als je wilt (50, 100, meer). Die zijn **alleen voor de werkplaats** en ziet de klant nooit. Ze worden automatisch verkleind.
+
 ## Twee carburateurs op een offerte
 Soms staan er twee carburateurs op een offerte en pakt elke monteur er een. Bovenin de werkbon staat dan een keuze **Carburateur 1 / 2**.
 - Kies eerst welke carburateur jij doet. Staat er maar een carburateur op de offerte? Laat het gewoon op 1 staan.
-- De **afstelling, sproeiers, checklist en artikelen** worden per carburateur apart bewaard, dus jullie overschrijven elkaar niet.
-- De **stadia, foto's en tijd** delen jullie samen: de klant ziet een gecombineerde voortgang. Stem onderling af wie welk stadium afvinkt.
+- De **afstelling, sproeiers, checklist, artikelen en interne foto's** worden per carburateur apart bewaard, dus jullie overschrijven elkaar niet.
+- De **stadia, klant-foto's en tijd** delen jullie samen: de klant ziet een gecombineerde voortgang. Stem onderling af wie welk stadium afvinkt.
+
+## Een klus delen of terugvinden
+- Open je een klus, dan kun je via **Kopieer link** de directe link doorsturen naar een collega. Bij hem of haar opent de klus dan meteen (mits ingelogd).
+- Een **gefactureerde** klus verdwijnt niet meer: die blijft in de lijst staan met een **GEFACTUREERD**-label en is gewoon te openen en bij te werken (bijvoorbeeld om later nog foto's toe te voegen).
 
 ## De klant op de hoogte houden
 - De klant ziet niets automatisch. Pas als jij op **Stuur update naar klant** drukt, ziet de klant de stand en de foto's.
@@ -28,4 +37,4 @@ Soms staan er twee carburateurs op een offerte en pakt elke monteur er een. Bove
 - Je krijgt dan een **ordernummer en code** (en een link) om aan de klant te geven. Daarmee volgt de klant de revisie.
 
 ## Belangrijk
-**Druk op "Stuur update naar klant" met de laatste stand voordat de offerte gefactureerd wordt.** Na facturatie verdwijnt de klus uit jouw lijst en kun je geen update meer sturen. De klant blijft wel alles zien wat je tot dan toe hebt gedeeld.
+**Druk op "Stuur update naar klant" met de laatste stand voordat de offerte gefactureerd wordt.** De klus zelf blijft na facturatie gewoon vindbaar en bewerkbaar (met een GEFACTUREERD-label), maar een nieuwe update naar de klant pushen kan daarna niet meer. De klant blijft wel alles zien wat je tot dan toe hebt gedeeld.

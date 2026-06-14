@@ -92,6 +92,30 @@ Getest in de werkplaats door Rens en Lukas, onder andere op een offerte met twee
 **Klein**
 - Kopieer-knop (klantlink) geeft een korte "Gekopieerd!"-bevestiging.
 
+### Gedaan op 14 juni 2026 (backend en demo)
+
+**Demo-omgeving (`/demo`)**
+- Zelflopende demo van het klantportaal die automatisch door de stadia loopt (Ontvangen 20% tot Klaar 100%) en daarna opnieuw begint. Voor de website-banner ("Ga naar de DEMO omgeving").
+- Typemachine-intro die de bezoeker meeneemt; Dubbele Dellorto DHLA 40 als voorbeeld.
+- Showcase-foto's komen uit `public/demo/` (ontvangen/diagnose/reviseren/afbouwen/klaar.jpg), met terugval op tijdelijke foto's zolang die ontbreken.
+
+**Foto-onderzoek**
+- Geverifieerd dat alle foto's van Lude (offerte 2026-0566) zowel in `klus_fotos` als in de opslag staan; niets verloren. Ze staan genest per stadium; de foto's van beide monteurs staan samen onder de offerte-map.
+
+**Klussen blijven vindbaar en bewerkbaar na facturatie (fase 1)**
+- De monteur-app toonde alleen Moneybird-`accepted` offertes, waardoor een gefactureerde klus verdween. Nu voegt de klussen-API onze eigen behandelde klussen toe (uit `werkbon_links`) die niet meer accepted zijn. Die krijgen status `gefactureerd` en blijven volledig bewerkbaar. Bewust GEEN losse Moneybird-facturen, alleen offertes die wij behandeld hebben.
+- Een GEFACTUREERD-label staat in de monteur-lijst, in de geopende werkbon en in de werkbonnen-lijst van het werkplaats-dashboard.
+- Volgende stap (fase 2): een eigen `klussen`-tabel met opslaan-bij-openen, zodat ook nooit-gepubliceerde klussen waterdicht bewaard blijven.
+
+**Interne foto's per carburateur**
+- De bulk-fotostort is nu intern: onbeperkt aantal (50-100+ per monteur), opgeslagen in Supabase onder stadium `intern-<carburateur>` in een eigen opslagmap. Deze foto's worden NOOIT gepubliceerd; "Stuur update naar klant" publiceert alleen de stage-foto's (max 3 per stadium).
+
+**Deelbare klus-URL**
+- Bij het openen van een klus komt `?klus=<id>` in de URL; die opent automatisch weer en is via "Kopieer link" door te sturen naar een collega. (Let op: de parameter gaat verloren bij een verse magic-link-login.)
+
+**Aandachtspunt opslag**
+- Interne foto's groeien hard: gratis Supabase is 1 GB, dus ~30-40 zulke klussen. Richting Supabase Pro bij dit volume. Idee: opslag-meter in het dashboard en een opschoonscript.
+
 ## Livegang (13 juni 2026)
 
 - Monteur-app gaat live; eerste klant gaat live op het portaal.
@@ -103,7 +127,8 @@ Getest in de werkplaats door Rens en Lukas, onder andere op een offerte met twee
 - **Woensdag 17 juni 2026, 10:00 — showcase-foto's voor de demo uploaden.** Vijf foto's in `public/demo/`: `ontvangen.jpg`, `diagnose.jpg`, `reviseren.jpg`, `afbouwen.jpg`, `klaar.jpg` (vierkant, klein). Zolang ze ontbreken valt de demo terug op tijdelijke foto's.
 - Anthropic API-key omdraaien: de sleutel is tijdens het werk in de chat zichtbaar geweest. Nieuwe key maken, oude intrekken, bijwerken in `.env.local` en in Vercel.
 - Eigen domein instellen: `app.carbservice.nl` via Vercel (Domains) plus een CNAME in de Strikingly DNS Manager. Daarna in Supabase de Site URL en Redirect URLs naar dat domein zetten. De root `carbservice.nl` blijft de Strikingly-site, dus een subdomein gebruiken.
-- Bon waterdicht maken: bij het aanmaken van een werkbon de kerngegevens (nummer, klant, voertuig, bedrag) volledig in Supabase vastleggen.
+- Bon waterdicht maken (fase 2): fase 1 is gedaan (gefactureerde klussen blijven vindbaar via `werkbon_links`). Voor de echte sluitpost een eigen `klussen`-tabel met opslaan-bij-openen, zodat ook nooit-gepubliceerde klussen bewaard blijven.
+- Opslag-beheer: opslag-meter in het dashboard en/of een opschoonscript voor oude, afgeronde klussen. Bij veel interne foto's richting Supabase Pro.
 
 ## Nog te doen, rond livegang
 
