@@ -125,6 +125,7 @@ Getest in de werkplaats door Rens en Lukas, onder andere op een offerte met twee
 ## Nog te doen, op korte termijn
 
 - **Woensdag 17 juni 2026, 10:00 — showcase-foto's voor de demo uploaden.** Vijf foto's in `public/demo/`: `ontvangen.jpg`, `diagnose.jpg`, `reviseren.jpg`, `afbouwen.jpg`, `klaar.jpg` (vierkant, klein). Zolang ze ontbreken valt de demo terug op tijdelijke foto's.
+- **Vrijdag 19 juni 2026, 10:00 — RLS dichtzetten (beveiliging).** Grootste risico nu: de database staat open via de publieke sleutel. Volledig stappenplan in `RLS-PLAN.md`. Volgorde: eerst server-routes op de service-role-sleutel, dan pas RLS aan.
 - Anthropic API-key omdraaien: de sleutel is tijdens het werk in de chat zichtbaar geweest. Nieuwe key maken, oude intrekken, bijwerken in `.env.local` en in Vercel.
 - Eigen domein instellen: `app.carbservice.nl` via Vercel (Domains) plus een CNAME in de Strikingly DNS Manager. Daarna in Supabase de Site URL en Redirect URLs naar dat domein zetten. De root `carbservice.nl` blijft de Strikingly-site, dus een subdomein gebruiken.
 - Bon waterdicht maken (fase 2): fase 1 is gedaan (gefactureerde klussen blijven vindbaar via `werkbon_links`). Voor de echte sluitpost een eigen `klussen`-tabel met opslaan-bij-openen, zodat ook nooit-gepubliceerde klussen bewaard blijven.
