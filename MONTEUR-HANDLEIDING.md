@@ -16,6 +16,12 @@ Werkt het niet? Check je spam, of vraag een nieuwe code aan.
 4. Maak per stadium maximaal 3 foto's. Schone achtergrond, goed licht.
 5. Vul afstelling, sproeiers en extra artikelen in waar nodig. De werkbon slaat zichzelf automatisch op.
 
+## Twee carburateurs op een offerte
+Soms staan er twee carburateurs op een offerte en pakt elke monteur er een. Bovenin de werkbon staat dan een keuze **Carburateur 1 / 2**.
+- Kies eerst welke carburateur jij doet. Staat er maar een carburateur op de offerte? Laat het gewoon op 1 staan.
+- De **afstelling, sproeiers, checklist en artikelen** worden per carburateur apart bewaard, dus jullie overschrijven elkaar niet.
+- De **stadia, foto's en tijd** delen jullie samen: de klant ziet een gecombineerde voortgang. Stem onderling af wie welk stadium afvinkt.
+
 ## De klant op de hoogte houden
 - De klant ziet niets automatisch. Pas als jij op **Stuur update naar klant** drukt, ziet de klant de stand en de foto's.
 - Druk daarop op een mooi moment, bijvoorbeeld na een fase.

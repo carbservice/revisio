@@ -1,6 +1,6 @@
 # Revisio werkplaats, stand van zaken
 
-_Laatst bijgewerkt: 12 juni 2026. Livegang gepland: 13 juni 2026._
+_Laatst bijgewerkt: 13 juni 2026. Livegang: 13 juni 2026 (uitgevoerd)._
 
 ## Wat al af is
 
@@ -60,6 +60,38 @@ _Laatst bijgewerkt: 12 juni 2026. Livegang gepland: 13 juni 2026._
 - Meelopend carburateur-icoon dat de voortgangsbalk traag vult tot het huidige stadium, met percentage. Verticaal bij de klant, horizontaal in de monteur-app (loopt opnieuw bij elke bevestiging).
 - Klant-data staat volledig in Supabase (`werkbon_links`, `klus_voortgang`, `klus_fotos`) en blijft zichtbaar via de URL en code, ook nadat de offerte gefactureerd is. Geverifieerd: de klant-API heeft geen Moneybird-afhankelijkheid en er is geen automatische opschoning.
 
+### Gedaan op 13 juni 2026 (livegang)
+
+Getest in de werkplaats door Rens en Lukas, onder andere op een offerte met twee carburateurs.
+
+**Back-ups**
+- Dagelijkse database-back-up via een GitHub Action (`.github/workflows/db-backup.yml`): elke nacht 02:00 UTC plus handmatig. Volledige dump met `pg_dump` (Postgres 17-client uit de PGDG-repo), bewaard als artifact (90 dagen). Vereist de secret `SUPABASE_DB_PASSWORD` in GitHub. Faalt hard (rood) als de dump leeg is, zodat een mislukte back-up niet als groen wordt gemeld.
+
+**Mobiel (iPhone)**
+- `viewport-fit: cover` plus safe-area-padding, zodat de inhoud netjes tot in de randen loopt en de vaste onderbalk boven de iPhone home-indicator blijft. Nette titel (Revisio) en theme-color.
+
+**Foto's**
+- Algemene foto-dump per revisie is nu onbeperkt (de max-3 geldt alleen per stadium).
+
+**Klantportaal (`/volg`)**
+- Monteur-voornaam zichtbaar ("onder behandeling van ..."); de API leest die uit `tijdregels` maar geeft nooit de tijd terug.
+- Helderdere kop: welkomtekst, groot offertenummer, "Deze revisie is voor", de klacht, een groot percentage-vak en een verwachting-blok onderaan.
+- Carburateur-animatie speelt opnieuw af zodra de voortgangsbalk weer in beeld komt (klant en monteur, via IntersectionObserver).
+- Tijdlijn vloeiender: niet meer meten per frame, dus geen gehaper bij scrollen.
+- Carburateur zakt bij 20% naar de onderkant van het ontvangst-vak in plaats van bovenin te blijven hangen.
+- Deel-knop (WhatsApp) waarmee de klant zijn unieke volglink doorstuurt, plus social-balk (YouTube, Instagram, Facebook, TikTok, LinkedIn).
+
+**Voortgang-telling herzien**
+- Het actieve (hoogst afgevinkte) stadium telt als "bezig" en nog niet mee in het percentage; alleen voltooide stadia tellen. Ontvangst is een uitzondering: bevestigen (met foto) is meteen 20%. Het laatste stadium (100%) betekent klaar.
+- Monteur-app en klantportaal rekenen met exact dezelfde formule en tonen hetzelfde percentage.
+
+**Twee carburateurs per offerte**
+- Bij een offerte met twee carburateurs kunnen beide monteurs tegelijk werken zonder elkaar te overschrijven. De technische werkbon (afstelling, sproeiers, checklist, artikelen, opmerking, retour) staat per carburateur apart via een afgeleide sleutel (`klus_id#2` voor carburateur 2). Stadia, foto's en tijd blijven gedeeld, zodat de klant een gecombineerde voortgang ziet. Keuzeknop Carburateur 1 / 2 bovenin de werkbon; standaard 1, dus losse klussen veranderen niet.
+- Aandachtspunt: de pagina "Bekijk werkbon (alleen lezen)" toont nu alleen carburateur 1, en de klant ziet bij twee monteurs maar één naam.
+
+**Klein**
+- Kopieer-knop (klantlink) geeft een korte "Gekopieerd!"-bevestiging.
+
 ## Livegang (13 juni 2026)
 
 - Monteur-app gaat live; eerste klant gaat live op het portaal.
@@ -74,7 +106,7 @@ _Laatst bijgewerkt: 12 juni 2026. Livegang gepland: 13 juni 2026._
 
 ## Nog te doen, rond livegang
 
-- Back-ups regelen: gratis Supabase heeft geen back-ups. Of naar Supabase Pro, of een gratis dagelijkse back-up via GitHub Actions.
+- Back-ups: GEDAAN. Gratis dagelijkse database-back-up via een GitHub Action (zie "Gedaan op 13 juni 2026"). Eventueel later nog Supabase Pro voor automatische point-in-time-back-ups.
 - RLS dichtzetten (echte sluitpost): de dashboards zitten in de UI achter login plus admin-rol, maar de database-policies staan nog bewust ruim open en de API-routes checken de rol nog niet zelf. Volgende stap: RLS per rol plus rolcheck in de API-routes.
 - E-mail later professioneel maken: nu verstuurt Gmail-SMTP de mails (prima voor dit volume). Vanaf `noreply@carbservice.nl` mailen kan met Resend plus domeinverificatie.
 
