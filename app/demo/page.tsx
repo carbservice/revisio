@@ -123,7 +123,7 @@ export default function DemoPagina() {
     display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start",
     padding: "40px 16px",
   };
-  const introTekst: CSSProperties = { fontSize: "clamp(16px,2.3vw,20px)", lineHeight: 1.62, color: GROEN, fontWeight: 500, whiteSpace: "pre-wrap", fontFamily: "'Karma','Times New Roman',serif", textAlign: "left" };
+  const introTekst: CSSProperties = { fontSize: "clamp(16px,2.3vw,20px)", lineHeight: 1.62, color: GROEN, fontWeight: 700, whiteSpace: "pre-wrap", fontFamily: "'Karma','Times New Roman',serif", textAlign: "left" };
   const kaart: CSSProperties = {
     width: "100%", maxWidth: 620, background: "#fff", border: `1px solid ${RAND}`,
     borderRadius: 22, overflow: "hidden", boxShadow: "0 20px 55px rgba(26,60,46,0.16)",
@@ -138,6 +138,8 @@ export default function DemoPagina() {
         @keyframes demoPuls{0%,100%{box-shadow:0 0 0 4px rgba(184,137,58,.18)}50%{box-shadow:0 0 0 9px rgba(184,137,58,.04)}}
         @keyframes demoCursor{0%,100%{opacity:1}50%{opacity:0}}
         @keyframes demoBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
+        @keyframes demoPijl{0%,100%{transform:translateY(0);opacity:1}50%{transform:translateY(10px);opacity:.35}}
+        @media (prefers-reduced-motion: reduce){ .demo-anim{animation:none !important;} }
       `}</style>
 
       {/* Typemachine-intro die de bezoeker meeneemt */}
@@ -147,11 +149,11 @@ export default function DemoPagina() {
           <div style={{ ...introTekst, visibility: "hidden" }} aria-hidden="true">{INTRO}</div>
           <div style={{ ...introTekst, position: "absolute", inset: 0 }}>
             {getypt}
-            <span style={{ color: GROEN_LICHT, fontWeight: 400, animation: typKlaar ? "none" : "demoCursor 1s step-end infinite", opacity: typKlaar ? 0 : 1 }}>|</span>
+            <span className="demo-anim" style={{ color: GROEN_LICHT, fontWeight: 400, animation: typKlaar ? "none" : "demoCursor 1s step-end infinite", opacity: typKlaar ? 0 : 1 }}>|</span>
           </div>
         </div>
         {typKlaar && (
-          <div style={{ textAlign: "center", color: GROEN_LICHT, fontSize: 28, marginTop: 10, animation: "demoBounce 1.4s ease-in-out infinite" }}>&darr;</div>
+          <div className="demo-anim" aria-hidden="true" style={{ textAlign: "center", color: GROEN_LICHT, fontSize: 44, lineHeight: 1, fontWeight: 700, marginTop: 14, animation: "demoPijl 1.5s ease-in-out infinite" }}>&darr;</div>
         )}
       </div>
 
