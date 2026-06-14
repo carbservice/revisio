@@ -550,13 +550,13 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
     if (open) { log(open.id, "foto verwijderd"); await laadVoortgang(open.id); }
   }
 
-  // Upload meerdere foto's tegelijk (verkleind), losstaand van een stadium.
-  // Ze krijgen stadium "algemeen" zodat ze in het foto-overzicht meetellen.
+  // Interne foto's: onbeperkte werkplaats-dump per carburateur. Ze krijgen
+  // stadium "intern-<carburateur>" en worden NOOIT gepubliceerd, dus de klant
+  // ziet ze nooit. Bedoeld voor 50-100+ foto's per monteur per carburateur.
   async function uploadMeerdereFotos(files: File[]) {
     if (!open || files.length === 0) return;
-    // Onbeperkt: de algemene foto's zijn een dump per revisie (soms 100+).
-    // De max-3 geldt alleen per stadium, niet hier.
     const teUploaden = files;
+    const internStap = `intern-${carburateur}`;
     setBulkBezig(true); setBulkMelding("");
     let gelukt = 0, mislukt = 0;
     for (let i = 0; i < teUploaden.length; i++) {
@@ -566,11 +566,11 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
         const { blob, ext: rawExt } = await verkleinFoto(file);
         const ext = (rawExt || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
         const map = (open.nummer || open.id).replace(/[^a-zA-Z0-9_-]/g, "_");
-        const pad = `${map}/algemeen/${Date.now()}-${i}.${ext}`;
+        const pad = `${map}/intern/carb${carburateur}/${Date.now()}-${i}.${ext}`;
         const { error } = await supabase.storage.from("werkbon-fotos").upload(pad, blob, { contentType: blob.type || "image/jpeg" });
         if (error) { mislukt++; continue; }
         const { data } = supabase.storage.from("werkbon-fotos").getPublicUrl(pad);
-        const { error: insErr } = await supabase.from("klus_fotos").insert({ klus_id: open.id, stap: "algemeen", url: data.publicUrl });
+        const { error: insErr } = await supabase.from("klus_fotos").insert({ klus_id: open.id, stap: internStap, url: data.publicUrl });
         if (insErr) { mislukt++; continue; }
         gelukt++;
       } catch { mislukt++; }
@@ -602,7 +602,8 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
     const nu = new Date().toISOString();
     const { error: pubErr } = await supabase.from("klus_voortgang").update({ gepubliceerd_op: nu }).eq("klus_id", open.id).is("gepubliceerd_op", null);
     if (pubErr) { setFout("Publiceren mislukt: " + pubErr.message); return; }
-    await supabase.from("klus_fotos").update({ gepubliceerd_op: nu }).eq("klus_id", open.id).is("gepubliceerd_op", null);
+    // Alleen de stage-foto's naar de klant; interne foto's blijven intern.
+    await supabase.from("klus_fotos").update({ gepubliceerd_op: nu }).eq("klus_id", open.id).is("gepubliceerd_op", null).in("stap", ["ontvangen", "gestart", "voor_ultrasoon", "na_ultrasoon", "schoon"]);
     log(open.id, "update naar klant gepubliceerd");
     setDeelCode(code || "");
     setDeelLink(`${window.location.origin}/volg?t=${token}`);
@@ -668,6 +669,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
   const eersteNietGedaan = STADIA.filter((s) => s.id !== "akkoord").find((s) => !isGedaan(s.id))?.id || "";
   const lopMin = (id: string) => lopendStart[id] ? Math.max(0, Math.round((nu - lopendStart[id]) / 60000)) : 0;
   const artikelenTotaal = artikelen.reduce((s, a) => s + bedragNum(a.bedrag), 0);
+  const internFotos = (fotos as any[]).filter((f) => f.stap === `intern-${carburateur}`);
 
   const wrap: CSSProperties = { minHeight: "100vh", background: BG, color: TEKST, fontFamily: "system-ui, -apple-system, sans-serif", padding: "20px 14px", maxWidth: 520, margin: "0 auto" };
   const kaart: CSSProperties = { background: KAART_BG, border: `1px solid ${RAND}`, borderRadius: 16, padding: 18, marginBottom: 16, boxShadow: KAART_SCHADUW };
@@ -965,38 +967,29 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
           <BlokEindcontrole checklist={checklist} updCheck={updCheck} onVerwijder={(k) => setChecklist((cs) => cs.filter((x) => x.key !== k))} onToevoegen={() => setChecklist((cs) => [...cs, { key: key(), naam: "", status: "", notitie: "", vast: false }])} kaart={kaart} kopstijl={kopstijl} inpG={inpG} plus={plus} toggle={toggle} />
 
           <div style={kaart}>
-            <div style={kopstijl}>Foto's</div>
-            <div style={{ fontSize: 12, color: GRIJS, marginBottom: 10 }}>Upload hier alle algemene foto's van deze klus (geen limiet). Ze worden automatisch verkleind.</div>
+            <div style={kopstijl}>Interne foto&apos;s · Carburateur {carburateur}</div>
+            <div style={{ fontSize: 12.5, color: GRIJS, marginBottom: 10, lineHeight: 1.5 }}>Werkplaats-documentatie, onbeperkt aantal. Deze foto&apos;s zijn <b style={{ color: ROOD }}>niet</b> zichtbaar voor de klant. Wissel bovenaan van carburateur voor de andere set. (De foto&apos;s die je per stadium maakt, zijn wél voor de klant.)</div>
             <label style={{ display: "block", textAlign: "center", background: bulkBezig ? "#cdbe8a" : GOUD, color: "#fff", borderRadius: 12, padding: "13px", fontSize: 15, fontWeight: 700, cursor: bulkBezig ? "default" : "pointer" }}>
-              {bulkBezig ? "Bezig met uploaden..." : `Alle foto's uploaden${fotos.filter((f) => f.stap === "algemeen").length ? ` (${fotos.filter((f) => f.stap === "algemeen").length})` : ""}`}
+              {bulkBezig ? "Bezig met uploaden..." : `Interne foto's uploaden${internFotos.length ? ` (${internFotos.length})` : ""}`}
               <input type="file" accept="image/*" multiple disabled={bulkBezig} style={{ display: "none" }} onChange={(e) => { const arr = e.target.files ? Array.from(e.target.files) : []; e.currentTarget.value = ""; if (arr.length) uploadMeerdereFotos(arr); }} />
             </label>
             {bulkMelding && <div style={{ fontSize: 13, color: GROEN, fontWeight: 600, marginTop: 10 }}>{bulkMelding}</div>}
 
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: 14, paddingTop: 10, borderTop: `1px solid ${RAND}` }}>
-              <span style={{ fontSize: 13, color: GRIJS, fontWeight: 600 }}>Totaal foto's</span>
-              <span style={{ fontSize: 18, fontWeight: 800, color: fotos.length ? GROEN : GRIJS }}>{fotos.length}</span>
-            </div>
-            {[...STADIA.map((s) => ({ id: s.id, naam: s.kort })), { id: "algemeen", naam: "Algemeen" }].map((g) => {
-              const n = fotos.filter((f) => f.stap === g.id).length;
-              if (!n) return null;
-              return (
-                <div key={g.id} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, padding: "5px 0", borderTop: `1px solid ${RAND}` }}>
-                  <span style={{ color: TEKST }}>{g.naam}</span>
-                  <span style={{ color: GRIJS, fontWeight: 600 }}>{n} foto{n === 1 ? "" : "'s"}</span>
+            {internFotos.length > 0 && (
+              <>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: 14, paddingTop: 10, borderTop: `1px solid ${RAND}` }}>
+                  <span style={{ fontSize: 13, color: GRIJS, fontWeight: 600 }}>Interne foto&apos;s carburateur {carburateur}</span>
+                  <span style={{ fontSize: 18, fontWeight: 800, color: GROEN }}>{internFotos.length}</span>
                 </div>
-              );
-            })}
-            {fotos.length > 0 && (
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
-                {fotos.map((f, idx) => (
-                  <div key={f.id} style={{ position: "relative", width: 80 }}>
-                    <img src={f.url} alt="" onClick={() => setLightbox({ fotos: fotos.map((x: any) => x.url), start: idx })} style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8, border: `1px solid ${RAND}`, display: "block", cursor: "pointer" }} />
-                    <button onClick={() => verwijderFoto(f.id)} style={{ position: "absolute", top: -6, right: -6, width: 22, height: 22, borderRadius: 999, border: "none", background: ROOD, color: "#fff", fontSize: 13, cursor: "pointer" }}>×</button>
-                    <div style={{ fontSize: 10, color: GRIJS, textAlign: "center", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.stap === "algemeen" ? "Algemeen" : (STADIA.find((s) => s.id === f.stap)?.kort || f.stap)}</div>
-                  </div>
-                ))}
-              </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+                  {internFotos.map((f, idx) => (
+                    <div key={f.id} style={{ position: "relative", width: 80 }}>
+                      <img src={f.url} alt="" loading="lazy" onClick={() => setLightbox({ fotos: internFotos.map((x: any) => x.url), start: idx })} style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8, border: `1px solid ${RAND}`, display: "block", cursor: "pointer" }} />
+                      <button onClick={() => verwijderFoto(f.id)} style={{ position: "absolute", top: -6, right: -6, width: 22, height: 22, borderRadius: 999, border: "none", background: ROOD, color: "#fff", fontSize: 13, cursor: "pointer" }}>×</button>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
 
