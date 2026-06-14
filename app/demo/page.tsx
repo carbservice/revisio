@@ -30,12 +30,37 @@ const PAUZE = 2600;     // hoe lang een fase in beeld blijft
 const EIND_PAUZE = 3400; // hoe lang "Klaar" blijft staan voor de herstart
 const FADE = 450;
 
+// Intro die als typemachine over het scherm loopt zodra je de pagina opent.
+const INTRO = "Welkom op de DEMO-pagina van Carburateur Service Nederland.\n\nAls wij een revisie voor je mogen uitvoeren, krijg je zo'n link in je e-mail. Dit is onze nieuwste ontwikkeling: we houden je up-to-date over de revisie van jouw carburateur op onze werkbanken.\n\nKijk hieronder mee.";
+
 export default function DemoPagina() {
   const [aantal, setAantal] = useState(1);      // aantal voltooide stadia (1..5)
   const [centers, setCenters] = useState<number[]>([]);
   const [transAan, setTransAan] = useState(true);
   const [zichtbaar, setZichtbaar] = useState(true);
   const [logoOk, setLogoOk] = useState(true);
+  const [getypt, setGetypt] = useState("");
+  const [typKlaar, setTypKlaar] = useState(false);
+
+  // Typemachine-intro: letter voor letter, met een korte adempauze na een punt
+  // of een nieuwe alinea.
+  useEffect(() => {
+    let i = 0;
+    let t: ReturnType<typeof setTimeout>;
+    const tik = () => {
+      i++;
+      setGetypt(INTRO.slice(0, i));
+      if (i < INTRO.length) {
+        const ch = INTRO[i - 1];
+        const wacht = ch === "\n" ? 240 : ch === "." ? 280 : ch === "," ? 120 : 24;
+        t = setTimeout(tik, wacht);
+      } else {
+        setTypKlaar(true);
+      }
+    };
+    t = setTimeout(tik, 600);
+    return () => clearTimeout(t);
+  }, []);
 
   const tijdlijnRef = useRef<HTMLDivElement | null>(null);
   const dotRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -94,9 +119,10 @@ export default function DemoPagina() {
     minHeight: "100vh",
     background: "linear-gradient(170deg, #f1f7f1 0%, #dde9df 55%, #cfe0d3 100%)",
     color: TEKST, fontFamily: "'Karma','Times New Roman',serif",
-    display: "flex", alignItems: "flex-start", justifyContent: "center",
+    display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start",
     padding: "40px 16px",
   };
+  const introTekst: CSSProperties = { fontSize: "clamp(16px,2.3vw,20px)", lineHeight: 1.62, color: GROEN, fontWeight: 500, whiteSpace: "pre-wrap", fontFamily: "'Karma','Times New Roman',serif", textAlign: "left" };
   const kaart: CSSProperties = {
     width: "100%", maxWidth: 620, background: "#fff", border: `1px solid ${RAND}`,
     borderRadius: 22, overflow: "hidden", boxShadow: "0 20px 55px rgba(26,60,46,0.16)",
@@ -107,7 +133,26 @@ export default function DemoPagina() {
   return (
     <main style={wrap}>
       <link href="https://fonts.googleapis.com/css2?family=Karma:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-      <style>{`@keyframes demoPuls{0%,100%{box-shadow:0 0 0 4px rgba(184,137,58,.18)}50%{box-shadow:0 0 0 9px rgba(184,137,58,.04)}}`}</style>
+      <style>{`
+        @keyframes demoPuls{0%,100%{box-shadow:0 0 0 4px rgba(184,137,58,.18)}50%{box-shadow:0 0 0 9px rgba(184,137,58,.04)}}
+        @keyframes demoCursor{0%,100%{opacity:1}50%{opacity:0}}
+        @keyframes demoBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
+      `}</style>
+
+      {/* Typemachine-intro die de bezoeker meeneemt */}
+      <div style={{ width: "100%", maxWidth: 620, margin: "0 auto 28px" }}>
+        <div style={{ position: "relative" }}>
+          {/* onzichtbare laag reserveert de volledige hoogte, zodat de kaart niet verspringt tijdens het typen */}
+          <div style={{ ...introTekst, visibility: "hidden" }} aria-hidden="true">{INTRO}</div>
+          <div style={{ ...introTekst, position: "absolute", inset: 0 }}>
+            {getypt}
+            <span style={{ color: GROEN_LICHT, fontWeight: 400, animation: typKlaar ? "none" : "demoCursor 1s step-end infinite", opacity: typKlaar ? 0 : 1 }}>|</span>
+          </div>
+        </div>
+        {typKlaar && (
+          <div style={{ textAlign: "center", color: GROEN_LICHT, fontSize: 28, marginTop: 10, animation: "demoBounce 1.4s ease-in-out infinite" }}>&darr;</div>
+        )}
+      </div>
 
       <div style={kaart}>
         <div style={{ background: `linear-gradient(150deg, ${GROEN_LICHT} 0%, ${GROEN} 70%)`, padding: "22px 24px", textAlign: "center" }}>
@@ -139,6 +184,7 @@ export default function DemoPagina() {
           <div style={{ marginTop: 18 }}>
             <div style={labelStijl}>Deze revisie is voor</div>
             <div style={{ fontSize: 18, fontWeight: 600, color: TEKST, marginTop: 4 }}>Alfa Romeo 2000 GTV (1973)</div>
+            <div style={{ fontSize: 15, color: GRIJS, marginTop: 2 }}>Dubbele Dellorto DHLA 40</div>
           </div>
 
           <div style={{ marginTop: 16, background: GROEN_BG, borderRadius: 12, padding: "15px 17px" }}>
