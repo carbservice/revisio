@@ -49,7 +49,24 @@
     "grundeinstellung": "0,3 ± 0,03",
     "kaltstart": "0,8 ± 0,05",
     "schnell_leerlauf": "4500 ± 200/min."
-   }
+   },
+   "motor": {
+    "kw": "40",
+    "ps": "55",
+    "cc": "1300",
+    "rpm": "5800"
+   },
+   "bouwjaar": {
+    "von": "augustus 1979",
+    "bis": ""
+   },
+   "toepassingen": [
+    {
+     "merk_model": "Audi 80",
+     "chassis": "",
+     "motorcode": ""
+    }
+   ]
   },
   {
    "id": "1b3-36-audi80s",
@@ -72,15 +89,15 @@
     {
      "name": "Automatik",
      "bestel": "7.17627.09",
-     "tag": "049 129 016 A/B",
+     "tag": "049 129 016 B",
      "kleur": "geel / zwart",
      "ab_datum": "9 249"
     },
     {
      "name": "Hand",
      "bestel": "7.17627.10",
-     "tag": "049 129 016 B",
-     "kleur": "geel / zwart",
+     "tag": "049 129 016 A",
+     "kleur": "wit / wit",
      "ab_datum": "9 249"
     }
    ],
@@ -101,7 +118,23 @@
     "kaltstart": "0,8 ± 0,05",
     "schnell_leerlauf": "3700 ± 200/min. (Hand) / 3900 ± 200/min. (Autom.)"
    },
-   "controle": "Tagletter Automatik onzeker (A vs B tussen twee lezingen). Bij blad zelf nakijken."
+   "motor": {
+    "kw": "55",
+    "ps": "75",
+    "cc": "1600",
+    "rpm": "5600"
+   },
+   "bouwjaar": {
+    "von": "september 1979",
+    "bis": "april 1980"
+   },
+   "toepassingen": [
+    {
+     "merk_model": "Audi 80 S",
+     "chassis": "",
+     "motorcode": ""
+    }
+   ]
   },
   {
    "id": "1b1-36-vwpassat",
@@ -125,7 +158,7 @@
      "bestel": "7.17626.03",
      "tag": "036 129 016",
      "kleur": "geel / grijs",
-     "ab_datum": "9 253"
+     "ab_datum": "9 153"
     }
    ],
    "werte": {
@@ -144,14 +177,31 @@
     "grundeinstellung": "0,3 ± 0,03",
     "kaltstart": "0,8 ± 0,05",
     "schnell_leerlauf": "4500 ± 200/min."
-   }
+   },
+   "motor": {
+    "kw": "40",
+    "ps": "55",
+    "cc": "1300",
+    "rpm": "5800"
+   },
+   "bouwjaar": {
+    "von": "september 1979",
+    "bis": ""
+   },
+   "toepassingen": [
+    {
+     "merk_model": "VW Passat",
+     "chassis": "",
+     "motorcode": ""
+    }
+   ]
   },
   {
    "id": "1b3-36-vwpassat16",
    "fabrikant": "Pierburg",
    "type": "1 B 3 - 36",
    "gasklep": 36,
-   "vehicle": "VW Passat 1,6 l",
+   "vehicle": "VW Passat 1,6",
    "yearFrom": "vanaf september 1979",
    "engine": "55 kW (75 pk) @ 5600/min · 1588 cc",
    "registrier": "012 111/2.4",
@@ -160,7 +210,8 @@
     18
    ],
    "tag_norm": [
-    "049129016C"
+    "049129016C",
+    "049129016B"
    ],
    "variants": [
     {
@@ -168,6 +219,13 @@
      "bestel": "7.17627.08",
      "tag": "049 129 016 C",
      "kleur": "grijs / geel",
+     "ab_datum": "9 249"
+    },
+    {
+     "name": "Automatik",
+     "bestel": "7.17627.09",
+     "tag": "049 129 016 B",
+     "kleur": "zwart / geel",
      "ab_datum": "9 249"
     }
    ],
@@ -187,7 +245,25 @@
     "grundeinstellung": "0,3 ± 0,03",
     "kaltstart": "0,75 ± 0,05",
     "schnell_leerlauf": "3900 ± 200/min."
-   }
+   },
+   "motor": {
+    "kw": "55",
+    "ps": "75",
+    "cc": "1588",
+    "rpm": "5600"
+   },
+   "bouwjaar": {
+    "von": "september 1979",
+    "bis": ""
+   },
+   "toepassingen": [
+    {
+     "merk_model": "VW Passat 1,6 l",
+     "chassis": "",
+     "motorcode": ""
+    }
+   ],
+   "controle": "Automatik-uitvoering (7.17627.09 / tag 049 129 016 B) komt ook voor op de Audi 80 S — waarschijnlijk dezelfde carburateur op beide auto's."
   },
   {
    "id": "1b1-36-vwiltis",
@@ -238,7 +314,24 @@
     "grundeinstellung": "0,65 ± 0,03",
     "kaltstart": "0,7 ± 0,05",
     "schnell_leerlauf": "3100 ± 200/min."
-   }
+   },
+   "motor": {
+    "kw": "55",
+    "ps": "75",
+    "cc": "1700",
+    "rpm": "5500"
+   },
+   "bouwjaar": {
+    "von": "november 1978",
+    "bis": ""
+   },
+   "toepassingen": [
+    {
+     "merk_model": "VW Iltis",
+     "chassis": "",
+     "motorcode": ""
+    }
+   ]
   },
   {
    "id": "1b1-36-vwlt28",
@@ -281,14 +374,31 @@
     "grundeinstellung": "0,3 ± 0,03",
     "kaltstart": "1,2 ± 0,05",
     "schnell_leerlauf": "4100 ± 100/min."
-   }
+   },
+   "motor": {
+    "kw": "55",
+    "ps": "75",
+    "cc": "2000",
+    "rpm": "4300"
+   },
+   "bouwjaar": {
+    "von": "augustus 1979",
+    "bis": ""
+   },
+   "toepassingen": [
+    {
+     "merk_model": "VW LT 28",
+     "chassis": "",
+     "motorcode": ""
+    }
+   ]
   },
   {
    "id": "4a1-3254-db250-fruh",
    "fabrikant": "Pierburg",
    "type": "4 A 1 - 32/54",
    "gasklep": "32/54",
-   "vehicle": "Mercedes 250 (W123, M123)",
+   "vehicle": "Mercedes 250 (W123)",
    "yearFrom": "maart 1979 - juni 1980",
    "engine": "103 kW (140 pk) @ 5500/min · 2525 cc",
    "registrier": "003 91/3",
@@ -301,7 +411,7 @@
    ],
    "variants": [
     {
-     "name": "Standaard",
+     "name": "Hand + Autom.",
      "bestel": "7.17822.00",
      "tag": "001 070 55 04",
      "kleur": "groen",
@@ -325,14 +435,31 @@
     "kaltstart": "",
     "schnell_leerlauf": ""
    },
-   "controle": "Stromberg-type (4A1): blad heeft afwijkende regels (Düsennadel, Federlänge Drehzahlregler). Sommige standaardvelden ontbreken."
+   "controle": "Solex 4A1 (register-carburateur met naald): blad heeft afwijkende regels (Düsennadel, Federlänge Drehzahlregler). Sommige standaardvelden ontbreken.",
+   "motor": {
+    "kw": "103",
+    "ps": "140",
+    "cc": "2525",
+    "rpm": "5500"
+   },
+   "bouwjaar": {
+    "von": "maart 1979",
+    "bis": "juni 1980"
+   },
+   "toepassingen": [
+    {
+     "merk_model": "Mercedes 250",
+     "chassis": "W123",
+     "motorcode": "M123"
+    }
+   ]
   },
   {
    "id": "4a1-3254-db250-spaet",
    "fabrikant": "Pierburg",
    "type": "4 A 1 - 32/54",
    "gasklep": "32/54",
-   "vehicle": "Mercedes 250 (W123, M123) Hand + Autom.",
+   "vehicle": "Mercedes 250 (W123)",
    "yearFrom": "vanaf juli 1980",
    "engine": "103 kW (140 pk) @ 5500/min · 2525 cc",
    "registrier": "003 91/4",
@@ -369,14 +496,31 @@
     "kaltstart": "",
     "schnell_leerlauf": ""
    },
-   "controle": "Stromberg-type (4A1)."
+   "controle": "Solex 4A1 (register-carburateur met naald).",
+   "motor": {
+    "kw": "103",
+    "ps": "140",
+    "cc": "2525",
+    "rpm": "5500"
+   },
+   "bouwjaar": {
+    "von": "juli 1980",
+    "bis": ""
+   },
+   "toepassingen": [
+    {
+     "merk_model": "Mercedes 250",
+     "chassis": "W123",
+     "motorcode": "M123"
+    }
+   ]
   },
   {
    "id": "4a1-3254-db280-weiss",
    "fabrikant": "Pierburg",
    "type": "4 A 1 - 32/54",
    "gasklep": "32/54",
-   "vehicle": "Mercedes 280 (W123, M110) / 280 S (W116, M110)",
+   "vehicle": "Mercedes 280 / 280 S",
    "yearFrom": "januari 1980 - juni 1980",
    "engine": "115 kW (156 pk) @ 5500/min · 2746 cc",
    "registrier": "003 111/3",
@@ -413,14 +557,36 @@
     "kaltstart": "",
     "schnell_leerlauf": ""
    },
-   "controle": "Stromberg-type (4A1)."
+   "controle": "Solex 4A1 (register-carburateur met naald).",
+   "motor": {
+    "kw": "115",
+    "ps": "156",
+    "cc": "2746",
+    "rpm": "5500"
+   },
+   "bouwjaar": {
+    "von": "januari 1980",
+    "bis": "juni 1980"
+   },
+   "toepassingen": [
+    {
+     "merk_model": "Mercedes 280",
+     "chassis": "W123",
+     "motorcode": "M110"
+    },
+    {
+     "merk_model": "Mercedes 280 S",
+     "chassis": "W116",
+     "motorcode": "M110"
+    }
+   ]
   },
   {
    "id": "4a1-3254-db280-schwarz",
    "fabrikant": "Pierburg",
    "type": "4 A 1 - 32/54",
    "gasklep": "32/54",
-   "vehicle": "Mercedes 280 (W123, M110) / 280 S (W126, M110)",
+   "vehicle": "Mercedes 280 / 280 S",
    "yearFrom": "vanaf juli 1980",
    "engine": "115 kW (156 pk) @ 5500/min · 2746 cc",
    "registrier": "003 111/4",
@@ -457,7 +623,29 @@
     "kaltstart": "",
     "schnell_leerlauf": ""
    },
-   "controle": "Stromberg-type (4A1)."
+   "controle": "Solex 4A1 (register-carburateur met naald).",
+   "motor": {
+    "kw": "115",
+    "ps": "156",
+    "cc": "2746",
+    "rpm": "5500"
+   },
+   "bouwjaar": {
+    "von": "juli 1980",
+    "bis": ""
+   },
+   "toepassingen": [
+    {
+     "merk_model": "Mercedes 280",
+     "chassis": "W123",
+     "motorcode": "M110"
+    },
+    {
+     "merk_model": "Mercedes 280 S",
+     "chassis": "W126",
+     "motorcode": "M110"
+    }
+   ]
   },
   {
    "id": "31pic6-vwpolo-895",
@@ -500,7 +688,29 @@
     "kaltstart": "",
     "schnell_leerlauf": "2400 ± 100/min."
    },
-   "controle": "PIC-6 (enkelvoudige Solex-type), afwijkende bladindeling."
+   "controle": "PIC-6 (enkelvoudige Solex-type), afwijkende bladindeling.",
+   "motor": {
+    "kw": "29",
+    "ps": "40",
+    "cc": "895",
+    "rpm": "5900"
+   },
+   "bouwjaar": {
+    "von": "augustus 1979",
+    "bis": ""
+   },
+   "toepassingen": [
+    {
+     "merk_model": "VW Polo",
+     "chassis": "",
+     "motorcode": ""
+    },
+    {
+     "merk_model": "VW Derby",
+     "chassis": "",
+     "motorcode": ""
+    }
+   ]
   },
   {
    "id": "31pic6-vwpolo-1093",
@@ -520,14 +730,14 @@
    ],
    "variants": [
     {
-     "name": "Polo",
+     "name": "Polo (8.79-)",
      "bestel": "7.17889.00",
      "tag": "052 129 015 P",
      "kleur": "blauw / zwart",
      "ab_datum": "9 219"
     },
     {
-     "name": "Derby",
+     "name": "Derby (9.79-)",
      "bestel": "7.18010.00",
      "tag": "052 129 015 M",
      "kleur": "geel / groen",
@@ -551,7 +761,29 @@
     "kaltstart": "",
     "schnell_leerlauf": "2400/min."
    },
-   "controle": "PIC-6, twee kolommen (Polo/Derby). Waarden waar ze verschillen met / gescheiden."
+   "controle": "PIC-6, twee kolommen (Polo/Derby). Waarden waar ze verschillen met / gescheiden.",
+   "motor": {
+    "kw": "37",
+    "ps": "50",
+    "cc": "1093",
+    "rpm": "5800"
+   },
+   "bouwjaar": {
+    "von": "augustus 1979",
+    "bis": ""
+   },
+   "toepassingen": [
+    {
+     "merk_model": "VW Polo",
+     "chassis": "",
+     "motorcode": ""
+    },
+    {
+     "merk_model": "VW Derby",
+     "chassis": "",
+     "motorcode": ""
+    }
+   ]
   },
   {
    "id": "36-1b1-passat-audi80l",
@@ -595,7 +827,29 @@
     "kaltstart": "0,8 ± 0,05",
     "schnell_leerlauf": "4500 ± 200/min."
    },
-   "controle": "KRUISVERWIJZING: zelfde tag (036 129 016 C) op VW Passat (blad 12) en Audi 80 L (blad 18)."
+   "controle": "KRUISVERWIJZING: zelfde tag 036 129 016 C op VW Passat én Audi 80 L (beide oktober 1980).",
+   "motor": {
+    "kw": "40",
+    "ps": "55",
+    "cc": "1300",
+    "rpm": "5800"
+   },
+   "bouwjaar": {
+    "von": "oktober 1980",
+    "bis": ""
+   },
+   "toepassingen": [
+    {
+     "merk_model": "VW Passat",
+     "chassis": "",
+     "motorcode": ""
+    },
+    {
+     "merk_model": "Audi 80 L",
+     "chassis": "",
+     "motorcode": ""
+    }
+   ]
   },
   {
    "id": "36-1b3-vwpassat-16",
@@ -637,14 +891,31 @@
     "grundeinstellung": "0,3 ± 0,03",
     "kaltstart": "0,5 ± 0,05",
     "schnell_leerlauf": "3900 ± 200/min."
-   }
+   },
+   "motor": {
+    "kw": "55",
+    "ps": "75",
+    "cc": "1600",
+    "rpm": "5600"
+   },
+   "bouwjaar": {
+    "von": "april 1980",
+    "bis": ""
+   },
+   "toepassingen": [
+    {
+     "merk_model": "VW Passat",
+     "chassis": "",
+     "motorcode": ""
+    }
+   ]
   },
   {
-   "id": "31pic6-vwpassat",
+   "id": "31pic6-vwgolf-1093",
    "fabrikant": "Pierburg",
    "type": "31 PIC-6",
    "gasklep": 31,
-   "vehicle": "VW Passat",
+   "vehicle": "VW Golf",
    "yearFrom": "vanaf oktober 1980",
    "engine": "40 kW (55 pk) @ 5800/min · 1300 cc",
    "registrier": "012 112/0.5",
@@ -656,11 +927,18 @@
    ],
    "variants": [
     {
-     "name": "Standaard",
+     "name": "8.79-",
      "bestel": "7.17894.00",
      "tag": "036 129 015 L",
-     "kleur": "groen / kleurloos",
+     "kleur": "groen / grijs",
      "ab_datum": "9 219"
+    },
+    {
+     "name": "9.79-",
+     "bestel": "7.18011.00",
+     "tag": "036 129 015 (tweede letter)",
+     "kleur": "geel / bruin",
+     "ab_datum": "9 247"
     }
    ],
    "werte": {
@@ -680,14 +958,31 @@
     "kaltstart": "",
     "schnell_leerlauf": "2400/min."
    },
-   "controle": "PIC-6 (enkelvoudige Solex-type)."
+   "controle": "Tweede uitvoering 9.79- (7.18011.00, geel/bruin); tagletter bij blad nakijken. CORRECTIE: dit is VW Golf, niet Passat (eerdere lezing).",
+   "motor": {
+    "kw": "37",
+    "ps": "50",
+    "cc": "1093",
+    "rpm": "6000"
+   },
+   "bouwjaar": {
+    "von": "augustus 1979",
+    "bis": ""
+   },
+   "toepassingen": [
+    {
+     "merk_model": "VW Golf",
+     "chassis": "",
+     "motorcode": ""
+    }
+   ]
   },
   {
    "id": "34pic5-vwpolo-golf",
    "fabrikant": "Pierburg",
    "type": "34 PIC-5",
    "gasklep": 34,
-   "vehicle": "VW Polo / Derby / Golf",
+   "vehicle": "VW Polo / Derby / Golf / Jetta / Scirocco",
    "yearFrom": "vanaf augustus 1979",
    "engine": "44 kW (60 pk) @ 5600/min · 1300 cc",
    "registrier": "012 112/1.1",
@@ -707,7 +1002,7 @@
      "ab_datum": "9 218"
     },
     {
-     "name": "Golf",
+     "name": "Golf / Jetta / Scirocco",
      "bestel": "7.17893.00",
      "tag": "036 129 015 M",
      "kleur": "blauw / koper",
@@ -731,14 +1026,51 @@
     "kaltstart": "",
     "schnell_leerlauf": "2600 ± 100/min."
    },
-   "controle": "PIC-5 (enkelvoudige Solex-type), twee uitvoeringen (Polo/Derby en Golf)."
+   "controle": "PIC-5 (enkelvoudige Solex-type), twee uitvoeringen (Polo/Derby en Golf).",
+   "motor": {
+    "kw": "44",
+    "ps": "60",
+    "cc": "1300",
+    "rpm": "5600"
+   },
+   "bouwjaar": {
+    "von": "augustus 1979",
+    "bis": ""
+   },
+   "toepassingen": [
+    {
+     "merk_model": "VW Polo",
+     "chassis": "",
+     "motorcode": ""
+    },
+    {
+     "merk_model": "VW Derby",
+     "chassis": "",
+     "motorcode": ""
+    },
+    {
+     "merk_model": "VW Golf",
+     "chassis": "",
+     "motorcode": ""
+    },
+    {
+     "merk_model": "VW Jetta",
+     "chassis": "",
+     "motorcode": ""
+    },
+    {
+     "merk_model": "VW Scirocco",
+     "chassis": "",
+     "motorcode": ""
+    }
+   ]
   },
   {
    "id": "36-1b3-golf-jetta-scirocco",
    "fabrikant": "Pierburg",
    "type": "36 - 1 B 3",
    "gasklep": 36,
-   "vehicle": "VW Golf / Jetta (S/LS/GLS) / Scirocco S",
+   "vehicle": "VW Golf / Jetta / Scirocco",
    "yearFrom": "vanaf april 1980",
    "engine": "51 kW (70 pk) @ 5600/min · 1460 cc",
    "registrier": "012 112/3.4",
@@ -761,7 +1093,7 @@
      "name": "Automatik",
      "bestel": "7.17627.17",
      "tag": "055 129 024 P",
-     "kleur": "rood / rood",
+     "kleur": "rood / blauw",
      "ab_datum": "0 099"
     }
    ],
@@ -782,7 +1114,53 @@
     "kaltstart": "0,75 ± 0,05",
     "schnell_leerlauf": "3900 ± 200/min."
    },
-   "controle": "Automatik-tag (055 129 024 P) en bestelnr afgeleid; bij blad nakijken."
+   "motor": {
+    "kw": "51",
+    "ps": "70",
+    "cc": "1460",
+    "rpm": "5600"
+   },
+   "bouwjaar": {
+    "von": "april 1980",
+    "bis": ""
+   },
+   "toepassingen": [
+    {
+     "merk_model": "VW Golf S",
+     "chassis": "",
+     "motorcode": ""
+    },
+    {
+     "merk_model": "VW Golf LS",
+     "chassis": "",
+     "motorcode": ""
+    },
+    {
+     "merk_model": "VW Golf GLS",
+     "chassis": "",
+     "motorcode": ""
+    },
+    {
+     "merk_model": "VW Jetta S",
+     "chassis": "",
+     "motorcode": ""
+    },
+    {
+     "merk_model": "VW Jetta LS",
+     "chassis": "",
+     "motorcode": ""
+    },
+    {
+     "merk_model": "VW Jetta GLS",
+     "chassis": "",
+     "motorcode": ""
+    },
+    {
+     "merk_model": "VW Scirocco S",
+     "chassis": "",
+     "motorcode": ""
+    }
+   ]
   },
   {
    "id": "36-1b3-audi80s",
@@ -797,15 +1175,31 @@
     219
    ],
    "tag_norm": [
-    "049129016N"
+    "049129016N",
+    "049129016L",
+    "049129017G"
    ],
    "variants": [
     {
-     "name": "Hand + Autom.",
+     "name": "Automatik (4.80-)",
      "bestel": "7.17627.19",
      "tag": "049 129 016 N",
      "kleur": "rood / grijs",
      "ab_datum": "0 099"
+    },
+    {
+     "name": "Hand (4.80-9.80)",
+     "bestel": "7.17627.20",
+     "tag": "049 129 016 L",
+     "kleur": "rood / zwart",
+     "ab_datum": "0 099"
+    },
+    {
+     "name": "Hand (10.80-)",
+     "bestel": "7.17627.23",
+     "tag": "049 129 017 G",
+     "kleur": "blauw / zwart",
+     "ab_datum": "0 109"
     }
    ],
    "werte": {
@@ -824,7 +1218,25 @@
     "grundeinstellung": "0,3 ± 0,03",
     "kaltstart": "0,8 ± 0,05",
     "schnell_leerlauf": "3700 ± 200/min."
-   }
+   },
+   "motor": {
+    "kw": "55",
+    "ps": "75",
+    "cc": "1600",
+    "rpm": "5600"
+   },
+   "bouwjaar": {
+    "von": "april 1980",
+    "bis": ""
+   },
+   "toepassingen": [
+    {
+     "merk_model": "Audi 80 S",
+     "chassis": "",
+     "motorcode": ""
+    }
+   ]
   }
- ]
+ ],
+ "_verrijkt": "Per kaart: motor (kw/ps/cc/rpm), bouwjaar (von/bis), toepassingen (voertuig/chassis/motorcode), uitvoeringen met tags. Tweede leesronde + handmatige correctie p25/p27."
 }

@@ -33,9 +33,12 @@ function Hub() {
     const q = norm(zoek);
     if (!q) return KENNBLADEN;
     return KENNBLADEN.filter((c) => {
+      const toep = (c.toepassingen || []).map((t) => `${t.merk_model} ${t.chassis} ${t.motorcode}`).join(" ");
       const hooi = norm(
-        c.type + " " + c.vehicle + " " + c.registrier + " " +
-        c.tag_norm.join(" ") + " " + c.variants.map((v) => v.tag).join(" ")
+        c.type + " " + c.vehicle + " " + c.registrier + " " + c.engine + " " +
+        (c.motor ? `${c.motor.cc} ${c.motor.kw} ${c.motor.ps}` : "") + " " +
+        (c.bouwjaar ? `${c.bouwjaar.von} ${c.bouwjaar.bis}` : "") + " " + toep + " " +
+        c.variants.map((v) => `${v.tag} ${v.kleur}`).join(" ") + " " + c.tag_norm.join(" ")
       );
       return hooi.includes(q);
     });
@@ -59,7 +62,7 @@ function Hub() {
             <input
               value={zoek}
               onChange={(e) => setZoek(e.target.value)}
-              placeholder="Zoek op tag, type of voertuig (bv. 036129016, Passat, 4A1)…"
+              placeholder="Zoek op auto, bouwjaar, cc, type, kleur of tag (bv. Passat, 1980, 1600, 4A1)…"
               style={{ border: 0, outline: 0, fontSize: 16, width: "100%", color: TEKST, background: "transparent" }}
             />
           </div>
@@ -79,6 +82,7 @@ function Hub() {
                 <div style={{ fontSize: 20, fontWeight: 800, color: GROEN }}>{c.type}</div>
                 <div style={{ fontWeight: 700, marginTop: 2 }}>{c.vehicle}</div>
                 <div style={{ color: GRIJS, fontSize: 13, marginTop: 4 }}>{c.engine}</div>
+                {c.bouwjaar && <div style={{ color: GROEN, fontSize: 12.5, fontWeight: 700, marginTop: 3 }}>Bouwjaar: {c.bouwjaar.von}{c.bouwjaar.bis ? ` – ${c.bouwjaar.bis}` : " →"}</div>}
                 <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {c.variants.map((v, i) => (
                     <span key={i} style={badgeGoud}>{v.tag}</span>
@@ -105,6 +109,33 @@ function Detail({ c, li, taal, setTaal, terug }: { c: Kennblad; li: number; taal
       <div style={{ fontSize: 17, fontWeight: 700 }}>{c.vehicle}</div>
       <div style={{ color: GRIJS, marginTop: 3 }}>{c.engine} · {c.yearFrom}</div>
       <div style={{ color: GRIJS, fontSize: 12.5, marginTop: 6 }}>Registrier-Nr {c.registrier} · {c.fabrikant} · bronbladen {c.bron_sheets.join(" & ")}</div>
+
+      {c.toepassingen && c.toepassingen.length > 0 && (
+        <section style={paneel}>
+          <h3 style={kop}>Toepassingen (voertuigen)</h3>
+          <table style={tabel}>
+            <thead><tr>{["Merk / model", "Chassis", "Motorcode", "Bouwjaar"].map((h) => <th key={h} style={th}>{h}</th>)}</tr></thead>
+            <tbody>
+              {c.toepassingen.map((t, i) => (
+                <tr key={i}>
+                  <td style={{ ...td, fontWeight: 700 }}>{t.merk_model}</td>
+                  <td style={td}>{t.chassis || "–"}</td>
+                  <td style={td}>{t.motorcode || "–"}</td>
+                  <td style={td}>{c.bouwjaar ? `${c.bouwjaar.von}${c.bouwjaar.bis ? ` – ${c.bouwjaar.bis}` : " →"}` : "–"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {c.motor && (
+            <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 8 }}>
+              <span style={badge}>{c.motor.kw} kW</span>
+              <span style={badge}>{c.motor.ps} pk</span>
+              <span style={badge}>{c.motor.cc} cc</span>
+              <span style={badge}>{c.motor.rpm}/min</span>
+            </div>
+          )}
+        </section>
+      )}
 
       <section style={paneel}>
         <h3 style={kop}>Uitvoeringen &amp; tags</h3>
