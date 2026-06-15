@@ -1,0 +1,20 @@
+{
+  "_doel": "Vaste vertaal-dictionary voor de Normaleinstellung-regels op elk Pierburg-kennblad. Volgorde = volgorde op het blad. Per regel: [en, de, nl, symbool].",
+  "regels": {
+    "lufttrichter":          ["Venturi",                    "Lufttrichter",             "Luchttrechter (venturi)",        "K"],
+    "hauptduese":            ["Main jet",                   "Hauptdüse",                "Hoofdsproeier",                  "Gg"],
+    "luftkorrektur":         ["Air-correction jet",         "Luftkorrekturdüse",        "Luchtcorrectiesproeier",         "a"],
+    "leerlauf_luft":         ["Idle / idle-air jet",        "Leerlauf-/Luftdüse",       "Stationair-/luchtsproeier",      "g"],
+    "zusatz_kraftstoff_luft":["Auxiliary fuel / air jet",   "Zusatzkraftstoff-/Luftdüse","Extra brandstof-/luchtsproeier","" ],
+    "einspritzrohr":         ["Accelerator-pump tube",      "Einspritzrohr",            "Inspuitbuisje (pompstraal)",     "i"],
+    "einspritzmenge":        ["Injection qty per stroke",   "Einspritzmenge cm³/Hub",   "Inspuithoeveelheid cm³/slag",    "" ],
+    "anreicherung_teillast": ["Enrichment / part-load",     "Anreicherung/Teillast",    "Verrijking / deellast",          "o"],
+    "niveau":                ["Float level",                "Niveau",                   "Vlotterniveau",                  "mm"],
+    "schwimmernadelventil":  ["Float needle valve",         "Schwimmernadelventil",     "Vlotternaaldventiel",            "P"],
+    "schwimmergewicht":      ["Float weight",               "Schwimmergewicht",         "Vlottergewicht",                 "" ],
+    "starterklappenspalt":   ["Choke-valve gap",            "Starterklappenspalt",      "Chokeklepspleet",                "" ],
+    "grundeinstellung":      ["Basic setting (throttle lift)","Grundeinstellung",       "Basisinstelling (gasklepheffing)","" ],
+    "kaltstart":             ["Cold-start (throttle gap)",  "Kaltstarteinstellung",     "Koudstartinstelling (gasklepspleet)","" ],
+    "schnell_leerlauf":      ["Fast idle",                  "Schnell-Leerlauf",         "Snel stationair",                "n"]
+  }
+}

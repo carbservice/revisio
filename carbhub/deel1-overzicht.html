@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="nl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carburateur Hub — Deel 1 (controle)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Karma:wght@400;500;600;700&display=swap');
+  :root{--g-dark:#1c4a37;--g-mid:#2f8f5b;--g-deep:#277a4d;--brass:#b8893a;
+    --soft:#f6faf8;--border:#dceae2;--ink:#27332e;--muted:#5f7068;
+    --serif:'Karma',Georgia,serif;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:#eef3f0;color:var(--ink);font-family:var(--sans);}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 16px 60px;}
+  header.top{background:var(--g-dark);color:#fff;padding:22px 0 26px;}
+  .brand{font-family:var(--serif);font-weight:700;font-size:27px;}
+  .brand small{display:block;font-family:var(--sans);font-weight:400;font-size:13px;color:#bfe0cf;margin-top:2px;}
+  .searchbar{margin-top:18px;display:flex;gap:10px;align-items:center;background:#fff;border-radius:12px;padding:11px 14px;box-shadow:0 8px 24px rgba(10,40,25,.18);}
+  .searchbar input{border:0;outline:0;font-size:17px;width:100%;font-family:var(--sans);color:var(--ink);background:transparent;}
+  .count{color:#bfe0cf;font-size:13px;margin-top:10px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-top:22px;}
+  .card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px 16px 16px;cursor:pointer;transition:transform .15s,box-shadow .2s,border-color .2s;}
+  .card:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(20,60,40,.12);border-color:#c7dccf;}
+  .card .type{font-family:var(--serif);font-weight:700;color:var(--g-dark);font-size:20px;}
+  .card .veh{font-weight:600;margin-top:2px;}
+  .card .eng{color:var(--muted);font-size:13.5px;margin-top:4px;}
+  .badges{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;}
+  .badge{font-size:11.5px;background:var(--soft);border:1px solid var(--border);color:var(--g-deep);border-radius:20px;padding:3px 9px;font-variant-numeric:tabular-nums;}
+  .badge.brass{color:#8a6320;border-color:#ecdcc0;background:#fbf4e8;}
+  .detail{display:none;margin-top:22px;}
+  .back{background:none;border:0;color:var(--g-deep);font-size:15px;cursor:pointer;padding:6px 0;font-family:var(--sans);}
+  .dhead{font-family:var(--serif);font-weight:700;color:var(--g-dark);font-size:28px;margin:6px 0 2px;}
+  .dveh{font-weight:600;font-size:17px;}
+  .deng{color:var(--muted);margin-top:3px;}
+  .reg{color:var(--muted);font-size:12.5px;margin-top:6px;}
+  .panel{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px;margin-top:16px;}
+  .panel h3{font-family:var(--serif);color:var(--g-dark);margin:0 0 12px;font-size:18px;font-weight:600;}
+  table.specs{width:100%;border-collapse:collapse;font-size:14.5px;}
+  table.specs th,table.specs td{text-align:left;padding:8px 10px;border-bottom:1px solid #eef3f0;vertical-align:top;}
+  table.specs thead th{color:var(--g-deep);font-weight:600;}
+  .sym{color:var(--brass);font-weight:700;width:34px;}
+  .val{font-variant-numeric:tabular-nums;font-weight:600;}
+  .vtab{width:100%;border-collapse:collapse;font-size:14px;}
+  .vtab th,.vtab td{text-align:left;padding:7px 10px;border-bottom:1px solid #eef3f0;}
+  .note{background:#fbf4e8;border:1px solid #ecdcc0;color:#8a6320;border-radius:10px;padding:10px 12px;margin-top:14px;font-size:13.5px;}
+  .langtoggle{float:right;display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+  .langtoggle button{border:0;background:#fff;color:var(--muted);font-size:12.5px;padding:6px 11px;cursor:pointer;border-left:1px solid var(--border);}
+  .langtoggle button:first-child{border-left:0;}
+  .langtoggle button.on{background:var(--g-dark);color:#fff;}
+</style></head>
+<body>
+<header class="top"><div class="wrap">
+  <div class="brand">Carburateur Hub <small>Deel 1 · 10 unieke kennbladen · controleweergave</small></div>
+  <div class="searchbar">
+    <input id="q" placeholder="Zoek op tag, type of voertuig (bv. 036129016, Passat, 4A1)…" oninput="render()">
+  </div>
+  <div class="count" id="count"></div>
+</div></header>
+<div class="wrap">
+  <div class="grid" id="grid"></div>
+  <div class="detail" id="detail"></div>
+</div>
+<script>
+const LABELS={lufttrichter:["Venturi","Lufttrichter","Luchttrechter (venturi)","K"],hauptduese:["Main jet","Hauptdüse","Hoofdsproeier","Gg"],luftkorrektur:["Air-correction jet","Luftkorrekturdüse","Luchtcorrectiesproeier","a"],leerlauf_luft:["Idle / idle-air jet","Leerlauf-/Luftdüse","Stationair-/luchtsproeier","g"],zusatz_kraftstoff_luft:["Auxiliary fuel / air jet","Zusatzkraftstoff-/Luftdüse","Extra brandstof-/luchtsproeier",""],einspritzrohr:["Accelerator-pump tube","Einspritzrohr","Inspuitbuisje (pompstraal)","i"],einspritzmenge:["Injection qty per stroke","Einspritzmenge cm³/Hub","Inspuithoeveelheid cm³/slag",""],anreicherung_teillast:["Enrichment / part-load","Anreicherung/Teillast","Verrijking / deellast","o"],niveau:["Float level","Niveau","Vlotterniveau","mm"],schwimmernadelventil:["Float needle valve","Schwimmernadelventil","Vlotternaaldventiel","P"],schwimmergewicht:["Float weight","Schwimmergewicht","Vlottergewicht",""],starterklappenspalt:["Choke-valve gap","Starterklappenspalt","Chokeklepspleet",""],grundeinstellung:["Basic setting (throttle lift)","Grundeinstellung","Basisinstelling (gasklepheffing)",""],kaltstart:["Cold-start (throttle gap)","Kaltstarteinstellung","Koudstartinstelling (gasklepspleet)",""],schnell_leerlauf:["Fast idle","Schnell-Leerlauf","Snel stationair","n"]};
+const ORDER=Object.keys(LABELS);
+const CARBS=[{"id": "1b1-36-audi80", "fabrikant": "Pierburg", "type": "1 B 1 - 36", "gasklep": 36, "vehicle": "Audi 80", "yearFrom": "vanaf augustus 1979", "engine": "40 kW (55 pk) @ 5800/min · 1300 cc", "registrier": "001 60/1.8", "bron_sheets": [1, 11], "tag_norm": ["036129016A"], "variants": [{"name": "Standaard", "bestel": "7.17626.06", "tag": "036 129 016 A", "kleur": "wit / rood", "ab_datum": "9 220"}], "werte": {"lufttrichter": "25", "hauptduese": "X117,5", "luftkorrektur": "95", "leerlauf_luft": "52,5 / 130", "zusatz_kraftstoff_luft": "42,5 / 120", "einspritzrohr": "0,3 / 0,3 (nr. 14)", "einspritzmenge": "1,15 ± 0,2", "anreicherung_teillast": "50", "niveau": "27 ± 1", "schwimmernadelventil": "1,5 (m. stift)", "schwimmergewicht": "7,2 ± 0,5 g", "starterklappenspalt": "3,5 ± 0,15", "grundeinstellung": "0,3 ± 0,03", "kaltstart": "0,8 ± 0,05", "schnell_leerlauf": "4500 ± 200/min."}}, {"id": "1b3-36-audi80s", "fabrikant": "Pierburg", "type": "1 B 3 - 36", "gasklep": 36, "vehicle": "Audi 80 S", "yearFrom": "september 1979 - april 1980", "engine": "55 kW (75 pk) @ 5600/min · 1600 cc", "registrier": "001 60/2.6", "bron_sheets": [2, 12], "tag_norm": ["049129016A", "049129016B"], "variants": [{"name": "Automatik", "bestel": "7.17627.09", "tag": "049 129 016 A/B", "kleur": "geel / zwart", "ab_datum": "9 249"}, {"name": "Hand", "bestel": "7.17627.10", "tag": "049 129 016 B", "kleur": "geel / zwart", "ab_datum": "9 249"}], "werte": {"lufttrichter": "26", "hauptduese": "X122,5", "luftkorrektur": "100", "leerlauf_luft": "50 / 130", "zusatz_kraftstoff_luft": "37,5 / 130", "einspritzrohr": "0,5", "einspritzmenge": "0,9 ± 0,15", "anreicherung_teillast": "45", "niveau": "27 ± 1,0 mm", "schwimmernadelventil": "2,0 (m. stift)", "schwimmergewicht": "7,2 ± 0,5 g", "starterklappenspalt": "4,3 ± 0,15", "grundeinstellung": "0,3 ± 0,03", "kaltstart": "0,8 ± 0,05", "schnell_leerlauf": "3700 ± 200/min. (Hand) / 3900 ± 200/min. (Autom.)"}, "controle": "Tagletter Automatik onzeker (A vs B tussen twee lezingen). Bij blad zelf nakijken."}, {"id": "1b1-36-vwpassat", "fabrikant": "Pierburg", "type": "1 B 1 - 36", "gasklep": 36, "vehicle": "VW Passat", "yearFrom": "vanaf september 1979", "engine": "40 kW (55 pk) @ 5800/min · 1300 cc", "registrier": "012 111/1.6", "bron_sheets": [3, 17], "tag_norm": ["036129016"], "variants": [{"name": "Standaard", "bestel": "7.17626.03", "tag": "036 129 016", "kleur": "geel / grijs", "ab_datum": "9 253"}], "werte": {"lufttrichter": "25", "hauptduese": "X117,5", "luftkorrektur": "95", "leerlauf_luft": "52,5 / 130", "zusatz_kraftstoff_luft": "42,5 / 120", "einspritzrohr": "0,4 / 0,3 (nr. 12)", "einspritzmenge": "0,9 ± 0,15", "anreicherung_teillast": "50", "niveau": "27 ± 1,0 mm", "schwimmernadelventil": "1,5 (m. stift)", "schwimmergewicht": "7,2 ± 0,5 g", "starterklappenspalt": "3,5 ± 0,15", "grundeinstellung": "0,3 ± 0,03", "kaltstart": "0,8 ± 0,05", "schnell_leerlauf": "4500 ± 200/min."}}, {"id": "1b3-36-vwpassat16", "fabrikant": "Pierburg", "type": "1 B 3 - 36", "gasklep": 36, "vehicle": "VW Passat 1,6 l", "yearFrom": "vanaf september 1979", "engine": "55 kW (75 pk) @ 5600/min · 1588 cc", "registrier": "012 111/2.4", "bron_sheets": [4, 18], "tag_norm": ["049129016C"], "variants": [{"name": "Hand", "bestel": "7.17627.08", "tag": "049 129 016 C", "kleur": "grijs / geel", "ab_datum": "9 249"}], "werte": {"lufttrichter": "26", "hauptduese": "X125", "luftkorrektur": "100", "leerlauf_luft": "50 / 130", "zusatz_kraftstoff_luft": "37,5 / 130", "einspritzrohr": "0,55", "einspritzmenge": "0,9 ± 0,15", "anreicherung_teillast": "45", "niveau": "27 ± 1,0 mm", "schwimmernadelventil": "2,0 (m. stift)", "schwimmergewicht": "7,5 ± 0,5 g", "starterklappenspalt": "4,3 ± 0,15", "grundeinstellung": "0,3 ± 0,03", "kaltstart": "0,75 ± 0,05", "schnell_leerlauf": "3900 ± 200/min."}}, {"id": "1b1-36-vwiltis", "fabrikant": "Pierburg", "type": "1 B 1 - 36", "gasklep": 36, "vehicle": "VW Iltis", "yearFrom": "vanaf november 1978", "engine": "55 kW (75 pk) @ 5500/min · 1700 cc", "registrier": "012 115/1", "bron_sheets": [5, 19], "tag_norm": ["049129015L", "049129015M"], "variants": [{"name": "BW 24 Volt", "bestel": "7.17626.00", "tag": "049 129 015 L", "kleur": "geel / rood", "ab_datum": "8 319"}, {"name": "Zivil 12 Volt", "bestel": "7.17626.01", "tag": "049 129 015 M", "kleur": "geel / blauw", "ab_datum": "8 319"}], "werte": {"lufttrichter": "27", "hauptduese": "X127,5", "luftkorrektur": "140", "leerlauf_luft": "55 / 130", "zusatz_kraftstoff_luft": "50 / 145", "einspritzrohr": "0,4 (nr. 09)", "einspritzmenge": "1,0 ± 0,2", "anreicherung_teillast": "50", "niveau": "27 ± 1", "schwimmernadelventil": "2,0", "schwimmergewicht": "7,2 ± 0,5 g", "starterklappenspalt": "4,0 ± 0,15", "grundeinstellung": "0,65 ± 0,03", "kaltstart": "0,7 ± 0,05", "schnell_leerlauf": "3100 ± 200/min."}}, {"id": "1b1-36-vwlt28", "fabrikant": "Pierburg", "type": "1 B 1 - 36", "gasklep": 36, "vehicle": "VW LT 28", "yearFrom": "vanaf augustus 1979", "engine": "55 kW (75 pk) @ 4300/min · 2000 cc", "registrier": "012 220/1.2", "bron_sheets": [6, 20], "tag_norm": ["060129016"], "variants": [{"name": "Standaard", "bestel": "7.17626.02", "tag": "060 129 016", "kleur": "geel / groen", "ab_datum": "9 220"}], "werte": {"lufttrichter": "28", "hauptduese": "X135", "luftkorrektur": "140", "leerlauf_luft": "55 / 135", "zusatz_kraftstoff_luft": "50 / 140", "einspritzrohr": "0,4 (nr. 17)", "einspritzmenge": "0,9 ± 0,15", "anreicherung_teillast": "90", "niveau": "27 ± 1,0 mm", "schwimmernadelventil": "2,0", "schwimmergewicht": "7,2 ± 0,5 g", "starterklappenspalt": "4,1 ± 0,15", "grundeinstellung": "0,3 ± 0,03", "kaltstart": "1,2 ± 0,05", "schnell_leerlauf": "4100 ± 100/min."}}, {"id": "4a1-3254-db250-fruh", "fabrikant": "Pierburg", "type": "4 A 1 - 32/54", "gasklep": "32/54", "vehicle": "Mercedes 250 (W123, M123)", "yearFrom": "maart 1979 - juni 1980", "engine": "103 kW (140 pk) @ 5500/min · 2525 cc", "registrier": "003 91/3", "bron_sheets": [7, 13], "tag_norm": ["0010705504"], "variants": [{"name": "Standaard", "bestel": "7.17822.00", "tag": "001 070 55 04", "kleur": "groen", "ab_datum": "9 065"}], "werte": {"lufttrichter": "20 mm Ø", "hauptduese": "X97,5 / C3 (naald)", "luftkorrektur": "", "leerlauf_luft": "120", "zusatz_kraftstoff_luft": "120", "einspritzrohr": "", "einspritzmenge": "0,7 ± 0,15", "anreicherung_teillast": "naald nr. 2", "niveau": "5 ± 1 mm", "schwimmernadelventil": "", "schwimmergewicht": "6,8 ± 0,35 g", "starterklappenspalt": "3,0 ± 0,15 mm", "grundeinstellung": "", "kaltstart": "", "schnell_leerlauf": ""}, "controle": "Stromberg-type (4A1): blad heeft afwijkende regels (Düsennadel, Federlänge Drehzahlregler). Sommige standaardvelden ontbreken."}, {"id": "4a1-3254-db250-spaet", "fabrikant": "Pierburg", "type": "4 A 1 - 32/54", "gasklep": "32/54", "vehicle": "Mercedes 250 (W123, M123) Hand + Autom.", "yearFrom": "vanaf juli 1980", "engine": "103 kW (140 pk) @ 5500/min · 2525 cc", "registrier": "003 91/4", "bron_sheets": [8, 14], "tag_norm": ["0010706804"], "variants": [{"name": "Hand + Autom.", "bestel": "7.17822.01", "tag": "001 070 68 04", "kleur": "blauw", "ab_datum": "9 065"}], "werte": {"lufttrichter": "20 mm Ø", "hauptduese": "X97,5 / C3 (naald)", "luftkorrektur": "", "leerlauf_luft": "120", "zusatz_kraftstoff_luft": "120 (TN-starter)", "einspritzrohr": "", "einspritzmenge": "0,7 ± 0,15", "anreicherung_teillast": "naald nr. 2", "niveau": "5 ± 1 mm", "schwimmernadelventil": "", "schwimmergewicht": "6,8 ± 0,35 g", "starterklappenspalt": "3,0 ± 0,15 mm", "grundeinstellung": "aanheftoerental n = 2000/min.", "kaltstart": "", "schnell_leerlauf": ""}, "controle": "Stromberg-type (4A1)."}, {"id": "4a1-3254-db280-weiss", "fabrikant": "Pierburg", "type": "4 A 1 - 32/54", "gasklep": "32/54", "vehicle": "Mercedes 280 (W123, M110) / 280 S (W116, M110)", "yearFrom": "januari 1980 - juni 1980", "engine": "115 kW (156 pk) @ 5500/min · 2746 cc", "registrier": "003 111/3", "bron_sheets": [9, 15], "tag_norm": ["0010704604"], "variants": [{"name": "Hand + Autom.", "bestel": "7.17825.00", "tag": "001 070 46 04", "kleur": "wit", "ab_datum": "8 009"}], "werte": {"lufttrichter": "20 mm Ø", "hauptduese": "X97,5 / B4 (naald)", "luftkorrektur": "", "leerlauf_luft": "100", "zusatz_kraftstoff_luft": "", "einspritzrohr": "", "einspritzmenge": "0,8 ± 0,15", "anreicherung_teillast": "naald nr. 2", "niveau": "7 ± 1 mm", "schwimmernadelventil": "", "schwimmergewicht": "6,8 ± 0,35 g", "starterklappenspalt": "3,0 ± 0,2 mm", "grundeinstellung": "", "kaltstart": "", "schnell_leerlauf": ""}, "controle": "Stromberg-type (4A1)."}, {"id": "4a1-3254-db280-schwarz", "fabrikant": "Pierburg", "type": "4 A 1 - 32/54", "gasklep": "32/54", "vehicle": "Mercedes 280 (W123, M110) / 280 S (W126, M110)", "yearFrom": "vanaf juli 1980", "engine": "115 kW (156 pk) @ 5500/min · 2746 cc", "registrier": "003 111/4", "bron_sheets": [10, 16], "tag_norm": ["0010706604"], "variants": [{"name": "Hand + Autom.", "bestel": "7.17825.01", "tag": "001 070 66 04", "kleur": "zwart", "ab_datum": "8 009"}], "werte": {"lufttrichter": "20 mm Ø", "hauptduese": "X97,5 / B4 (naald)", "luftkorrektur": "", "leerlauf_luft": "100", "zusatz_kraftstoff_luft": "", "einspritzrohr": "", "einspritzmenge": "0,8 ± 0,15", "anreicherung_teillast": "naald nr. 2", "niveau": "7 ± 1 mm", "schwimmernadelventil": "", "schwimmergewicht": "6,8 ± 0,35 g", "starterklappenspalt": "3,0 ± 0,2 mm", "grundeinstellung": "", "kaltstart": "", "schnell_leerlauf": ""}, "controle": "Stromberg-type (4A1)."}];
+let lang=2; // 0=en 1=de 2=nl
+function norm(s){return (s||"").toString().toUpperCase().replace(/\s+/g,"");}
+function render(){
+  const q=norm(document.getElementById('q').value);
+  const list=CARBS.filter(c=>{
+    if(!q)return true;
+    const hay=norm(c.type+" "+c.vehicle+" "+c.registrier+" "+(c.tag_norm||[]).join(" ")+" "+c.variants.map(v=>v.tag).join(" "));
+    return hay.includes(q);
+  });
+  document.getElementById('count').textContent=list.length+" van "+CARBS.length+" kennbladen";
+  document.getElementById('grid').innerHTML=list.map(c=>`
+    <div class="card" onclick="open_('${c.id}')">
+      <div class="type">${c.type}</div>
+      <div class="veh">${c.vehicle}</div>
+      <div class="eng">${c.engine}</div>
+      <div class="badges">${c.variants.map(v=>`<span class="badge brass">${v.tag}</span>`).join("")}
+        <span class="badge">Reg. ${c.registrier}</span></div>
+    </div>`).join("");
+  document.getElementById('grid').style.display='grid';
+  document.getElementById('detail').style.display='none';
+}
+function setLang(l){lang=l;const c=window._cur;if(c)open_(c);}
+function open_(id){
+  window._cur=id;
+  const c=CARBS.find(x=>x.id===id);
+  const ln=['EN','DE','NL'];
+  const specRows=ORDER.map(k=>{const L=LABELS[k];const v=c.werte[k];if(!v)return"";return `<tr><td class="sym">${L[3]||""}</td><td>${L[lang]}</td><td class="val">${v}</td></tr>`}).join("");
+  const varRows=c.variants.map(v=>`<tr><td>${v.name}</td><td class="val">${v.tag}</td><td>${v.bestel}</td><td>${v.kleur}</td></tr>`).join("");
+  document.getElementById('detail').innerHTML=`
+    <button class="back" onclick="render()">&larr; terug naar overzicht</button>
+    <div class="dhead">${c.type}</div>
+    <div class="dveh">${c.vehicle}</div>
+    <div class="deng">${c.engine} · ${c.yearFrom}</div>
+    <div class="reg">Registrier-Nr ${c.registrier} · Pierburg · bronbladen ${c.bron_sheets.join(" & ")}</div>
+    <div class="panel"><h3>Uitvoeringen &amp; tags</h3>
+      <table class="vtab"><thead><tr><th>Uitvoering</th><th>Tag (Typenschild)</th><th>Bestel-nr</th><th>Kleur</th></tr></thead>
+      <tbody>${varRows}</tbody></table></div>
+    <div class="panel">
+      <div class="langtoggle">${ln.map((x,i)=>`<button class="${i===lang?'on':''}" onclick="setLang(${i})">${x}</button>`).join("")}</div>
+      <h3>Normaalinstelling</h3>
+      <table class="specs"><thead><tr><th class="sym"></th><th>${['Setting','Bezeichnung','Onderdeel'][lang]}</th><th>${['Value','Wert','Waarde'][lang]}</th></tr></thead>
+      <tbody>${specRows}</tbody></table>
+      ${c.controle?`<div class="note">⚠ Controle: ${c.controle}</div>`:""}
+    </div>`;
+  document.getElementById('grid').style.display='none';
+  document.getElementById('detail').style.display='block';
+  window.scrollTo(0,0);
+}
+render();
+</script>
+</body></html>
