@@ -4,7 +4,7 @@
 // Interne kruisverwijzing-database van Pierburg-kennbladen. Achter admin-login.
 // Data (18 unieke kennbladen) staat statisch in data.ts. Later uit Supabase.
 
-import { useEffect, useMemo, useState, CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, CSSProperties } from "react";
 import { GROEN, GOUD, TEKST, GRIJS, RAND, BG } from "@/lib/theme";
 import AuthGate, { useGebruiker } from "@/app/components/AuthGate";
 import { KENNBLADEN, LABELS, ORDER, Kennblad } from "./data";
@@ -132,6 +132,20 @@ function Hub() {
 
 function Detail({ c, li, taal, setTaal, terug, kopieer, gekopieerd }: { c: Kennblad; li: number; taal: string; setTaal: (t: any) => void; terug: () => void; kopieer: () => void; gekopieerd: boolean }) {
   const [groot, setGroot] = useState(false);
+  const [actiefNr, setActiefNr] = useState<string | null>(null);
+  const tekeningRef = useRef<HTMLDivElement>(null);
+
+  // Welke hotspot-sleutel hoort bij een onderdeel-nr? (exact, anders zonder achtervoegsel)
+  function hotspotSleutel(nr: string): string | null {
+    if (!c.hotspots) return null;
+    if (c.hotspots[nr]) return nr;
+    const kaal = nr.replace(/[a-c]$/, "");
+    return c.hotspots[kaal] ? kaal : null;
+  }
+  function kiesNr(key: string) {
+    setActiefNr(key);
+    tekeningRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
   return (
     <div style={{ paddingBottom: 60 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
@@ -222,14 +236,31 @@ function Detail({ c, li, taal, setTaal, terug, kopieer, gekopieerd }: { c: Kennb
 
       {/* 2. Blueprint (explosietekening) — onder de specsheet */}
       {c.drawing && (
-        <section style={paneel}>
+        <section ref={tekeningRef} style={paneel}>
           <h3 style={kop}>Blueprint — explosietekening</h3>
-          <button onClick={() => setGroot(true)} style={{ display: "block", width: "100%", border: 0, background: "#fff", padding: 0, cursor: "zoom-in" }}>
+          <div style={{ position: "relative" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={c.drawing} alt={`Explosietekening ${c.type} ${c.vehicle}`} style={{ width: "100%", height: "auto", borderRadius: 8, border: `1px solid ${RAND}` }} />
-          </button>
+            <img src={c.drawing} alt={`Explosietekening ${c.type} ${c.vehicle}`} onClick={() => setGroot(true)} style={{ display: "block", width: "100%", height: "auto", borderRadius: 8, border: `1px solid ${RAND}`, cursor: "zoom-in" }} />
+            {c.hotspots && Object.entries(c.hotspots).map(([nr, pos]) => {
+              const actief = actiefNr === nr;
+              return (
+                <button
+                  key={nr}
+                  onClick={(e) => { e.stopPropagation(); setActiefNr(nr); }}
+                  title={`nr. ${nr}`}
+                  style={{
+                    position: "absolute", left: `${pos[0] * 100}%`, top: `${pos[1] * 100}%`, transform: "translate(-50%, -50%)",
+                    width: actief ? 26 : 17, height: actief ? 26 : 17, borderRadius: "50%", padding: 0, lineHeight: 1,
+                    background: actief ? "#1763d6" : "rgba(23,99,214,.30)", color: "#fff", border: "1.5px solid #fff",
+                    fontSize: actief ? 12 : 8.5, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                    boxShadow: actief ? "0 0 0 4px rgba(23,99,214,.30)" : "0 1px 2px rgba(0,0,0,.3)", zIndex: actief ? 2 : 1,
+                  }}
+                >{nr}</button>
+              );
+            })}
+          </div>
           <div style={{ color: GRIJS, fontSize: 12, marginTop: 8, display: "flex", gap: 14, flexWrap: "wrap" }}>
-            <span>Klik om groot te bekijken.</span>
+            <span>Klik een blauw nummer of een regel in de onderdelenlijst. Klik de tekening om groot te bekijken.</span>
             <a href={c.drawing} target="_blank" rel="noreferrer" style={{ color: GROEN, fontWeight: 700, textDecoration: "none" }}>Tekening openen in nieuw tabblad ↗</a>
           </div>
         </section>
@@ -248,14 +279,24 @@ function Detail({ c, li, taal, setTaal, terug, kopieer, gekopieerd }: { c: Kennb
                 <th style={{ ...th, width: 110 }}>Bestel-nr</th>
               </tr></thead>
               <tbody>
-                {c.onderdelen.map((o, i) => (
-                  <tr key={i}>
-                    <td style={{ ...td, color: GOUD, fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>{o.nr}</td>
-                    <td style={td}>{o.naam[li]}</td>
-                    <td style={{ ...td, textAlign: "center" }}>{o.aantal}</td>
-                    <td style={{ ...td, fontVariantNumeric: "tabular-nums", color: o.bestell ? TEKST : GRIJS }}>{o.bestell || "–"}</td>
-                  </tr>
-                ))}
+                {c.onderdelen.map((o, i) => {
+                  const key = hotspotSleutel(o.nr);
+                  const actief = key !== null && actiefNr === key;
+                  return (
+                    <tr key={i} style={{ background: actief ? "#e6effb" : "transparent" }}>
+                      <td style={{ ...td, fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>
+                        {key ? (
+                          <button onClick={() => kiesNr(key)} title="Toon op tekening" style={{ border: 0, background: actief ? "#1763d6" : "#eef0ea", color: actief ? "#fff" : "#1763d6", borderRadius: 6, padding: "2px 7px", fontWeight: 800, cursor: "pointer", fontVariantNumeric: "tabular-nums" }}>{o.nr}</button>
+                        ) : (
+                          <span style={{ color: GOUD }}>{o.nr}</span>
+                        )}
+                      </td>
+                      <td style={td}>{o.naam[li]}</td>
+                      <td style={{ ...td, textAlign: "center" }}>{o.aantal}</td>
+                      <td style={{ ...td, fontVariantNumeric: "tabular-nums", color: o.bestell ? TEKST : GRIJS }}>{o.bestell || "–"}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
             {c.onderdelen_bron && <div style={{ color: GRIJS, fontSize: 11.5, marginTop: 10, lineHeight: 1.4 }}>{c.onderdelen_bron}</div>}
