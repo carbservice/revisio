@@ -238,10 +238,34 @@ function Detail({ c, li, taal, setTaal, terug, kopieer, gekopieerd }: { c: Kennb
       {/* 3. Originele vertaalde onderdelenlijst (nummers met uitleg) — onder de blueprint */}
       <section style={paneel}>
         <h3 style={kop}>Onderdelenlijst — nummers bij de tekening</h3>
-        <div style={{ color: GRIJS, fontSize: 13.5, lineHeight: 1.5 }}>
-          De genummerde onderdelenlijst die bij deze explosietekening hoort (nummer voor nummer, vertaald)
-          wordt nog toegevoegd.
-        </div>
+        {c.onderdelen && c.onderdelen.length > 0 ? (
+          <>
+            <table style={tabel}>
+              <thead><tr>
+                <th style={{ ...th, width: 52 }}>Nr.</th>
+                <th style={th}>Onderdeel</th>
+                <th style={{ ...th, width: 56, textAlign: "center" }}>Aantal</th>
+                <th style={{ ...th, width: 110 }}>Bestel-nr</th>
+              </tr></thead>
+              <tbody>
+                {c.onderdelen.map((o, i) => (
+                  <tr key={i}>
+                    <td style={{ ...td, color: GOUD, fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>{o.nr}</td>
+                    <td style={td}>{o.naam[li]}</td>
+                    <td style={{ ...td, textAlign: "center" }}>{o.aantal}</td>
+                    <td style={{ ...td, fontVariantNumeric: "tabular-nums", color: o.bestell ? TEKST : GRIJS }}>{o.bestell || "–"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {c.onderdelen_bron && <div style={{ color: GRIJS, fontSize: 11.5, marginTop: 10, lineHeight: 1.4 }}>{c.onderdelen_bron}</div>}
+          </>
+        ) : (
+          <div style={{ color: GRIJS, fontSize: 13.5, lineHeight: 1.5 }}>
+            De genummerde onderdelenlijst die bij deze explosietekening hoort (nummer voor nummer, vertaald)
+            wordt nog toegevoegd.
+          </div>
+        )}
       </section>
 
       {groot && c.drawing && (
