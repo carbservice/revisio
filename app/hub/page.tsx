@@ -64,7 +64,7 @@ function Hub() {
             />
           </div>
           <div style={{ fontSize: 12.5, color: "#bcd6c8", marginTop: 9 }}>
-            {lijst.length} van {KENNBLADEN.length} kennbladen · Deel 1
+            {lijst.length} van {KENNBLADEN.length} kennbladen
           </div>
         </div>
       </header>
