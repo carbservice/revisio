@@ -102,6 +102,7 @@ function Hub() {
 }
 
 function Detail({ c, li, taal, setTaal, terug }: { c: Kennblad; li: number; taal: string; setTaal: (t: any) => void; terug: () => void }) {
+  const [groot, setGroot] = useState(false);
   return (
     <div style={{ paddingBottom: 60 }}>
       <button onClick={terug} style={{ background: "none", border: 0, color: GROEN, fontSize: 15, fontWeight: 700, cursor: "pointer", padding: "14px 0" }}>← terug naar overzicht</button>
@@ -109,6 +110,24 @@ function Detail({ c, li, taal, setTaal, terug }: { c: Kennblad; li: number; taal
       <div style={{ fontSize: 17, fontWeight: 700 }}>{c.vehicle}</div>
       <div style={{ color: GRIJS, marginTop: 3 }}>{c.engine} · {c.yearFrom}</div>
       <div style={{ color: GRIJS, fontSize: 12.5, marginTop: 6 }}>Registrier-Nr {c.registrier} · {c.fabrikant} · bronbladen {c.bron_sheets.join(" & ")}</div>
+
+      {c.drawing && (
+        <section style={paneel}>
+          <h3 style={kop}>Explosietekening</h3>
+          <button onClick={() => setGroot(true)} style={{ display: "block", width: "100%", border: 0, background: "#fff", padding: 0, cursor: "zoom-in" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={c.drawing} alt={`Explosietekening ${c.type} ${c.vehicle}`} style={{ width: "100%", height: "auto", borderRadius: 8, border: `1px solid ${RAND}` }} />
+          </button>
+          <div style={{ color: GRIJS, fontSize: 12, marginTop: 8 }}>Klik om groot te bekijken.</div>
+        </section>
+      )}
+
+      {groot && c.drawing && (
+        <div onClick={() => setGroot(false)} style={{ position: "fixed", inset: 0, background: "rgba(20,30,25,.88)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 50, cursor: "zoom-out" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={c.drawing} alt={`Explosietekening ${c.type} ${c.vehicle}`} style={{ maxWidth: "100%", maxHeight: "100%", borderRadius: 8, background: "#fff" }} />
+        </div>
+      )}
 
       {c.toepassingen && c.toepassingen.length > 0 && (
         <section style={paneel}>

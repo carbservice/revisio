@@ -66,7 +66,8 @@
      "chassis": "",
      "motorcode": ""
     }
-   ]
+   ],
+   "drawing": "/hub/1b1-36-audi80.jpg"
   },
   {
    "id": "1b3-36-audi80s",
@@ -134,7 +135,8 @@
      "chassis": "",
      "motorcode": ""
     }
-   ]
+   ],
+   "drawing": "/hub/1b3-36-audi80s.jpg"
   },
   {
    "id": "1b1-36-vwpassat",
@@ -194,7 +196,8 @@
      "chassis": "",
      "motorcode": ""
     }
-   ]
+   ],
+   "drawing": "/hub/1b1-36-vwpassat.jpg"
   },
   {
    "id": "1b3-36-vwpassat16",
@@ -263,7 +266,8 @@
      "motorcode": ""
     }
    ],
-   "controle": "Automatik-uitvoering (7.17627.09 / tag 049 129 016 B) komt ook voor op de Audi 80 S — waarschijnlijk dezelfde carburateur op beide auto's."
+   "controle": "Automatik-uitvoering (7.17627.09 / tag 049 129 016 B) komt ook voor op de Audi 80 S — waarschijnlijk dezelfde carburateur op beide auto's.",
+   "drawing": "/hub/1b3-36-vwpassat16.jpg"
   },
   {
    "id": "1b1-36-vwiltis",
@@ -331,7 +335,8 @@
      "chassis": "",
      "motorcode": ""
     }
-   ]
+   ],
+   "drawing": "/hub/1b1-36-vwiltis.jpg"
   },
   {
    "id": "1b1-36-vwlt28",
@@ -391,7 +396,8 @@
      "chassis": "",
      "motorcode": ""
     }
-   ]
+   ],
+   "drawing": "/hub/1b1-36-vwlt28.jpg"
   },
   {
    "id": "4a1-3254-db250-fruh",
@@ -452,7 +458,8 @@
      "chassis": "W123",
      "motorcode": "M123"
     }
-   ]
+   ],
+   "drawing": "/hub/4a1-3254-db250-fruh.jpg"
   },
   {
    "id": "4a1-3254-db250-spaet",
@@ -513,7 +520,8 @@
      "chassis": "W123",
      "motorcode": "M123"
     }
-   ]
+   ],
+   "drawing": "/hub/4a1-3254-db250-spaet.jpg"
   },
   {
    "id": "4a1-3254-db280-weiss",
@@ -579,7 +587,8 @@
      "chassis": "W116",
      "motorcode": "M110"
     }
-   ]
+   ],
+   "drawing": "/hub/4a1-3254-db280-weiss.jpg"
   },
   {
    "id": "4a1-3254-db280-schwarz",
@@ -645,7 +654,8 @@
      "chassis": "W126",
      "motorcode": "M110"
     }
-   ]
+   ],
+   "drawing": "/hub/4a1-3254-db280-schwarz.jpg"
   },
   {
    "id": "31pic6-vwpolo-895",
@@ -710,7 +720,8 @@
      "chassis": "",
      "motorcode": ""
     }
-   ]
+   ],
+   "drawing": "/hub/31pic6-vwpolo-895.jpg"
   },
   {
    "id": "31pic6-vwpolo-1093",
@@ -783,7 +794,8 @@
      "chassis": "",
      "motorcode": ""
     }
-   ]
+   ],
+   "drawing": "/hub/31pic6-vwpolo-1093.jpg"
   },
   {
    "id": "36-1b1-passat-audi80l",
@@ -849,7 +861,8 @@
      "chassis": "",
      "motorcode": ""
     }
-   ]
+   ],
+   "drawing": "/hub/36-1b1-passat-audi80l.jpg"
   },
   {
    "id": "36-1b3-vwpassat-16",
@@ -908,7 +921,8 @@
      "chassis": "",
      "motorcode": ""
     }
-   ]
+   ],
+   "drawing": "/hub/36-1b3-vwpassat-16.jpg"
   },
   {
    "id": "31pic6-vwgolf-1093",
@@ -975,7 +989,8 @@
      "chassis": "",
      "motorcode": ""
     }
-   ]
+   ],
+   "drawing": "/hub/31pic6-vwgolf-1093.jpg"
   },
   {
    "id": "34pic5-vwpolo-golf",
@@ -1063,7 +1078,8 @@
      "chassis": "",
      "motorcode": ""
     }
-   ]
+   ],
+   "drawing": "/hub/34pic5-vwpolo-golf.jpg"
   },
   {
    "id": "36-1b3-golf-jetta-scirocco",
@@ -1160,7 +1176,8 @@
      "chassis": "",
      "motorcode": ""
     }
-   ]
+   ],
+   "drawing": "/hub/36-1b3-golf-jetta-scirocco.jpg"
   },
   {
    "id": "36-1b3-audi80s",
@@ -1235,7 +1252,8 @@
      "chassis": "",
      "motorcode": ""
     }
-   ]
+   ],
+   "drawing": "/hub/36-1b3-audi80s.jpg"
   }
  ],
  "_verrijkt": "Per kaart: motor (kw/ps/cc/rpm), bouwjaar (von/bis), toepassingen (voertuig/chassis/motorcode), uitvoeringen met tags. Tweede leesronde + handmatige correctie p25/p27."
