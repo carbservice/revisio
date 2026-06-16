@@ -174,6 +174,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
   const [klusLinkKop, setKlusLinkKop] = useState(false); // "Kopieer link"-bevestiging
   const deepLinkGedaan = useRef(false); // deep-link uit de URL maar één keer openen
   const [deelCode, setDeelCode] = useState("");
+  const [gedeeld, setGedeeld] = useState(false);
   const [lightbox, setLightbox] = useState<{ fotos: { url: string; rotatie: number }[]; start: number } | null>(null);
   const [vulPct, setVulPct] = useState(0);
   const [rijdt, setRijdt] = useState(false);
@@ -638,6 +639,8 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
     log(open.id, "update naar klant gepubliceerd");
     setDeelCode(code || "");
     setDeelLink(`${window.location.origin}/volg?t=${token}`);
+    setGedeeld(true);
+    setTimeout(() => setGedeeld(false), 3000);
   }
 
   function updVeld(k: string, veld: "label" | "binnenkomst" | "afleveren", val: string) {
@@ -973,7 +976,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
                 );
               })}
             </div>
-            <button onClick={deelMetKlant} style={{ ...knop(GOUD), marginTop: 12 }}>📣 Stuur update naar klant</button>
+            <button onClick={deelMetKlant} style={{ ...knop(gedeeld ? GROEN : GOUD), marginTop: 12 }}>{gedeeld ? "✓ Verstuurd naar klant!" : "📣 Stuur update naar klant"}</button>
             {deelLink && (
               <div style={{ marginTop: 10 }}>
                 <div style={{ fontSize: 13, color: GROEN, fontWeight: 700, marginBottom: 6 }}>Update gepubliceerd. De klant kan nu deze stand zien.</div>

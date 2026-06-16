@@ -61,8 +61,9 @@ function zoekTekst(c: Kennblad): string {
 }
 
 export default function HubPagina() {
+  // Toegankelijk voor alle ingelogde monteurs (geen admin-eis); zij mogen de Hub inzien.
   return (
-    <AuthGate requireAdmin>
+    <AuthGate>
       <Hub />
     </AuthGate>
   );
@@ -295,22 +296,7 @@ function Detail({ c, li, taal, setTaal, terug, kopieer, gekopieerd }: { c: Kennb
         )}
       </section>
 
-      {/* 2. Blueprint (explosietekening) — onder de specsheet */}
-      {c.drawing && (
-        <section style={paneel}>
-          <h3 style={kop}>Blueprint — explosietekening</h3>
-          <button onClick={() => setGrootSrc(c.drawing!)} style={{ display: "block", width: "100%", border: 0, background: "#fff", padding: 0, cursor: "zoom-in" }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={c.drawing} alt={`Explosietekening ${c.type} ${c.vehicle}`} style={{ width: "100%", height: "auto", borderRadius: 8, border: `1px solid ${RAND}` }} />
-          </button>
-          <div style={{ color: GRIJS, fontSize: 12, marginTop: 8, display: "flex", gap: 14, flexWrap: "wrap" }}>
-            <span>Klik om groot te bekijken.</span>
-            <a href={c.drawing} target="_blank" rel="noreferrer" style={{ color: GROEN, fontWeight: 700, textDecoration: "none" }}>Tekening openen in nieuw tabblad ↗</a>
-          </div>
-        </section>
-      )}
-
-      {/* 2b. Originele kaft-scan — onder de tekening */}
+      {/* Originele kaft-scan — boven de blueprint */}
       {c.kaft_url && (
         <section style={paneel}>
           <h3 style={kop}>Origineel kennblad (kaft-scan)</h3>
@@ -321,6 +307,21 @@ function Detail({ c, li, taal, setTaal, terug, kopieer, gekopieerd }: { c: Kennb
           <div style={{ color: GRIJS, fontSize: 12, marginTop: 8, display: "flex", gap: 14, flexWrap: "wrap" }}>
             <span>Het originele Pierburg-kennblad. Klik om groot te bekijken.</span>
             <a href={c.kaft_url} target="_blank" rel="noreferrer" style={{ color: GROEN, fontWeight: 700, textDecoration: "none" }}>Scan openen in nieuw tabblad ↗</a>
+          </div>
+        </section>
+      )}
+
+      {/* Blueprint (explosietekening) — onderaan, samen met de onderdelenlijst */}
+      {c.drawing && (
+        <section style={paneel}>
+          <h3 style={kop}>Blueprint — explosietekening</h3>
+          <button onClick={() => setGrootSrc(c.drawing!)} style={{ display: "block", width: "100%", border: 0, background: "#fff", padding: 0, cursor: "zoom-in" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={c.drawing} alt={`Explosietekening ${c.type} ${c.vehicle}`} style={{ width: "100%", height: "auto", borderRadius: 8, border: `1px solid ${RAND}` }} />
+          </button>
+          <div style={{ color: GRIJS, fontSize: 12, marginTop: 8, display: "flex", gap: 14, flexWrap: "wrap" }}>
+            <span>Klik om groot te bekijken.</span>
+            <a href={c.drawing} target="_blank" rel="noreferrer" style={{ color: GROEN, fontWeight: 700, textDecoration: "none" }}>Tekening openen in nieuw tabblad ↗</a>
           </div>
         </section>
       )}

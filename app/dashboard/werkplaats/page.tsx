@@ -11,6 +11,15 @@ import DashboardNav from "@/app/components/DashboardNav";
 import LaadScherm from "@/app/components/LaadScherm";
 import { uitCache, haalEnCache } from "@/lib/cache";
 import ScrollNaarBoven from "@/app/components/ScrollNaarBoven";
+import { supabase } from "@/lib/supabase";
+
+// Lopende tijd sinds start, als h:mm:ss (of m:ss onder een uur).
+function loopTijd(startISO: string, nuMs: number) {
+  const s = Math.max(0, Math.floor((nuMs - new Date(startISO).getTime()) / 1000));
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return h > 0 ? `${h}:${pad(m)}:${pad(sec)}` : `${m}:${pad(sec)}`;
+}
 
 const MAAND = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
 function maandLabel(ym: string) {
@@ -49,6 +58,8 @@ function WerkplaatsDashboard() {
   const [laden, setLaden] = useState(true);
   const [fout, setFout] = useState("");
   const [zoek, setZoek] = useState("");
+  const [actieveTimers, setActieveTimers] = useState<any[]>([]);
+  const [nu, setNu] = useState(Date.now());
 
   useEffect(() => {
     const c = uitCache("/api/werkplaats-stats");
@@ -56,6 +67,20 @@ function WerkplaatsDashboard() {
     haalEnCache("/api/werkplaats-stats", { cache: "no-store" })
       .then((d) => { if (d.fout) setFout(d.fout); else setData(d); setLaden(false); })
       .catch((e) => { if (!c) { setFout(String(e)); setLaden(false); } });
+  }, []);
+
+  // Live: lopende timers (rijen zonder minuten) elke seconde laten tikken,
+  // en elke ~25s opnieuw ophalen om nieuwe starts/stops mee te nemen.
+  useEffect(() => {
+    let levend = true;
+    async function laadTimers() {
+      const { data } = await supabase.from("tijdregels").select("klus_id, monteur_naam, start_tijd").is("minuten", null).not("start_tijd", "is", null);
+      if (levend) setActieveTimers(data || []);
+    }
+    laadTimers();
+    const refetch = setInterval(laadTimers, 25000);
+    const tik = setInterval(() => setNu(Date.now()), 1000);
+    return () => { levend = false; clearInterval(refetch); clearInterval(tik); };
   }, []);
 
   const wrap: CSSProperties = { minHeight: "100vh", background: BG, color: TEKST, fontFamily: "system-ui, -apple-system, sans-serif", padding: "28px 18px", maxWidth: 1000, margin: "0 auto" };
@@ -108,6 +133,29 @@ function WerkplaatsDashboard() {
         {tegel("Retouren deze maand", String(retour.deze_maand), retour.deze_maand ? ROOD : GROEN, `vorige maand ${retour.vorige_maand}`)}
         {tegel("Gem. uren per klus", uur(data.gem_uren_per_klus_min), GROEN, `over ${data.klussen_met_uren} klussen`)}
       </div>
+
+      {/* Live: nu lopende timers */}
+      {actieveTimers.length > 0 && (
+        <div style={{ ...kaart, borderColor: GROEN }}>
+          <div style={kopstijl}>
+            <span style={{ display: "inline-block", width: 9, height: 9, borderRadius: "50%", background: GROEN, marginRight: 7, boxShadow: `0 0 0 3px ${GROEN}33` }} />
+            Nu actief in de werkplaats ({actieveTimers.length})
+          </div>
+          {actieveTimers.map((t, i) => {
+            const b = (data.bonnen || []).find((x: any) => x.klus_id === t.klus_id);
+            const label = b ? `${b.nummer}${b.klant ? " · " + b.klant : ""}` : t.klus_id;
+            return (
+              <a key={i} href={bonHref(t.klus_id)} style={klikRij}>
+                <span style={{ minWidth: 0 }}>
+                  <span style={{ fontSize: 14, fontWeight: 700 }}>{label}</span>
+                  {t.monteur_naam && <span style={{ display: "block", fontSize: 12, color: GRIJS, marginTop: 2 }}>{t.monteur_naam} is bezig</span>}
+                </span>
+                <span style={{ fontSize: 17, fontWeight: 800, color: GROEN, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{loopTijd(t.start_tijd, nu)}</span>
+              </a>
+            );
+          })}
+        </div>
+      )}
 
       {/* Werkbonnen dashboard */}
       <div style={kaart}>
