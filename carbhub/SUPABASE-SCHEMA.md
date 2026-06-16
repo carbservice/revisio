@@ -52,7 +52,7 @@ Kernidee: de **doorzoekbare/matchbare** delen worden echte tabellen/kolommen; de
 | tag | text | 001 070 66 04 |
 | tag_norm | text (index) | 0010706604 |
 
-Eén carburateur kan meerdere tags hebben. Index op `tag_norm` voor snel zoeken en dedupe-controle bij import.
+Eén carburateur kan meerdere tags hebben. Index op `tag_norm` voor snel zoeken en dedupe-controle bij import. **Géén unieke constraint op `tag_norm`** — een tag mag bewust naar meerdere carburateurs wijzen (kruisverwijzing). Voorbeeld in de huidige data: tag `049 129 016 B` (Automatik) staat op zowel Audi 80 S als VW Passat 1,6.
 
 ### 3. `hub_toepassingen` — voertuigtoepassingen (DE matching-tabel)
 | kolom | type | voorbeeld |
@@ -70,6 +70,8 @@ Eén carburateur kan meerdere tags hebben. Index op `tag_norm` voor snel zoeken 
 | cilinders | int | 6 |
 
 Eén carburateur op meerdere voertuigen = meerdere rijen (de kruisverwijzing). Hierop draait straks de kenteken-match: RDW geeft merk + bouwjaar + inhoud + cilinders → zoek de toepassing → carburateur.
+
+**Afleiding bij migratie** (gecontroleerd, allemaal mogelijk uit de huidige data): `merk` = eerste woord van `merk_model` (Audi/VW/Mercedes); `model` = de rest; `bouwjaar_van/tot`, `cc`, `cilinders` worden overgenomen van de carburateur. Niets hoeft handmatig bijgemaakt te worden.
 
 ### 4. `hub_uitvoeringen` — varianten
 | kolom | type | voorbeeld |
@@ -123,6 +125,9 @@ Komt uit `labels.json`. De waarden per carburateur staan in `hub_carburateurs.we
 - Zelfde pijplijn als nu: scan → renderen/lezen → gestructureerde rijen → in Supabase.
 - `tag_norm` blijft de dedupe-sleutel; bij import checken we tegen `hub_tags`.
 - Veld voor "nog te controleren" zodat twijfelgevallen apart te zien zijn.
+
+## Migratie-gereedheid (gecontroleerd 16 juni)
+Audit (`audit_migratie.py`) over de 18 carburateurs: **alle 16 schema-velden 100% gevuld**, motor numeriek, bouwjaar afleidbaar, alle werte-sleutels in labels.json, alle onderdelen 3-talig, alle 36 afbeeldingen aanwezig. Geen ontbrekende data. De migratie kan in één keer schoon draaien.
 
 ## Status
 Schema akkoord (16 juni). Klaar om te bouwen zodra de Supabase service-role-sleutel beschikbaar is (nu of in de vrijdag 19 juni-sessie samen met RLS). Bouwstappen: tabellen aanmaken → bucket → 18 carburateurs + tekeningen/kaften migreren → `/hub` laten lezen uit Supabase → importpijplijn klaarzetten voor de 220 scans en de 5 tag-boekjes.
