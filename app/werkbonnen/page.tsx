@@ -819,7 +819,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
         </div>
       )}
 
-      {isAdmin && <DashboardNav />}
+      <DashboardNav isAdmin={isAdmin} />
       <PaginaKop naam={ingelogd.naam} onUitloggen={onUitloggen} titel="Werkplaats Werkbonnen">
         {!open && (
           <div style={kaart}>

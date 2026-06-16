@@ -133,7 +133,7 @@ export default function DashboardPagina() {
 }
 
 function Dashboard() {
-  const { naam, uitloggen } = useGebruiker();
+  const { naam, uitloggen, isAdmin } = useGebruiker();
   const [data, setData] = useState<any>(null);
   const [fout, setFout] = useState("");
   const [wp, setWp] = useState<any>(null);
@@ -206,7 +206,7 @@ function Dashboard() {
   if (fout) return (
     <main style={buiten}>
       <div style={{ maxWidth: 1120, margin: "0 auto" }}>
-        <DashboardNav />
+        <DashboardNav isAdmin={isAdmin} />
         <div style={{ padding: 24, color: ROOD }}>Fout bij ophalen: {fout}</div>
       </div>
     </main>
@@ -214,7 +214,7 @@ function Dashboard() {
   if (!apis.every((a) => a.klaar)) return (
     <main style={buiten}>
       <div style={{ maxWidth: 1120, margin: "0 auto" }}>
-        <DashboardNav />
+        <DashboardNav isAdmin={isAdmin} />
         <LaadScherm apis={apis} />
       </div>
     </main>
@@ -356,7 +356,7 @@ function Dashboard() {
       `}</style>
       <div style={{ maxWidth: 1120, margin: "0 auto" }}>
 
-        <DashboardNav />
+        <DashboardNav isAdmin={isAdmin} />
         <ScrollNaarBoven />
         <PaginaKop naam={naam} onUitloggen={uitloggen} titel="Cijfers" />
 

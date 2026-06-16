@@ -12,12 +12,13 @@ import { GROEN, GRIJS, RAND, BG, TEKST, ROOD, KAART_SCHADUW } from "@/lib/theme"
 type Status = "laden" | "uit" | "geen-toegang" | "ok";
 
 // Stelt de ingelogde gebruiker beschikbaar aan de beschermde pagina-inhoud.
-const GebruikerContext = createContext<{ naam: string; uitloggen: () => void }>({ naam: "", uitloggen: () => {} });
+const GebruikerContext = createContext<{ naam: string; isAdmin: boolean; uitloggen: () => void }>({ naam: "", isAdmin: false, uitloggen: () => {} });
 export function useGebruiker() { return useContext(GebruikerContext); }
 
 export default function AuthGate({ requireAdmin = false, children }: { requireAdmin?: boolean; children: ReactNode }) {
   const [status, setStatus] = useState<Status>("laden");
   const [naam, setNaam] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
   const [email, setEmail] = useState("");
   const [bezig, setBezig] = useState(false);
   const [fout, setFout] = useState("");
@@ -32,6 +33,7 @@ export default function AuthGate({ requireAdmin = false, children }: { requireAd
     const match = g && typeof g.email === "string" && g.email.toLowerCase() === adres;
     if (error || !match || !g!.actief) { await supabase.auth.signOut(); setStatus("uit"); return; }
     setNaam(g!.naam as string);
+    setIsAdmin(g!.rol === "admin");
     if (requireAdmin && g!.rol !== "admin") { setStatus("geen-toegang"); return; }
     setStatus("ok");
   }
@@ -72,7 +74,7 @@ export default function AuthGate({ requireAdmin = false, children }: { requireAd
     setEmail(""); setCode(""); setVerstuurd(false); setStatus("uit");
   }
 
-  if (status === "ok") return <GebruikerContext.Provider value={{ naam, uitloggen }}>{children}</GebruikerContext.Provider>;
+  if (status === "ok") return <GebruikerContext.Provider value={{ naam, isAdmin, uitloggen }}>{children}</GebruikerContext.Provider>;
 
   const wrap: CSSProperties = { minHeight: "100vh", background: BG, color: TEKST, fontFamily: "system-ui, -apple-system, sans-serif", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 };
   const kaart: CSSProperties = { background: "#fff", border: `1px solid ${RAND}`, borderRadius: 18, padding: 28, maxWidth: 380, width: "100%", boxShadow: KAART_SCHADUW };

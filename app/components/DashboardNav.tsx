@@ -8,17 +8,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { GROEN } from "@/lib/theme";
 
+// adminOnly = alleen zichtbaar voor admins. Werkbonnen en Hub zijn voor iedereen.
 const items = [
-  { href: "/dashboard", label: "📊 Cijfers" },
-  { href: "/dashboard/werkplaats", label: "🔧 Werkplaats Dashboard" },
-  { href: "/werkbonnen", label: "🧾 Werkbonnen" },
+  { href: "/dashboard", label: "📊 Cijfers", adminOnly: true },
+  { href: "/dashboard/werkplaats", label: "🔧 Werkplaats Dashboard", adminOnly: true },
+  { href: "/werkbonnen", label: "🧾 Werkbonnen", adminOnly: false },
+  { href: "/hub", label: "⚙️ Carburateur Hub", adminOnly: false },
 ];
 
-export default function DashboardNav() {
+export default function DashboardNav({ isAdmin = false }: { isAdmin?: boolean }) {
   const pad = usePathname();
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
-      {items.map((it) => {
+      {items.filter((it) => !it.adminOnly || isAdmin).map((it) => {
         const actief = pad === it.href;
         return (
           <Link

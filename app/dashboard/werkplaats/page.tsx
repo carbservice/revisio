@@ -53,7 +53,7 @@ export default function WerkplaatsDashboardPagina() {
 }
 
 function WerkplaatsDashboard() {
-  const { naam, uitloggen } = useGebruiker();
+  const { naam, uitloggen, isAdmin } = useGebruiker();
   const [data, setData] = useState<any>(null);
   const [laden, setLaden] = useState(true);
   const [fout, setFout] = useState("");
@@ -90,7 +90,7 @@ function WerkplaatsDashboard() {
 
   if (laden) return (
     <main style={wrap}>
-      <DashboardNav />
+      <DashboardNav isAdmin={isAdmin} />
       <LaadScherm apis={[{ naam: "Werkplaats-stats", klaar: false }]} />
     </main>
   );
@@ -113,7 +113,7 @@ function WerkplaatsDashboard() {
 
   return (
     <main style={wrap}>
-      <DashboardNav />
+      <DashboardNav isAdmin={isAdmin} />
       <ScrollNaarBoven />
       <PaginaKop naam={naam} onUitloggen={uitloggen} titel="Werkplaats">
         <div style={{ fontSize: 13.5, color: GRIJS, margin: "-6px 0 14px" }}>Live uit de werkplaats-app · {maandLabel(data.maand)} vergeleken met {maandLabel(data.vorige_maand)}</div>
