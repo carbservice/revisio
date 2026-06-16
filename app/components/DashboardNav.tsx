@@ -8,8 +8,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { GROEN } from "@/lib/theme";
 
-// adminOnly = alleen zichtbaar voor admins. Werkbonnen en Hub zijn voor iedereen.
+// adminOnly = alleen zichtbaar voor admins. Start, Werkbonnen en Hub zijn voor iedereen.
 const items = [
+  { href: "/start", label: "🏠 Start", adminOnly: false },
   { href: "/dashboard", label: "📊 Cijfers", adminOnly: true },
   { href: "/dashboard/werkplaats", label: "🔧 Werkplaats Dashboard", adminOnly: true },
   { href: "/werkbonnen", label: "🧾 Werkbonnen", adminOnly: false },
