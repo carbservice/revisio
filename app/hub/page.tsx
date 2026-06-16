@@ -2,12 +2,35 @@
 
 // Carburateur Hub. app/hub/page.tsx
 // Interne kruisverwijzing-database van Pierburg-kennbladen. Achter admin-login.
-// Data (18 unieke kennbladen) staat statisch in data.ts. Later uit Supabase.
+// Data komt uit Supabase (hub_* tabellen). De vaste vertaal-labels blijven in data.ts.
 
 import { useEffect, useMemo, useState, CSSProperties } from "react";
 import { GROEN, GOUD, TEKST, GRIJS, RAND, BG } from "@/lib/theme";
 import AuthGate, { useGebruiker } from "@/app/components/AuthGate";
-import { KENNBLADEN, LABELS, ORDER, Kennblad } from "./data";
+import { supabase } from "@/lib/supabase";
+import { LABELS, ORDER, Kennblad } from "./data";
+
+// Zet de losse Supabase-tabellen om naar het Kennblad-model dat de pagina gebruikt.
+function bouwKennbladen(carbs: any[], tags: any[], toep: any[], uitv: any[], ond: any[]): Kennblad[] {
+  const groep = (rows: any[], key: string) => { const m: Record<string, any[]> = {}; (rows || []).forEach((r) => { (m[r[key]] = m[r[key]] || []).push(r); }); return m; };
+  const tg = groep(tags, "carb_id"), tp = groep(toep, "carb_id"), uv = groep(uitv, "carb_id"), od = groep(ond, "carb_id");
+  return (carbs || []).map((c) => ({
+    id: c.id, fabrikant: c.fabrikant, type: c.type, gasklep: c.gasklep, cilinders: c.cilinders,
+    vehicle: c.vehicle, registrier: c.registrier,
+    engine: `${c.motor_kw} kW (${c.motor_ps} pk) @ ${c.motor_rpm}/min · ${c.motor_cc} cc`,
+    yearFrom: c.bouwjaar_tot_tekst ? `${c.bouwjaar_van_tekst} - ${c.bouwjaar_tot_tekst}` : `vanaf ${c.bouwjaar_van_tekst}`,
+    bron_sheets: [],
+    tag_norm: (tg[c.id] || []).map((t) => t.tag_norm),
+    motor: { kw: String(c.motor_kw ?? ""), ps: String(c.motor_ps ?? ""), cc: String(c.motor_cc ?? ""), rpm: String(c.motor_rpm ?? "") },
+    bouwjaar: { von: c.bouwjaar_van_tekst || "", bis: c.bouwjaar_tot_tekst || "" },
+    toepassingen: (tp[c.id] || []).map((t) => ({ merk_model: t.merk_model, chassis: t.chassis || "", motorcode: t.motorcode || "" })),
+    variants: (uv[c.id] || []).map((v) => ({ name: v.naam, bestel: v.bestel_nr_oud || "", tag: v.tag, kleur: v.kleur, ab_datum: v.ab_datum || "" })),
+    werte: c.werte || {},
+    drawing: c.tekening_url || "", kaft_url: c.kaft_url || "",
+    onderdelen: (od[c.id] || []).map((o) => ({ nr: o.nr, naam: [o.naam_en, o.naam_de, o.naam_nl] as [string, string, string], aantal: o.aantal, bestell: o.bestell_oud || "" })),
+    onderdelen_bron: c.onderdelen_bron || undefined, controle: c.controle || undefined,
+  }));
+}
 
 const TALEN = ["NL", "DE", "EN"] as const;
 // LABELS-volgorde in data.ts is [en, de, nl, symbool]; UI-volgorde is NL, DE, EN.
@@ -51,11 +74,25 @@ function Hub() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [taal, setTaal] = useState<(typeof TALEN)[number]>("NL");
   const [gekopieerd, setGekopieerd] = useState(false);
+  const [kennbladen, setKennbladen] = useState<Kennblad[]>([]);
+  const [laden, setLaden] = useState(true);
 
-  // Deep-link: ?id=<kennblad> opent meteen die kaart en is deelbaar.
+  // Carburateurs uit Supabase laden en samenstellen; daarna eventuele deep-link openen.
   useEffect(() => {
-    const id = new URLSearchParams(window.location.search).get("id");
-    if (id && KENNBLADEN.some((c) => c.id === id)) setOpenId(id);
+    (async () => {
+      const [carbs, tags, toep, uitv, ond] = await Promise.all([
+        supabase.from("hub_carburateurs").select("*").order("id"),
+        supabase.from("hub_tags").select("*"),
+        supabase.from("hub_toepassingen").select("*"),
+        supabase.from("hub_uitvoeringen").select("*").order("volgorde"),
+        supabase.from("hub_onderdelen").select("*").order("volgorde"),
+      ]);
+      const lijst = bouwKennbladen(carbs.data || [], tags.data || [], toep.data || [], uitv.data || [], ond.data || []);
+      setKennbladen(lijst);
+      setLaden(false);
+      const id = new URLSearchParams(window.location.search).get("id");
+      if (id && lijst.some((c) => c.id === id)) setOpenId(id);
+    })();
   }, []);
 
   function openen(c: Kennblad) {
@@ -79,8 +116,8 @@ function Hub() {
     // Per-woord zoeken (AND): elk woord moet ergens raak zijn. Een jaartal (19xx/20xx)
     // wordt als bereik getoetst tegen het bouwjaar ("juli 1980 →" = vanaf 1980 en nieuwer).
     const woorden = zoek.trim().toLowerCase().split(/\s+/).filter(Boolean);
-    if (woorden.length === 0) return KENNBLADEN;
-    return KENNBLADEN.filter((c) => {
+    if (woorden.length === 0) return kennbladen;
+    return kennbladen.filter((c) => {
       const ruw = zoekTekst(c);
       const spaced = " " + ruw.toLowerCase().replace(/\s+/g, " ") + " ";   // woorden, spaties bewaard
       const compact = norm(ruw);                                            // tags, spatie-ongevoelig
@@ -100,9 +137,9 @@ function Hub() {
         return spaced.includes(w.toLowerCase()) || compact.includes(norm(w)); // woord of tag
       });
     });
-  }, [zoek]);
+  }, [zoek, kennbladen]);
 
-  const open = openId ? KENNBLADEN.find((c) => c.id === openId) || null : null;
+  const open = openId ? kennbladen.find((c) => c.id === openId) || null : null;
   const li = LANG_INDEX[taal];
 
   return (
@@ -127,12 +164,14 @@ function Hub() {
               style={{ border: 0, outline: 0, fontSize: 16, width: "100%", color: TEKST, background: "transparent" }}
             />
           </div>
-          <div style={{ fontSize: 12.5, color: "#bcd6c8", marginTop: 9 }}>{lijst.length} van {KENNBLADEN.length} kennbladen</div>
+          <div style={{ fontSize: 12.5, color: "#bcd6c8", marginTop: 9 }}>{laden ? "Laden…" : `${lijst.length} van ${kennbladen.length} kennbladen`}</div>
         </div>
       </header>
 
       <div style={wrap}>
-        {open ? (
+        {laden ? (
+          <p style={{ color: GRIJS, textAlign: "center", padding: 40 }}>Carburateurs laden…</p>
+        ) : open ? (
           <Detail c={open} li={li} taal={taal} setTaal={setTaal} terug={sluiten} kopieer={kopieerLink} gekopieerd={gekopieerd} />
         ) : (
           <div style={grid}>
@@ -174,7 +213,7 @@ function Detail({ c, li, taal, setTaal, terug, kopieer, gekopieerd }: { c: Kennb
       <div style={{ fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: GROEN }}>Pierburg {c.type}</div>
       <div style={{ fontSize: 17, fontWeight: 700 }}>{c.vehicle}</div>
       <div style={{ color: GRIJS, marginTop: 3 }}>{c.engine} · {c.yearFrom}</div>
-      <div style={{ color: GRIJS, fontSize: 12.5, marginTop: 6 }}>Registrier-Nr {c.registrier} · {c.fabrikant} · bronbladen {c.bron_sheets.join(" & ")}</div>
+      <div style={{ color: GRIJS, fontSize: 12.5, marginTop: 6 }}>Registrier-Nr {c.registrier} · {c.fabrikant}{c.bron_sheets.length ? ` · bronbladen ${c.bron_sheets.join(" & ")}` : ""}</div>
 
       {c.toepassingen && c.toepassingen.length > 0 && (
         <section style={paneel}>
