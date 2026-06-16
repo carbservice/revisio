@@ -13,9 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://revisio-umber.vercel.app"),
   // Elke pagina krijgt z'n eigen naam in het tabblad via een sjabloon: "Hub · Revisio".
   title: { default: "Revisio", template: "%s · Revisio" },
   description: "Werkbonnen en revisievoortgang voor Carbservice.",
+  openGraph: { siteName: "Carburateur Service Nederland", locale: "nl_NL", type: "website" },
 };
 
 // viewport-fit: cover laat de inhoud tot in de iPhone-randen lopen (notch en
