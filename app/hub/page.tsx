@@ -303,6 +303,19 @@ function Detail({ c, li, taal, setTaal, terug, kopieer, gekopieerd }: { c: Kennb
                 </tr>
               );
             })}
+            {/* Nieuwe Solex/DVG-bladen hebben de originele Duitse insteltabel-labels
+                (niet de canonieke sleutels); die tonen we generiek, label zoals gedrukt. */}
+            {Object.entries(c.werte)
+              .filter(([k]) => !ORDER.includes(k))
+              .map(([k, v]) =>
+                v ? (
+                  <tr key={k}>
+                    <td style={{ ...td, color: GOUD, fontWeight: 800, width: 34 }} />
+                    <td style={td}>{k}</td>
+                    <td style={{ ...td, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{String(v)}</td>
+                  </tr>
+                ) : null
+              )}
           </tbody>
         </table>
         {c.controle && (
