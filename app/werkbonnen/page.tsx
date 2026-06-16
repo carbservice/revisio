@@ -174,7 +174,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
   const [klusLinkKop, setKlusLinkKop] = useState(false); // "Kopieer link"-bevestiging
   const deepLinkGedaan = useRef(false); // deep-link uit de URL maar één keer openen
   const [deelCode, setDeelCode] = useState("");
-  const [lightbox, setLightbox] = useState<{ fotos: string[]; start: number } | null>(null);
+  const [lightbox, setLightbox] = useState<{ fotos: { url: string; rotatie: number }[]; start: number } | null>(null);
   const [vulPct, setVulPct] = useState(0);
   const [rijdt, setRijdt] = useState(false);
   const huidigPctRef = useRef(0);
@@ -323,7 +323,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
   async function laadVoortgang(klusId: string) {
     const { data: v } = await supabase.from("klus_voortgang").select("stap, bericht, gedaan_op").eq("klus_id", klusId);
     setVoortgang(v || []);
-    const { data: f } = await supabase.from("klus_fotos").select("id, stap, url").eq("klus_id", klusId).order("geupload_op");
+    const { data: f } = await supabase.from("klus_fotos").select("*").eq("klus_id", klusId).order("geupload_op");
     setFotos(f || []);
   }
 
@@ -370,7 +370,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
       setBekijkRetour(ret && ret[0] ? { is: !!ret[0].is_retour, reden: ret[0].reden || "" } : null);
       const { data: v } = await supabase.from("klus_voortgang").select("stap, bericht, gedaan_op").eq("klus_id", k.id);
       setBekijkVoortgang(v || []);
-      const { data: f } = await supabase.from("klus_fotos").select("id, stap, url").eq("klus_id", k.id).order("geupload_op");
+      const { data: f } = await supabase.from("klus_fotos").select("*").eq("klus_id", k.id).order("geupload_op");
       setBekijkFotos(f || []);
       const { data: t } = await supabase.from("tijdregels").select("id, monteur_naam, minuten, notitie, aangemaakt_op").eq("klus_id", k.id).order("aangemaakt_op");
       setBekijkRegels(((t || []) as any[]).filter((r) => r.minuten != null) as Regel[]);
@@ -570,6 +570,15 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
   async function verwijderFoto(id: string) {
     await supabase.from("klus_fotos").delete().eq("id", id);
     if (open) { log(open.id, "foto verwijderd"); await laadVoortgang(open.id); }
+  }
+
+  // Draait een foto 90 graden (alleen de getoonde stand; de afbeelding zelf
+  // blijft onaangeraakt). Slaat de hoek op zodat ook de klant 'm recht ziet.
+  async function draaiFoto(f: any) {
+    const nieuw = (((f.rotatie || 0) + 90) % 360);
+    setFotos((lijst) => lijst.map((x) => (x.id === f.id ? { ...x, rotatie: nieuw } : x)));
+    const { error } = await supabase.from("klus_fotos").update({ rotatie: nieuw }).eq("id", f.id);
+    if (error) setFotoMelding("Draaien opslaan mislukt (is de kolom 'rotatie' al toegevoegd?).");
   }
 
   // Interne foto's: onbeperkte werkplaats-dump per carburateur. Ze krijgen
@@ -789,7 +798,8 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
                     {fotos.filter((f) => f.stap === stapInfo.id).map((f, idx, arr) => (
                       <div key={f.id} style={{ position: "relative" }}>
-                        <img src={f.url} alt="" onClick={() => setLightbox({ fotos: arr.map((x) => x.url), start: idx })} style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8, border: `1px solid ${RAND}`, cursor: "pointer", display: "block" }} />
+                        <img src={f.url} alt="" onClick={() => setLightbox({ fotos: arr.map((x) => ({ url: x.url, rotatie: x.rotatie || 0 })), start: idx })} style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8, border: `1px solid ${RAND}`, cursor: "pointer", display: "block", transform: `rotate(${f.rotatie || 0}deg)` }} />
+                        <button onClick={() => draaiFoto(f)} title="Draai 90°" style={{ position: "absolute", bottom: -6, right: -6, width: 22, height: 22, borderRadius: 999, border: "none", background: GROEN, color: "#fff", fontSize: 12, cursor: "pointer" }}>↻</button>
                         <button onClick={() => verwijderFoto(f.id)} style={{ position: "absolute", top: -6, right: -6, width: 22, height: 22, borderRadius: 999, border: "none", background: ROOD, color: "#fff", fontSize: 13, cursor: "pointer" }}>×</button>
                       </div>
                     ))}
@@ -1012,7 +1022,8 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
                   {internFotos.map((f, idx) => (
                     <div key={f.id} style={{ position: "relative", width: 80 }}>
-                      <img src={f.url} alt="" loading="lazy" onClick={() => setLightbox({ fotos: internFotos.map((x: any) => x.url), start: idx })} style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8, border: `1px solid ${RAND}`, display: "block", cursor: "pointer" }} />
+                      <img src={f.url} alt="" loading="lazy" onClick={() => setLightbox({ fotos: internFotos.map((x: any) => ({ url: x.url, rotatie: x.rotatie || 0 })), start: idx })} style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8, border: `1px solid ${RAND}`, display: "block", cursor: "pointer", transform: `rotate(${f.rotatie || 0}deg)` }} />
+                      <button onClick={() => draaiFoto(f)} title="Draai 90°" style={{ position: "absolute", bottom: -6, right: -6, width: 22, height: 22, borderRadius: 999, border: "none", background: GROEN, color: "#fff", fontSize: 12, cursor: "pointer" }}>↻</button>
                       <button onClick={() => verwijderFoto(f.id)} style={{ position: "absolute", top: -6, right: -6, width: 22, height: 22, borderRadius: 999, border: "none", background: ROOD, color: "#fff", fontSize: 13, cursor: "pointer" }}>×</button>
                     </div>
                   ))}

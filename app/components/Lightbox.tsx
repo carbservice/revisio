@@ -7,7 +7,14 @@
 
 import { useEffect, useState, CSSProperties } from "react";
 
-export default function Lightbox({ fotos, start, onClose }: { fotos: string[]; start: number; onClose: () => void }) {
+// Een foto is een URL, of een object met een draaihoek (0/90/180/270).
+// De afbeelding zelf wordt nooit aangepast; we draaien alleen in beeld.
+type Foto = string | { url: string; rotatie?: number };
+function normFoto(f: Foto): { url: string; rotatie: number } {
+  return typeof f === "string" ? { url: f, rotatie: 0 } : { url: f.url, rotatie: ((f.rotatie || 0) % 360 + 360) % 360 };
+}
+
+export default function Lightbox({ fotos, start, onClose }: { fotos: Foto[]; start: number; onClose: () => void }) {
   const [i, setI] = useState(start);
   const [touchX, setTouchX] = useState<number | null>(null);
 
@@ -42,7 +49,11 @@ export default function Lightbox({ fotos, start, onClose }: { fotos: string[]; s
       <button onClick={onClose} aria-label="Sluiten" style={{ position: "absolute", top: 14, right: 16, width: 46, height: 46, borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.16)", color: "#fff", fontSize: 26, cursor: "pointer" }}>×</button>
 
       {i > 0 && <button onClick={(e) => { e.stopPropagation(); naar(-1); }} aria-label="Vorige" style={pijl("left")}>‹</button>}
-      <img onClick={(e) => e.stopPropagation()} src={fotos[i]} alt="" style={{ maxWidth: "94vw", maxHeight: "84vh", objectFit: "contain", borderRadius: 8 }} />
+      {(() => {
+        const f = normFoto(fotos[i]);
+        const draai = f.rotatie === 90 || f.rotatie === 270; // afmetingen wisselen
+        return <img onClick={(e) => e.stopPropagation()} src={f.url} alt="" style={{ maxWidth: draai ? "84vh" : "94vw", maxHeight: draai ? "94vw" : "84vh", objectFit: "contain", borderRadius: 8, transform: `rotate(${f.rotatie}deg)` }} />;
+      })()}
       {i < fotos.length - 1 && <button onClick={(e) => { e.stopPropagation(); naar(1); }} aria-label="Volgende" style={pijl("right")}>›</button>}
 
       {fotos.length > 1 && (

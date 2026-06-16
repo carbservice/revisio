@@ -38,7 +38,7 @@ export default function WerkbonBekijk({ bekijk, onTerug, bekijkLaden, bekijkVeld
   const artIngevuld = bekijkArtikelen.filter((a) => a.naam.trim() && bedragNum(a.bedrag) > 0);
   const artTotaal = artIngevuld.reduce((s, a) => s + bedragNum(a.bedrag), 0);
   const bPct = STADIA.filter((s) => bekijkVoortgang.some((x) => x.stap === s.id)).reduce((m, s) => Math.max(m, s.pct), 0);
-  const [lightbox, setLightbox] = useState<{ fotos: string[]; start: number } | null>(null);
+  const [lightbox, setLightbox] = useState<{ fotos: { url: string; rotatie: number }[]; start: number } | null>(null);
   return (
     <main style={wrap}>
       <button onClick={onTerug} style={{ border: "none", background: "transparent", color: GROEN, fontWeight: 700, fontSize: 14, cursor: "pointer", padding: "4px 0", marginBottom: 6 }}>← Terug naar klussen</button>
@@ -151,7 +151,7 @@ export default function WerkbonBekijk({ bekijk, onTerug, bekijkLaden, bekijkVeld
           <div style={kopstijl}>Foto's</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {bekijkFotos.map((f, idx) => (
-              <img key={f.id} src={f.url} alt="" onClick={() => setLightbox({ fotos: bekijkFotos.map((x: any) => x.url), start: idx })} style={{ width: 84, height: 84, objectFit: "cover", borderRadius: 8, border: `1px solid ${RAND}`, display: "block", cursor: "pointer" }} />
+              <img key={f.id} src={f.url} alt="" onClick={() => setLightbox({ fotos: bekijkFotos.map((x: any) => ({ url: x.url, rotatie: x.rotatie || 0 })), start: idx })} style={{ width: 84, height: 84, objectFit: "cover", borderRadius: 8, border: `1px solid ${RAND}`, display: "block", cursor: "pointer", transform: `rotate(${f.rotatie || 0}deg)` }} />
             ))}
           </div>
         </div>

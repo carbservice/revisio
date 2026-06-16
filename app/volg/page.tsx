@@ -26,8 +26,9 @@ const STADIA = [
   { stap: "schoon", label: "Klaar om te verzenden of op te halen", omschrijving: "Je revisie is afgerond, gecontroleerd en klaar.", pct: 100 },
 ];
 
-type Stap = { stap: string; label: string; pct: number; bericht: string; gedaan_op: string | null; fotos: string[] };
-type Data = { nummer: string; klant: string; voertuig: string; klacht: string; monteur: string; pct: number; actiefStap: string | null; stadium: string; stappen: Stap[]; algemeneFotos: string[]; gepubliceerd: boolean; fout?: string };
+type Foto = { url: string; rotatie: number };
+type Stap = { stap: string; label: string; pct: number; bericht: string; gedaan_op: string | null; fotos: Foto[] };
+type Data = { nummer: string; klant: string; voertuig: string; klacht: string; monteur: string; pct: number; actiefStap: string | null; stadium: string; stappen: Stap[]; algemeneFotos: Foto[]; gepubliceerd: boolean; fout?: string };
 
 // Waar moet de carburateur staan? Bij een actief stadium: daar. Anders zakt hij
 // naar het eerstvolgende nog-niet-gedane stadium, zodat hij bij bijvoorbeeld 20%
@@ -64,7 +65,7 @@ function Inner() {
   const [fout, setFout] = useState("");
   const [laden, setLaden] = useState(true);
   const [logoOk, setLogoOk] = useState(true);
-  const [lightbox, setLightbox] = useState<{ fotos: string[]; start: number } | null>(null);
+  const [lightbox, setLightbox] = useState<{ fotos: Foto[]; start: number } | null>(null);
   const [vul, setVul] = useState(0);
   const [centers, setCenters] = useState<number[]>([]);
   const [replay, setReplay] = useState(0);
@@ -310,8 +311,8 @@ function Inner() {
 
                     {done && s!.fotos.length > 0 && (
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14 }}>
-                        {s!.fotos.slice(0, 3).map((url, j) => (
-                          <img key={j} src={url} alt="" onClick={() => setLightbox({ fotos: s!.fotos.slice(0, 3), start: j })} style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 12, border: `1px solid ${RAND}`, display: "block", cursor: "pointer" }} />
+                        {s!.fotos.slice(0, 3).map((f, j) => (
+                          <img key={j} src={f.url} alt="" onClick={() => setLightbox({ fotos: s!.fotos.slice(0, 3), start: j })} style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 12, border: `1px solid ${RAND}`, display: "block", cursor: "pointer", transform: `rotate(${f.rotatie || 0}deg)` }} />
                         ))}
                       </div>
                     )}
@@ -333,8 +334,8 @@ function Inner() {
             <div style={{ marginTop: 28, borderTop: `1px solid ${RAND}`, paddingTop: 22 }}>
               <div style={{ ...labelStijl, marginBottom: 12 }}>Extra foto's</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-                {data.algemeneFotos.slice(0, 3).map((url, j) => (
-                  <img key={j} src={url} alt="" onClick={() => setLightbox({ fotos: data.algemeneFotos.slice(0, 3), start: j })} style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 12, border: `1px solid ${RAND}`, display: "block", cursor: "pointer" }} />
+                {data.algemeneFotos.slice(0, 3).map((f: Foto, j: number) => (
+                  <img key={j} src={f.url} alt="" onClick={() => setLightbox({ fotos: data.algemeneFotos.slice(0, 3), start: j })} style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 12, border: `1px solid ${RAND}`, display: "block", cursor: "pointer", transform: `rotate(${f.rotatie || 0}deg)` }} />
                 ))}
               </div>
             </div>

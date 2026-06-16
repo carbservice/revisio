@@ -134,7 +134,7 @@ export default function WerkbonBekijk() {
         const { data: o } = await supabase.from("werkbon_opmerking").select("tekst").eq("klus_id", klusId).limit(1);
         const { data: ret } = await supabase.from("werkbon_retour").select("is_retour, reden").eq("klus_id", klusId).limit(1);
         const { data: v } = await supabase.from("klus_voortgang").select("stap, bericht, gedaan_op").eq("klus_id", klusId);
-        const { data: f } = await supabase.from("klus_fotos").select("id, stap, url").eq("klus_id", klusId).order("geupload_op");
+        const { data: f } = await supabase.from("klus_fotos").select("*").eq("klus_id", klusId).order("geupload_op");
         const { data: lg } = await supabase.from("werkbon_log").select("monteur_naam, actie, detail, gedaan_op").eq("klus_id", klusId).order("gedaan_op", { ascending: false }).limit(50);
 
         // Kop: eerst uit werkbon_links, anders uit klus_label "{nummer} {klant}"
@@ -302,7 +302,7 @@ export default function WerkbonBekijk() {
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {fotos.map((f) => (
               <a key={f.id} href={f.url} target="_blank" rel="noreferrer">
-                <img src={f.url} alt="" style={{ width: 92, height: 92, objectFit: "cover", borderRadius: 8, border: `1px solid ${RAND}` }} />
+                <img src={f.url} alt="" style={{ width: 92, height: 92, objectFit: "cover", borderRadius: 8, border: `1px solid ${RAND}`, transform: `rotate(${f.rotatie || 0}deg)` }} />
               </a>
             ))}
           </div>

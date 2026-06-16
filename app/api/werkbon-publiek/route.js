@@ -39,7 +39,7 @@ export async function GET(req) {
       .not("gepubliceerd_op", "is", null);
     const { data: fotos } = await supabase
       .from("klus_fotos")
-      .select("stap, url, geupload_op")
+      .select("*")
       .eq("klus_id", link.klus_id)
       .not("gepubliceerd_op", "is", null)
       .order("geupload_op");
@@ -72,7 +72,7 @@ export async function GET(req) {
     const vMap = {};
     (voortgang || []).forEach((v) => { vMap[v.stap] = v; });
     const fByStap = {};
-    (fotos || []).forEach((f) => { (fByStap[f.stap] = fByStap[f.stap] || []).push(f.url); });
+    (fotos || []).forEach((f) => { (fByStap[f.stap] = fByStap[f.stap] || []).push({ url: f.url, rotatie: f.rotatie || 0 }); });
 
     const stappen = STADIA.filter((s) => vMap[s.stap]).map((s) => ({
       stap: s.stap,
