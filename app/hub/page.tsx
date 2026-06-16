@@ -12,13 +12,21 @@ import { supabase } from "@/lib/supabase";
 import { LABELS, ORDER, Kennblad } from "./data";
 
 // Zet de losse Supabase-tabellen om naar het Kennblad-model dat de pagina gebruikt.
+// Nette motorregel die "null kW / null pk" weglaat als een waarde niet gedrukt stond.
+function motorTekst(c: any): string {
+  const verm = [c.motor_kw != null ? `${c.motor_kw} kW` : "", c.motor_ps != null ? `(${c.motor_ps} pk)` : ""].filter(Boolean).join(" ");
+  const rpm = c.motor_rpm != null ? `@ ${c.motor_rpm}/min` : "";
+  const cc = c.motor_cc != null ? `${c.motor_cc} cc` : "";
+  return [verm, rpm, cc].filter(Boolean).join(" · ");
+}
+
 function bouwKennbladen(carbs: any[], tags: any[], toep: any[], uitv: any[], ond: any[]): Kennblad[] {
   const groep = (rows: any[], key: string) => { const m: Record<string, any[]> = {}; (rows || []).forEach((r) => { (m[r[key]] = m[r[key]] || []).push(r); }); return m; };
   const tg = groep(tags, "carb_id"), tp = groep(toep, "carb_id"), uv = groep(uitv, "carb_id"), od = groep(ond, "carb_id");
   return (carbs || []).map((c) => ({
     id: c.id, fabrikant: c.fabrikant, type: c.type, gasklep: c.gasklep, cilinders: c.cilinders,
     vehicle: c.vehicle, registrier: c.registrier,
-    engine: `${c.motor_kw} kW (${c.motor_ps} pk) @ ${c.motor_rpm}/min · ${c.motor_cc} cc`,
+    engine: motorTekst(c),
     yearFrom: c.bouwjaar_tot_tekst ? `${c.bouwjaar_van_tekst} - ${c.bouwjaar_tot_tekst}` : `vanaf ${c.bouwjaar_van_tekst}`,
     bron_sheets: [],
     tag_norm: (tg[c.id] || []).map((t) => t.tag_norm),
@@ -157,7 +165,7 @@ function Hub() {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
             <div>
               <div style={{ fontFamily: SERIF, fontSize: 27, fontWeight: 700, letterSpacing: 0.2 }}>Carburateur Hub</div>
-              <div style={{ fontSize: 12.5, color: "#bcd6c8", marginTop: 2 }}>Pierburg-kennbladen · interne kruisverwijzing</div>
+              <div style={{ fontSize: 12.5, color: "#bcd6c8", marginTop: 2 }}>Solex · Pierburg · Zenith kennbladen · interne kruisverwijzing</div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
               <span style={{ fontSize: 13, color: "#bcd6c8" }}>Ingelogd als <span style={{ fontWeight: 700, color: "#fff" }}>{naam || "gebruiker"}</span></span>
@@ -190,7 +198,7 @@ function Hub() {
                   <div style={{ height: 150, background: `#f3f6f4 url('${c.drawing}') center/cover no-repeat`, borderBottom: `1px solid ${RAND}` }} />
                 )}
                 <div style={{ padding: "14px 16px 16px" }}>
-                  <div style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 700, color: GROEN }}>Pierburg {c.type}</div>
+                  <div style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 700, color: GROEN }}>{c.fabrikant} {c.type}</div>
                   <div style={{ fontWeight: 700, marginTop: 2 }}>{c.vehicle}</div>
                   <div style={{ color: GRIJS, fontSize: 13, marginTop: 4 }}>{c.engine}</div>
                   {c.bouwjaar && <div style={{ color: GROEN, fontSize: 12.5, fontWeight: 700, marginTop: 3 }}>Bouwjaar: {c.bouwjaar.von}{c.bouwjaar.bis ? ` – ${c.bouwjaar.bis}` : " →"}</div>}
@@ -219,7 +227,7 @@ function Detail({ c, li, taal, setTaal, terug, kopieer, gekopieerd }: { c: Kennb
         <button onClick={terug} style={{ background: "none", border: 0, color: GROEN, fontSize: 15, fontWeight: 700, cursor: "pointer", padding: "14px 0" }}>← terug naar overzicht</button>
         <button onClick={kopieer} style={{ background: gekopieerd ? GOUD : "#fff", color: gekopieerd ? "#fff" : GROEN, border: `1px solid ${gekopieerd ? GOUD : RAND}`, borderRadius: 10, padding: "8px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>{gekopieerd ? "Gekopieerd!" : "🔗 Kopieer link"}</button>
       </div>
-      <div style={{ fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: GROEN }}>Pierburg {c.type}</div>
+      <div style={{ fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: GROEN }}>{c.fabrikant} {c.type}</div>
       <div style={{ fontSize: 17, fontWeight: 700 }}>{c.vehicle}</div>
       <div style={{ color: GRIJS, marginTop: 3 }}>{c.engine} · {c.yearFrom}</div>
       <div style={{ color: GRIJS, fontSize: 12.5, marginTop: 6 }}>Registrier-Nr {c.registrier} · {c.fabrikant}{c.bron_sheets.length ? ` · bronbladen ${c.bron_sheets.join(" & ")}` : ""}</div>
