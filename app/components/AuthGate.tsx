@@ -6,6 +6,7 @@
 // toegang is goedgekeurd.
 
 import { useEffect, useState, ReactNode, CSSProperties, createContext, useContext } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { GROEN, GRIJS, RAND, BG, TEKST, ROOD, KAART_SCHADUW } from "@/lib/theme";
 
@@ -24,6 +25,7 @@ export default function AuthGate({ requireAdmin = false, children }: { requireAd
   const [fout, setFout] = useState("");
   const [verstuurd, setVerstuurd] = useState(false);
   const [code, setCode] = useState("");
+  const router = useRouter();
 
   async function check(authEmail: string | undefined | null) {
     if (!authEmail) { setStatus("uit"); return; }
@@ -54,7 +56,8 @@ export default function AuthGate({ requireAdmin = false, children }: { requireAd
     const adres = email.trim();
     if (!adres) return;
     setBezig(true); setFout("");
-    const { error } = await supabase.auth.signInWithOtp({ email: adres, options: { emailRedirectTo: window.location.href } });
+    // Magic link landt op de startpagina, net als de code-login.
+    const { error } = await supabase.auth.signInWithOtp({ email: adres, options: { emailRedirectTo: `${window.location.origin}/start` } });
     if (error) setFout("Inloglink versturen mislukt: " + error.message);
     else setVerstuurd(true);
     setBezig(false);
@@ -65,8 +68,9 @@ export default function AuthGate({ requireAdmin = false, children }: { requireAd
     if (c.length < 6) return;
     setBezig(true); setFout("");
     const { error } = await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token: c, type: "email" });
-    if (error) setFout("Code klopt niet of is verlopen. Vraag eventueel een nieuwe aan.");
+    if (error) { setFout("Code klopt niet of is verlopen. Vraag eventueel een nieuwe aan."); setBezig(false); return; }
     setBezig(false);
+    router.push("/start"); // elke login komt op de startpagina uit
   }
 
   async function uitloggen() {
