@@ -3,6 +3,7 @@
 // Revisio werkbonnen (monteur-app). app/werkbonnen/page.tsx
 
 import { useEffect, useState, useRef, CSSProperties } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { GROEN, GROEN_BG, GOUD, GOUD_BG, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG, KAART_BG, VELD_BG, VELD_TEKST, VELD_RAND, KAART_SCHADUW } from "@/lib/theme";
 import { duur, mmss, dagenGeleden } from "@/lib/format";
@@ -1062,6 +1063,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
 
 // Inlogscherm met e-mail magic link. Dit is de zichtbare pagina.
 export default function WerkplaatsPagina() {
+  const router = useRouter();
   const [ingelogd, setIngelogd] = useState<Monteur | null>(null);
   const [email, setEmail] = useState("");
   const [bezig, setBezig] = useState(false);
@@ -1111,7 +1113,8 @@ export default function WerkplaatsPagina() {
     const adres = email.trim();
     if (!adres) return;
     setBezig(true); setFout("");
-    const { error } = await supabase.auth.signInWithOtp({ email: adres, options: { emailRedirectTo: `${window.location.origin}/werkbonnen` } });
+    // Magic link landt op de startpagina, net als alle andere logins.
+    const { error } = await supabase.auth.signInWithOtp({ email: adres, options: { emailRedirectTo: `${window.location.origin}/start` } });
     if (error) setFout("Versturen mislukt: " + error.message);
     else setVerstuurd(true);
     setBezig(false);
@@ -1123,9 +1126,9 @@ export default function WerkplaatsPagina() {
     if (c.length < 6) return;
     setBezig(true); setFout("");
     const { error } = await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token: c, type: "email" });
-    if (error) setFout("Code klopt niet of is verlopen. Vraag eventueel een nieuwe aan.");
+    if (error) { setFout("Code klopt niet of is verlopen. Vraag eventueel een nieuwe aan."); setBezig(false); return; }
     setBezig(false);
-    // Bij succes pikt onAuthStateChange de sessie op en logt je in.
+    router.push("/start"); // na inloggen naar de startpagina
   }
 
   async function uitloggen() {
