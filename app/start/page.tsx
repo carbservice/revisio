@@ -22,10 +22,10 @@ function groet(): string {
 }
 
 const MODULES = [
-  { href: "/werkbonnen", icon: "🧾", titel: "Werkbonnen", sub: "Klussen, timers en foto's", adminOnly: false },
-  { href: "/hub", icon: "⚙️", titel: "Carburateur Hub", sub: "Kennbladen en tekeningen opzoeken", adminOnly: false },
-  { href: "/dashboard", icon: "📊", titel: "Cijfers", sub: "Omzet, marges en KPI's", adminOnly: true },
-  { href: "/dashboard/werkplaats", icon: "🔧", titel: "Werkplaats", sub: "Doorlooptijd, uren en retouren", adminOnly: true },
+  { href: "/werkbonnen", icon: "🧾", titel: "Werkbonnen", sub: "Geaccepteerde klussen klaar voor revisie", adminOnly: false },
+  { href: "/hub", icon: "⚙️", titel: "Carburateur Hub", sub: "Interne database voor alle blueprints", adminOnly: false },
+  { href: "/dashboard", icon: "📊", titel: "Cijfers", sub: "Omzet, marges, KPI's", adminOnly: true },
+  { href: "/dashboard/werkplaats", icon: "🔧", titel: "Werkplaats", sub: "Dit is het interne werkplaatsdashboard", adminOnly: true },
 ];
 const OPSLAG = "revisio-start-volgorde";
 
