@@ -10,6 +10,7 @@ import type { Klus, Monteur, Regel, Veld, Check, Artikel } from "@/lib/types";
 import DashboardNav from "@/app/components/DashboardNav";
 import ScrollNaarBoven from "@/app/components/ScrollNaarBoven";
 import PaginaKop from "@/app/components/PaginaKop";
+import LaadScherm from "@/app/components/LaadScherm";
 import Lightbox from "@/app/components/Lightbox";
 import BlokOpmerkingen from "./components/BlokOpmerkingen";
 import BlokArtikelen from "./components/BlokArtikelen";
@@ -714,7 +715,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
   const toggle = (a: boolean, kleur: string): CSSProperties => ({ border: `1px solid ${a ? kleur : RAND}`, background: a ? kleur : "#fff", color: a ? "#fff" : TEKST, borderRadius: 8, padding: "8px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer" });
   const kopstijl: CSSProperties = { fontSize: 13, color: GRIJS, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, margin: "2px 0 12px" };
 
-  if (laden) return <main style={wrap}><p style={{ color: GRIJS }}>Laden...</p></main>;
+  if (laden) return <main style={{ ...wrap, maxWidth: 600 }}><LaadScherm titel="Werkbonnen laden…" apis={[{ naam: "Werkbonnen", klaar: false }]} /></main>;
 
   const stapInfo = stapPopup ? STADIA.find((s) => s.id === stapPopup) : null;
   const binnenDagenLijst = klussen.map((k) => ontvangst[k.id] ? dagenGeleden(ontvangst[k.id]) : null).filter((d): d is number => d != null);
@@ -1134,7 +1135,7 @@ export default function WerkplaatsPagina() {
 
   const wrapL: CSSProperties = { minHeight: "100vh", background: BG, color: TEKST, fontFamily: "system-ui, -apple-system, sans-serif", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 };
 
-  if (!klaar) return <main style={wrapL}><p style={{ color: GRIJS }}>Laden...</p></main>;
+  if (!klaar) return <main style={{ ...wrapL, display: "block", padding: "20px 14px", maxWidth: 600 }}><LaadScherm titel="Werkbonnen laden…" apis={[{ naam: "Inloggen controleren", klaar: false }]} /></main>;
 
   if (ingelogd) return <WerkplaatsApp ingelogd={ingelogd} isAdmin={isAdmin} onUitloggen={uitloggen} />;
 

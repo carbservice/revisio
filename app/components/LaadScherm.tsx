@@ -5,7 +5,7 @@
 
 import { GROEN, GROEN_BG, GRIJS, RAND, TEKST, KAART_SCHADUW } from "@/lib/theme";
 
-export default function LaadScherm({ apis }: { apis: { naam: string; klaar: boolean }[] }) {
+export default function LaadScherm({ apis, titel = "Cijfers laden…" }: { apis: { naam: string; klaar: boolean }[]; titel?: string }) {
   const klaar = apis.filter((a) => a.klaar).length;
   const totaal = apis.length;
   const pct = totaal ? Math.round((klaar / totaal) * 100) : 0;
@@ -18,7 +18,7 @@ export default function LaadScherm({ apis }: { apis: { naam: string; klaar: bool
       `}</style>
 
       <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", color: GROEN }}>Revisio · live data</div>
-      <h1 style={{ fontSize: 22, fontWeight: 800, color: GROEN, margin: "8px 0 6px" }}>Cijfers laden…</h1>
+      <h1 style={{ fontSize: 22, fontWeight: 800, color: GROEN, margin: "8px 0 6px" }}>{titel}</h1>
       <p style={{ fontSize: 14.5, color: TEKST, lineHeight: 1.5, margin: "0 0 20px" }}>
         Alle API&apos;s draaien en halen de data live op. Moment geduld, dit kost soms even.
       </p>
