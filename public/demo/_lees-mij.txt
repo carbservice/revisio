@@ -1,0 +1,18 @@
+DEMO-FOTO'S
+===========
+
+Plaats hier 5 foto's met PRECIES deze namen (kleine letters, .jpg):
+
+  ontvangen.jpg   -> stadium "Ontvangen"   (carburateur op de werkbank)
+  diagnose.jpg    -> stadium "Diagnose"    (onderdelen uit elkaar / inspectie)
+  reviseren.jpg   -> stadium "Reviseren"   (ultrasoon / schoonmaken / onderdelen)
+  afbouwen.jpg    -> stadium "Afbouwen en aftesten"
+  klaar.jpg       -> stadium "Klaar"        (de mooie eindfoto)
+
+Tips:
+- Vierkant werkt het mooist (ze worden als 120x120 getoond, bijgesneden).
+- Houd ze klein: bijv. 600x600 px en onder ~250 KB per foto.
+- Zodra ze hier staan: commit + push (of geef een seintje, dan doe ik het).
+
+Zolang een foto hier ontbreekt, toont de demo automatisch een tijdelijke foto.
+Dit tekstbestand mag je laten staan of weggooien.

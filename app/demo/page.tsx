@@ -16,15 +16,16 @@ const GROEN_BG = "#e7f0ea";
 const SPOOR = "#e1e7dd";
 const BRASS = "#b8893a";
 
-// Demo-foto's. De showcase-foto's staan in public/demo/. Zolang die er nog
-// niet zijn, valt de afbeelding terug op de tijdelijke foto's (fallback).
+// Demo-foto's: meerdere per stadium uit public/demo/ (bv. ontvangen-1.jpg ...).
+// Per stadium een fallback-URL voor het geval een bestand ontbreekt.
 const F = "https://ntcbrqoesjlgiawmkdsa.supabase.co/storage/v1/object/public/werkbon-fotos/2026-0566";
+const dfotos = (s: string, n: number) => Array.from({ length: n }, (_, i) => `/demo/${s}-${i + 1}.jpg`);
 const STADIA = [
-  { label: "Ontvangen", oms: "We hebben je carburateur goed ontvangen en op de werkbank gelegd.", foto: "/demo/ontvangen.jpg", fallback: `${F}/ontvangen/1781344012440.jpg`, pct: 20 },
-  { label: "Diagnose", oms: "We zijn begonnen: inspectie en analyse van alle onderdelen.", foto: "/demo/diagnose.jpg", fallback: `${F}/gestart/1781346357956.jpg`, pct: 40 },
-  { label: "Reviseren", oms: "Demontage, ultrasoonreiniging en de onderdelen plaatsen.", foto: "/demo/reviseren.jpg", fallback: `${F}/voor_ultrasoon/1781354974808.jpg`, pct: 60 },
-  { label: "Afbouwen en aftesten", oms: "We bouwen de carburateur af en testen op vacuum en benzinedruk.", foto: "/demo/afbouwen.jpg", fallback: `${F}/voor_ultrasoon/1781354988151.jpg`, pct: 80 },
-  { label: "Klaar om op te halen", oms: "Je revisie is afgerond, afgesteld en gecontroleerd.", foto: "/demo/klaar.jpg", fallback: `${F}/schoon/1781359590611.jpg`, pct: 100 },
+  { label: "Ontvangen", oms: "We hebben je carburateur goed ontvangen en op de werkbank gelegd.", fotos: dfotos("ontvangen", 3), fallback: `${F}/ontvangen/1781344012440.jpg`, pct: 20 },
+  { label: "Diagnose", oms: "We zijn begonnen: inspectie en analyse van alle onderdelen.", fotos: dfotos("diagnose", 8), fallback: `${F}/gestart/1781346357956.jpg`, pct: 40 },
+  { label: "Reviseren", oms: "Demontage, ultrasoonreiniging en de onderdelen plaatsen.", fotos: dfotos("reviseren", 3), fallback: `${F}/voor_ultrasoon/1781354974808.jpg`, pct: 60 },
+  { label: "Afbouwen en aftesten", oms: "We bouwen de carburateur af en testen op vacuum en benzinedruk.", fotos: dfotos("afbouwen", 4), fallback: `${F}/voor_ultrasoon/1781354988151.jpg`, pct: 80 },
+  { label: "Klaar om op te halen", oms: "Je revisie is afgerond, afgesteld en gecontroleerd.", fotos: dfotos("klaar", 3), fallback: `${F}/schoon/1781359590611.jpg`, pct: 100 },
 ];
 
 const PAUZE = 2600;     // hoe lang een fase in beeld blijft
@@ -248,8 +249,10 @@ export default function DemoPagina() {
                     {actief && <div style={{ display: "inline-block", fontSize: 12.5, fontWeight: 700, color: "#fff", background: GROEN_LICHT, borderRadius: 999, padding: "3px 11px", marginTop: 8 }}>We zijn hier nu mee bezig</div>}
                     {!done && <div style={{ display: "inline-block", fontSize: 12.5, fontWeight: 700, color: "#8d8a81", background: "#efefea", borderRadius: 999, padding: "3px 11px", marginTop: 8 }}>Nog te doen</div>}
                     {done && (
-                      <div style={{ marginTop: 13 }}>
-                        <img src={st.foto} onError={(e) => { const im = e.currentTarget; if (im.dataset.fb) return; im.dataset.fb = "1"; im.src = st.fallback; }} alt="" style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 12, border: `1px solid ${RAND}`, display: "block" }} />
+                      <div style={{ marginTop: 13, display: "flex", flexWrap: "wrap", gap: 8 }}>
+                        {st.fotos.map((src, k) => (
+                          <img key={k} src={src} onError={(e) => { const im = e.currentTarget; if (im.dataset.fb) return; im.dataset.fb = "1"; im.src = st.fallback; }} alt="" style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 12, border: `1px solid ${RAND}`, display: "block" }} />
+                        ))}
                       </div>
                     )}
                   </div>
