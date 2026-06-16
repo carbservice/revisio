@@ -13,7 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Revisio",
+  // Elke pagina krijgt z'n eigen naam in het tabblad via een sjabloon: "Hub · Revisio".
+  title: { default: "Revisio", template: "%s · Revisio" },
   description: "Werkbonnen en revisievoortgang voor Carbservice.",
 };
 
