@@ -3371,37 +3371,37 @@
    "drawing": "/hub/1b1-36-vwiltis.jpg",
    "onderdelen": [
     {
-     "nr": "-",
+     "nr": "–",
      "naam": [
-      "Carburetor 1 B 1 - 36 *",
+      "Carburetor 1 B 1-36 (BW 24V)",
       "Vergaser 1 B 1 - 36 *",
-      "Carburateur 1 B 1 - 36 *"
+      "Carburateur 1 B 1-36 (BW 24V)"
      ],
      "aantal": "1",
      "bestell": "7.17626.00"
     },
     {
-     "nr": "-",
+     "nr": "–",
      "naam": [
-      "Carburetor 1 B 1 - 36 **",
+      "Carburetor 1 B 1-36 (Zivil 12V)",
       "Vergaser 1 B 1 - 36 **",
-      "Carburateur 1 B 1 - 36 **"
+      "Carburateur 1 B 1-36 (Zivil 12V)"
      ],
      "aantal": "1",
      "bestell": "7.17626.01"
     },
     {
-     "nr": "24",
+     "nr": "1-24",
      "naam": [
       "Carburetor body assy",
       "Vergasergehäuse kpl.",
       "Carburateurhuis compleet"
      ],
      "aantal": "1",
-     "bestell": ""
+     "bestell": "kein ET"
     },
     {
-     "nr": "8",
+     "nr": "2",
      "naam": [
       "Bushing",
       "Buchse",
@@ -3411,7 +3411,7 @@
      "bestell": "3.36130.01"
     },
     {
-     "nr": "7",
+     "nr": "3",
      "naam": [
       "Torsion spring",
       "Drehfeder",
@@ -3421,14 +3421,14 @@
      "bestell": "3.36037.00"
     },
     {
-     "nr": "9",
+     "nr": "7",
      "naam": [
       "Wave washer",
       "Wellscheibe",
       "Golfveerring"
      ],
      "aantal": "1",
-     "bestell": "3.34772.00"
+     "bestell": "3.24772.00"
     },
     {
      "nr": "8",
@@ -3441,14 +3441,14 @@
      "bestell": "3.36130.02"
     },
     {
-     "nr": "6",
+     "nr": "10",
      "naam": [
       "Lever",
       "Hebel",
       "Hendel"
      ],
      "aantal": "1",
-     "bestell": "1.18599.02"
+     "bestell": "5.18599.00"
     },
     {
      "nr": "10c",
@@ -3461,27 +3461,27 @@
      "bestell": "3.36008.00"
     },
     {
-     "nr": "11",
+     "nr": "12",
      "naam": [
       "Spacer bushing",
       "Distanzbuchse",
       "Afstandsbus"
      ],
      "aantal": "1",
-     "bestell": "3.39418.00"
+     "bestell": "3.29418.00"
     },
     {
-     "nr": "12",
+     "nr": "13",
      "naam": [
       "Cam lever",
       "Kurvenhebel",
       "Nokkenhendel"
      ],
      "aantal": "1",
-     "bestell": "5.18780.00"
+     "bestell": "5.18790.00"
     },
     {
-     "nr": "13",
+     "nr": "14",
      "naam": [
       "Lock washer",
       "Sicherungsscheibe",
@@ -3491,17 +3491,17 @@
      "bestell": "3.32308.00"
     },
     {
-     "nr": "14",
+     "nr": "15",
      "naam": [
-      "Oval countersunk screw",
-      "Linsensenkschraube",
-      "Verzonken bolkopschroef"
+      "Oval-head screw",
+      "Linsenschraube",
+      "Bolkopschroef"
      ],
      "aantal": "1",
-     "bestell": "3.36669.94"
+     "bestell": "3.36669.00"
     },
     {
-     "nr": "15",
+     "nr": "20",
      "naam": [
       "Lock washer",
       "Sicherungsscheibe",
@@ -3511,7 +3511,7 @@
      "bestell": "3.25312.00"
     },
     {
-     "nr": "16",
+     "nr": "21",
      "naam": [
       "Hex nut",
       "Sechskantmutter",
@@ -3521,7 +3521,7 @@
      "bestell": "3.30887.00"
     },
     {
-     "nr": "17",
+     "nr": "22",
      "naam": [
       "Set screw",
       "Gewindestift",
@@ -3531,11 +3531,11 @@
      "bestell": "3.27688.00"
     },
     {
-     "nr": "18",
+     "nr": "23",
      "naam": [
-      "Adjusting screw set",
+      "Adjusting screw (set)",
       "Satz-Einstellschraube",
-      "Set stelschroef"
+      "Stelschroef (set)"
      ],
      "aantal": "1",
      "bestell": "5.18811.00"
@@ -3551,7 +3551,7 @@
      "bestell": "3.34520.00"
     },
     {
-     "nr": "19",
+     "nr": "28",
      "naam": [
       "Mixture adjustment screw",
       "Gem.-Reg.-Schraube",
@@ -3591,7 +3591,7 @@
      "bestell": "5.17888.00"
     },
     {
-     "nr": "29",
+     "nr": "32",
      "naam": [
       "O-ring",
       "O-Ring",
@@ -3603,9 +3603,9 @@
     {
      "nr": "35",
      "naam": [
-      "Cut-off valve *",
+      "Cut-off valve (BW 24V)",
       "Abschaltventil *",
-      "Afsluitventiel *"
+      "Afsluitventiel (BW 24V)"
      ],
      "aantal": "1",
      "bestell": "7.20549.00"
@@ -3613,9 +3613,9 @@
     {
      "nr": "35",
      "naam": [
-      "Cut-off valve **",
+      "Cut-off valve (Zivil 12V)",
       "Abschaltventil **",
-      "Afsluitventiel **"
+      "Afsluitventiel (Zivil 12V)"
      ],
      "aantal": "1",
      "bestell": "7.20414.00"
@@ -3661,7 +3661,7 @@
      "bestell": "3.27204.00"
     },
     {
-     "nr": "41",
+     "nr": "40",
      "naam": [
       "Cap",
       "Kappe",
@@ -3671,27 +3671,27 @@
      "bestell": "3.35099.00"
     },
     {
-     "nr": "42",
+     "nr": "41",
      "naam": [
       "Compression spring",
       "Druckfeder",
       "Drukveer"
      ],
      "aantal": "1",
-     "bestell": "3.35847.00"
+     "bestell": "3.35847.01"
     },
     {
-     "nr": "43",
+     "nr": "42",
      "naam": [
       "Pump piston",
       "Pumpenkolben",
       "Pompzuiger"
      ],
      "aantal": "1",
-     "bestell": "5.18598.01"
+     "bestell": "5.18598.05"
     },
     {
-     "nr": "44",
+     "nr": "43",
      "naam": [
       "Guide ring",
       "Führungsring",
@@ -3713,22 +3713,12 @@
     {
      "nr": "46",
      "naam": [
-      "Injection tube *",
-      "Einspritzrohr *",
-      "Inspuitbuisje *"
+      "Injection tube",
+      "Einspritzrohr",
+      "Inspuitbuisje"
      ],
      "aantal": "1",
-     "bestell": "5.18542.05"
-    },
-    {
-     "nr": "46",
-     "naam": [
-      "Injection tube **",
-      "Einspritzrohr **",
-      "Inspuitbuisje **"
-     ],
-     "aantal": "1",
-     "bestell": "5.18542.02"
+     "bestell": "5.18542.01"
     },
     {
      "nr": "47",
@@ -3738,7 +3728,7 @@
       "O-ring"
      ],
      "aantal": "1",
-     "bestell": "3.16681.00"
+     "bestell": "3.18681.00"
     },
     {
      "nr": "49",
@@ -3751,14 +3741,14 @@
      "bestell": "3.35741.01"
     },
     {
-     "nr": "54",
+     "nr": "50-54",
      "naam": [
       "Part-load enrichment valve",
       "Teillastanreicherungsventil",
       "Deellast-verrijkingsventiel"
      ],
      "aantal": "1",
-     "bestell": "5.18730.00"
+     "bestell": "5.18780.00"
     },
     {
      "nr": "51",
@@ -3778,14 +3768,14 @@
       "Membraan"
      ],
      "aantal": "1",
-     "bestell": "3.18532.00"
+     "bestell": "5.18532.01"
     },
     {
      "nr": "53",
      "naam": [
-      "Compression spring",
-      "Druckfeder",
-      "Drukveer"
+      "O-ring",
+      "O-Ring",
+      "O-ring"
      ],
      "aantal": "1",
      "bestell": "3.31598.00"
@@ -3797,31 +3787,31 @@
       "Clips",
       "Clip"
      ],
-     "aantal": "1",
-     "bestell": "3.36059.00"
+     "aantal": "2",
+     "bestell": "3.36050.00"
     },
     {
-     "nr": "65",
+     "nr": "55",
      "naam": [
       "Oval-head screw",
       "Linsenschraube",
       "Bolkopschroef"
      ],
      "aantal": "1",
-     "bestell": "3.18783.00"
+     "bestell": "5.18783.00"
     },
     {
      "nr": "66",
      "naam": [
-      "Plug/jet",
+      "Plug / jet",
       "Stopfen/Düse",
-      "Plug/sproeier"
+      "Plug / sproeier"
      ],
      "aantal": "1",
      "bestell": ""
     },
     {
-     "nr": "66",
+     "nr": "67",
      "naam": [
       "Carburetor cover gasket",
       "Vergaserdeckeldichtung",
@@ -3831,14 +3821,14 @@
      "bestell": "3.36047.00"
     },
     {
-     "nr": "67",
+     "nr": "67-79",
      "naam": [
       "Carburetor cover assy",
       "Vergaserdeckel kpl.",
       "Carburateurdeksel compleet"
      ],
      "aantal": "1",
-     "bestell": "5.17985.02"
+     "bestell": "5.17985.05"
     },
     {
      "nr": "68",
@@ -3848,7 +3838,7 @@
       "Naaldventiel"
      ],
      "aantal": "1",
-     "bestell": "3.13587.00"
+     "bestell": "5.18367.00"
     },
     {
      "nr": "69",
@@ -3888,7 +3878,7 @@
       "Pompas"
      ],
      "aantal": "1",
-     "bestell": "5.18597.00"
+     "bestell": "5.18597.01"
     },
     {
      "nr": "73",
@@ -3905,7 +3895,7 @@
      "naam": [
       "Oval countersunk screw",
       "Linsensenkschraube",
-      "Verzonken bolkopschroef"
+      "Bolverzonken schroef"
      ],
      "aantal": "1",
      "bestell": "3.36667.99"
@@ -3941,11 +3931,11 @@
      "bestell": "3.35900.00"
     },
     {
-     "nr": "91",
+     "nr": "80-91",
      "naam": [
       "Starter (choke) cover assy",
       "Starterdeckel kpl.",
-      "Starterdeksel compleet"
+      "Starterdeksel compleet (choke)"
      ],
      "aantal": "1",
      "bestell": "5.18587.01"
@@ -3981,9 +3971,9 @@
      "bestell": "3.36013.01"
     },
     {
-     "nr": "87",
+     "nr": "84",
      "naam": [
-      "Starter lever",
+      "Starter (choke) lever",
       "Starterhebel",
       "Starterhendel"
      ],
@@ -4011,7 +4001,7 @@
      "bestell": "3.02540.00"
     },
     {
-     "nr": "91",
+     "nr": "90",
      "naam": [
       "Lock washer",
       "Sicherungsscheibe",
@@ -4028,7 +4018,7 @@
       "Bolkopschroef"
      ],
      "aantal": "1",
-     "bestell": "3.36669.94"
+     "bestell": "3.36669.00"
     },
     {
      "nr": "92",
@@ -4041,24 +4031,14 @@
      "bestell": "3.01318.05"
     },
     {
-     "nr": "95",
-     "naam": [
-      "Oval-head screw",
-      "Linsenschraube",
-      "Bolkopschroef"
-     ],
-     "aantal": "3",
-     "bestell": "3.36668.14"
-    },
-    {
      "nr": "96",
      "naam": [
       "Oval-head screw",
       "Linsenschraube",
       "Bolkopschroef"
      ],
-     "aantal": "2",
-     "bestell": "5.19227.24"
+     "aantal": "1",
+     "bestell": "3.36668.14"
     },
     {
      "nr": "97",
@@ -4068,7 +4048,7 @@
       "Bolkopschroef"
      ],
      "aantal": "2",
-     "bestell": "5.19227.14"
+     "bestell": "5.19227.24"
     },
     {
      "nr": "98",
@@ -4078,7 +4058,7 @@
       "Ring"
      ],
      "aantal": "6",
-     "bestell": "3.18788.00"
+     "bestell": "6.31878.00"
     },
     {
      "nr": "99",
@@ -4097,7 +4077,7 @@
       "Sechskantmutter",
       "Zeskantmoer"
      ],
-     "aantal": "3",
+     "aantal": "1",
      "bestell": "3.25243.00"
     },
     {
@@ -4105,13 +4085,13 @@
      "naam": [
       "Hose (pull-down)",
       "Schlauch (Pull-Down)",
-      "Slang (Pull-Down)"
+      "Slang (pull-down)"
      ],
      "aantal": "1",
      "bestell": "3.34227.00"
     },
     {
-     "nr": "-",
+     "nr": "set",
      "naam": [
       "Gasket set",
       "Dichtungssatz",
@@ -4121,7 +4101,7 @@
      "bestell": "4.01246.00"
     },
     {
-     "nr": "-",
+     "nr": "set",
      "naam": [
       "Repair kit",
       "Reparatursatz",
@@ -4131,7 +4111,7 @@
      "bestell": "4.03280.00"
     }
    ],
-   "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen."
+   "onderdelen_bron": "Ersatzteilliste blad p9, nummering herzien tegen hoge-res scan (15 jun). Twee uitvoeringen: * BW 24V, ** Zivil 12V."
   },
   {
    "id": "1b1-36-vwlt28",
