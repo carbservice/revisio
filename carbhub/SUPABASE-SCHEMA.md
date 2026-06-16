@@ -14,7 +14,7 @@ Kernidee: de **doorzoekbare/matchbare** delen worden echte tabellen/kolommen; de
 2. **Daarna (later ontwikkelpunt)**: cross-reference — bij een Revisio-klus automatisch "de juiste tekening" klaarzetten op de juiste auto (via kenteken/RDW).
 
 ## Besloten (16 juni)
-- **Bestelnummers**: doen we niets mee (oude, omgenummerde Pierburg-nrs, waardeloos). Niet in de UI, niet in het schema. De **tag (Typenschild-Nr)** is de identiteit.
+- **Bestelnummers**: **wel loggen** voor volledigheid (oude, omgenummerde Pierburg-nrs — functioneel niet meer bruikbaar, maar bewaren we als archief). In het schema als kolom, in de UI zichtbaar maar gemarkeerd als "oud". We zoeken/matchen er niet op. De **tag (Typenschild-Nr)** blijft de identiteit.
 - **Kaft-scans**: bewaren én tonen, **onder de blueprint** in het detail.
 - **Bucket**: technisch `carburateur-blueprints` (Supabase staat geen spaties/hoofdletters toe; weergavenaam mag "Carburateur Blueprints").
 - **Geen voorraad / prijs / leverancier.**
@@ -83,8 +83,7 @@ Eén carburateur op meerdere voertuigen = meerdere rijen (de kruisverwijzing). H
 | tag | text | 001 070 66 04 |
 | kleur | text | zwart |
 | ab_datum | text | 8 009 |
-
-_(Bestelnummer bewust weggelaten — niet bruikbaar.)_
+| bestel_nr_oud | text (archief) | 7.17825.01 |
 
 ### 5. `hub_onderdelen` — onderdelenlijst (Ersatzteilliste)
 | kolom | type | voorbeeld |
@@ -95,8 +94,9 @@ _(Bestelnummer bewust weggelaten — niet bruikbaar.)_
 | nr | text | 40 |
 | naam_nl / naam_de / naam_en | text | Hoofdsproeier / Hauptdüse / Main jet |
 | aantal | text | 1 |
+| bestell_oud | text (archief) | 3.33124.38 |
 
-_(Bestelnummer bewust weggelaten.)_ Als tabel (niet JSON) zodat je later kunt zoeken op onderdeelnaam over de hele database.
+Als tabel (niet JSON) zodat je later kunt zoeken op onderdeelnaam over de hele database. Bestelnummer wordt gelogd (archief), niet voor gebruik.
 
 ### 6. `hub_instel_labels` — referentie: vaste vertaling van de insteltabel
 | kolom | type | voorbeeld |

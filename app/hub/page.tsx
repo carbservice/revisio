@@ -207,13 +207,17 @@ function Detail({ c, li, taal, setTaal, terug, kopieer, gekopieerd }: { c: Kennb
       <section style={paneel}>
         <h3 style={kop}>Uitvoeringen &amp; tags</h3>
         <table style={tabel}>
-          <thead><tr>{["Uitvoering", "Tag (Typenschild)", "Kleur"].map((h) => <th key={h} style={th}>{h}</th>)}</tr></thead>
+          <thead><tr>
+            {["Uitvoering", "Tag (Typenschild)", "Kleur"].map((h) => <th key={h} style={th}>{h}</th>)}
+            <th style={{ ...th, color: GRIJS, fontWeight: 500 }}>Oud bestelnr</th>
+          </tr></thead>
           <tbody>
             {c.variants.map((v, i) => (
               <tr key={i}>
                 <td style={td}>{v.name}</td>
                 <td style={{ ...td, fontWeight: 700, color: GOUD, fontVariantNumeric: "tabular-nums" }}>{v.tag}</td>
                 <td style={td}>{v.kleur}</td>
+                <td style={{ ...td, color: GRIJS, fontSize: 12.5, fontVariantNumeric: "tabular-nums" }}>{v.bestel || "–"}</td>
               </tr>
             ))}
           </tbody>
@@ -292,6 +296,7 @@ function Detail({ c, li, taal, setTaal, terug, kopieer, gekopieerd }: { c: Kennb
                 <th style={{ ...th, width: 52 }}>Nr.</th>
                 <th style={th}>Onderdeel</th>
                 <th style={{ ...th, width: 56, textAlign: "center" }}>Aantal</th>
+                <th style={{ ...th, width: 110, color: GRIJS, fontWeight: 500 }}>Oud bestelnr</th>
               </tr></thead>
               <tbody>
                 {c.onderdelen.map((o, i) => (
@@ -299,6 +304,7 @@ function Detail({ c, li, taal, setTaal, terug, kopieer, gekopieerd }: { c: Kennb
                     <td style={{ ...td, color: GOUD, fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>{o.nr}</td>
                     <td style={td}>{o.naam[li]}</td>
                     <td style={{ ...td, textAlign: "center" }}>{o.aantal}</td>
+                    <td style={{ ...td, color: GRIJS, fontSize: 12.5, fontVariantNumeric: "tabular-nums" }}>{o.bestell || "–"}</td>
                   </tr>
                 ))}
               </tbody>
