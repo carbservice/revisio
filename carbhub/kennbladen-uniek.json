@@ -860,7 +860,8 @@
      "bestell": "4.03279.00"
     }
    ],
-   "onderdelen_bron": "Ersatzteilliste blad p1, opnieuw scherp gelezen en Bild-nummers gecontroleerd (15 jun). 77-79 op de scan iets onzeker."
+   "onderdelen_bron": "Ersatzteilliste blad p1, opnieuw scherp gelezen en Bild-nummers gecontroleerd (15 jun). 77-79 op de scan iets onzeker.",
+   "cilinders": 4
   },
   {
    "id": "1b3-36-audi80s",
@@ -1652,7 +1653,8 @@
      "bestell": "4.03282.00"
     }
    ],
-   "onderdelen_bron": "Ersatzteilliste blad p3, nummering herzien tegen hoge-res scan (15 jun). Twee uitvoeringen (Automatik .09 / Hand .10); bestelnr getoond = Automatik."
+   "onderdelen_bron": "Ersatzteilliste blad p3, nummering herzien tegen hoge-res scan (15 jun). Twee uitvoeringen (Automatik .09 / Hand .10); bestelnr getoond = Automatik.",
+   "cilinders": 4
   },
   {
    "id": "1b1-36-vwpassat",
@@ -2446,7 +2448,8 @@
      "bestell": "4.03280.00"
     }
    ],
-   "onderdelen_bron": "Ersatzteilliste blad p5, nummering herzien tegen scan (15 jun)."
+   "onderdelen_bron": "Ersatzteilliste blad p5, nummering herzien tegen scan (15 jun).",
+   "cilinders": 4
   },
   {
    "id": "1b3-36-vwpassat16",
@@ -3159,7 +3162,8 @@
      "bestell": "4.02139.00"
     }
    ],
-   "onderdelen_bron": "Ersatzteilliste blad p7, nummering herzien tegen hoge-res scan (15 jun). Twee uitvoeringen (Hand .08 / Automatik .09); bestelnr getoond = Hand."
+   "onderdelen_bron": "Ersatzteilliste blad p7, nummering herzien tegen hoge-res scan (15 jun). Twee uitvoeringen (Hand .08 / Automatik .09); bestelnr getoond = Hand.",
+   "cilinders": 4
   },
   {
    "id": "1b1-36-vwiltis",
@@ -3971,7 +3975,8 @@
      "bestell": "4.03280.00"
     }
    ],
-   "onderdelen_bron": "Ersatzteilliste blad p9, nummering herzien tegen hoge-res scan (15 jun). Twee uitvoeringen: * BW 24V, ** Zivil 12V."
+   "onderdelen_bron": "Ersatzteilliste blad p9, nummering herzien tegen hoge-res scan (15 jun). Twee uitvoeringen: * BW 24V, ** Zivil 12V.",
+   "cilinders": 4
   },
   {
    "id": "1b1-36-vwlt28",
@@ -4855,7 +4860,8 @@
      "bestell": "4.03280.00"
     }
    ],
-   "onderdelen_bron": "Ersatzteilliste blad p11, nummering herzien tegen hoge-res scan (15 jun). LT 28 heeft extra delen (vertragingsventiel/dempdoos); nr 34-35 bij afsluitventiel iets onzeker."
+   "onderdelen_bron": "Ersatzteilliste blad p11, nummering herzien tegen hoge-res scan (15 jun). LT 28 heeft extra delen (vertragingsventiel/dempdoos); nr 34-35 bij afsluitventiel iets onzeker.",
+   "cilinders": 4
   },
   {
    "id": "4a1-3254-db250-fruh",
@@ -5810,7 +5816,8 @@
      "bestell": "4.02318.01"
     }
    ],
-   "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen."
+   "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen.",
+   "cilinders": 6
   },
   {
    "id": "4a1-3254-db250-spaet",
@@ -6765,7 +6772,8 @@
      "bestell": "4.02318.01"
     }
    ],
-   "onderdelen_bron": "Ersatzteilliste blad p15, nummering herzien tegen hoge-res scan (15 jun). Solex 4A1 met geneste samenstellingen (Drosselklappenteil/Schwimmergehäuse/Starter/Vergaserdeckel als groepen)."
+   "onderdelen_bron": "Ersatzteilliste blad p15, nummering herzien tegen hoge-res scan (15 jun). Solex 4A1 met geneste samenstellingen (Drosselklappenteil/Schwimmergehäuse/Starter/Vergaserdeckel als groepen).",
+   "cilinders": 6
   },
   {
    "id": "4a1-3254-db280-weiss",
@@ -7705,7 +7713,8 @@
      "bestell": "3.34437.00"
     }
    ],
-   "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen."
+   "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen.",
+   "cilinders": 6
   },
   {
    "id": "4a1-3254-db280-schwarz",
@@ -8635,7 +8644,8 @@
      "bestell": "4.02318.00"
     }
    ],
-   "onderdelen_bron": "Ersatzteilliste blad p19, nummering herzien tegen hoge-res scan (15 jun). Solex 4A1 met geneste samenstellingen."
+   "onderdelen_bron": "Ersatzteilliste blad p19, nummering herzien tegen hoge-res scan (15 jun). Solex 4A1 met geneste samenstellingen.",
+   "cilinders": 6
   },
   {
    "id": "31pic6-vwpolo-895",
@@ -9404,7 +9414,8 @@
      "bestell": "4.03277.00"
     }
    ],
-   "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen."
+   "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen.",
+   "cilinders": 4
   },
   {
    "id": "31pic6-vwpolo-1093",
@@ -10241,7 +10252,8 @@
      "bestell": "4.03275.00"
     }
    ],
-   "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen."
+   "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen.",
+   "cilinders": 4
   },
   {
    "id": "36-1b1-passat-audi80l",
@@ -11051,7 +11063,8 @@
      "bestell": "4.03279.00"
     }
    ],
-   "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen."
+   "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen.",
+   "cilinders": 4
   },
   {
    "id": "36-1b3-vwpassat-16",
@@ -11944,7 +11957,8 @@
      "bestell": "4.03282.00"
     }
    ],
-   "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen."
+   "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen.",
+   "cilinders": 4
   },
   {
    "id": "31pic6-vwgolf-1093",
@@ -12795,7 +12809,8 @@
      "bestell": "4.03275.00"
     }
    ],
-   "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen."
+   "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen.",
+   "cilinders": 4
   },
   {
    "id": "34pic5-vwpolo-golf",
@@ -13607,7 +13622,8 @@
      "bestell": "4.03276.00"
     }
    ],
-   "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen."
+   "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen.",
+   "cilinders": 4
   },
   {
    "id": "36-1b3-golf-jetta-scirocco",
@@ -14328,7 +14344,8 @@
      "bestell": "4.03282.00"
     }
    ],
-   "onderdelen_bron": "Ersatzteilliste blad p31, nummering herzien tegen hoge-res scan (15 jun). Twee uitvoeringen (Hand .16 / Automatik .17); bestelnr getoond = Hand."
+   "onderdelen_bron": "Ersatzteilliste blad p31, nummering herzien tegen hoge-res scan (15 jun). Twee uitvoeringen (Hand .16 / Automatik .17); bestelnr getoond = Hand.",
+   "cilinders": 4
   },
   {
    "id": "36-1b3-audi80s",
@@ -15237,7 +15254,8 @@
      "bestell": "4.03282.00"
     }
    ],
-   "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen."
+   "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen.",
+   "cilinders": 4
   }
  ],
  "_verrijkt": "Per kaart: motor (kw/ps/cc/rpm), bouwjaar (von/bis), toepassingen (voertuig/chassis/motorcode), uitvoeringen met tags. Tweede leesronde + handmatige correctie p25/p27."

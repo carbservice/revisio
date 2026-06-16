@@ -15,6 +15,27 @@ const LANG_INDEX = { NL: 2, DE: 1, EN: 0 } as const;
 const SERIF = "'Karma', Georgia, serif";
 
 function norm(s: string) { return (s || "").toUpperCase().replace(/\s+/g, ""); }
+function jaarUit(s: string): number | null { const m = (s || "").match(/(19|20)\d\d/); return m ? parseInt(m[0], 10) : null; }
+
+// Bouwt de doorzoekbare tekst van een kaart, inclusief synoniemen (Solex/Pierburg,
+// Mercedes-Benz/MB/Daimler-Benz/DB, VW/Volkswagen) en cilinderaantal.
+function zoekTekst(c: Kennblad): string {
+  const tekst = (c.vehicle + " " + (c.toepassingen || []).map((t) => t.merk_model).join(" ")).toLowerCase();
+  const isMerc = tekst.includes("mercedes") || tekst.includes("daimler") || / db /.test(" " + tekst + " ");
+  const isVW = tekst.includes("vw") || tekst.includes("volkswagen") || tekst.includes("golf") || tekst.includes("passat") || tekst.includes("polo") || tekst.includes("derby") || tekst.includes("jetta") || tekst.includes("scirocco") || tekst.includes("iltis");
+  const syn = [
+    "solex pierburg",
+    isMerc ? "mercedes mercedes-benz mercedesbenz mb daimler daimler-benz db" : "",
+    isVW ? "vw volkswagen" : "",
+    c.cilinders ? `${c.cilinders} ${c.cilinders}cilinder ${c.cilinders}-cilinder cilinders` : "",
+  ].join(" ");
+  const toep = (c.toepassingen || []).map((t) => `${t.merk_model} ${t.chassis} ${t.motorcode}`).join(" ");
+  return [
+    c.type, c.vehicle, c.registrier, c.engine, c.fabrikant,
+    c.motor ? `${c.motor.cc} ${c.motor.kw} ${c.motor.ps}` : "",
+    toep, c.variants.map((v) => `${v.tag} ${v.kleur}`).join(" "), c.tag_norm.join(" "), syn,
+  ].join(" ");
+}
 
 export default function HubPagina() {
   return (
@@ -55,17 +76,29 @@ function Hub() {
   }
 
   const lijst = useMemo(() => {
-    const q = norm(zoek);
-    if (!q) return KENNBLADEN;
+    // Per-woord zoeken (AND): elk woord moet ergens raak zijn. Een jaartal (19xx/20xx)
+    // wordt als bereik getoetst tegen het bouwjaar ("juli 1980 →" = vanaf 1980 en nieuwer).
+    const woorden = zoek.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    if (woorden.length === 0) return KENNBLADEN;
     return KENNBLADEN.filter((c) => {
-      const toep = (c.toepassingen || []).map((t) => `${t.merk_model} ${t.chassis} ${t.motorcode}`).join(" ");
-      const hooi = norm(
-        c.type + " " + c.vehicle + " " + c.registrier + " " + c.engine + " " +
-        (c.motor ? `${c.motor.cc} ${c.motor.kw} ${c.motor.ps}` : "") + " " +
-        (c.bouwjaar ? `${c.bouwjaar.von} ${c.bouwjaar.bis}` : "") + " " + toep + " " +
-        c.variants.map((v) => `${v.tag} ${v.kleur}`).join(" ") + " " + c.tag_norm.join(" ")
-      );
-      return hooi.includes(q);
+      const ruw = zoekTekst(c);
+      const spaced = " " + ruw.toLowerCase().replace(/\s+/g, " ") + " ";   // woorden, spaties bewaard
+      const compact = norm(ruw);                                            // tags, spatie-ongevoelig
+      const vonY = c.bouwjaar ? jaarUit(c.bouwjaar.von) : null;
+      const bisY = c.bouwjaar ? jaarUit(c.bouwjaar.bis) : null;
+      return woorden.every((w) => {
+        if (/^(19|20)\d\d$/.test(w)) {            // jaartal: toets tegen het bouwjaar-bereik
+          if (vonY === null) return false;
+          const jaar = parseInt(w, 10);
+          if (jaar < vonY) return false;          // ouder dan begin bouwjaar
+          if (bisY !== null && jaar > bisY) return false; // na het einde (gesloten bereik)
+          return true;                            // binnen bereik (of open einde →)
+        }
+        if (/^\d{1,4}$/.test(w)) {                // kort getal (cc, gasklep): als heel getal, geen plakwerk
+          return new RegExp(`(?<!\\d)${w}(?!\\d)`).test(spaced);
+        }
+        return spaced.includes(w.toLowerCase()) || compact.includes(norm(w)); // woord of tag
+      });
     });
   }, [zoek]);
 
@@ -90,7 +123,7 @@ function Hub() {
             <input
               value={zoek}
               onChange={(e) => setZoek(e.target.value)}
-              placeholder="Zoek op auto, bouwjaar, cc, type, kleur of tag (bv. Passat, 1980, 1600, 4A1)…"
+              placeholder="Zoek op auto, bouwjaar, cc, type, kleur of tag (bv. Mercedes 1982, Solex 4A1, 2746, 280 S)…"
               style={{ border: 0, outline: 0, fontSize: 16, width: "100%", color: TEKST, background: "transparent" }}
             />
           </div>
