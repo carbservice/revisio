@@ -6,6 +6,7 @@
 // volgservice. Staat los van /volg en de rest van de app.
 
 import { useEffect, useRef, useState, CSSProperties } from "react";
+import { SOCIALS, WHATSAPP_PAD } from "@/lib/socials";
 
 const GROEN = "#1a3c2e";
 const GROEN_LICHT = "#2f8f5b";
@@ -33,7 +34,7 @@ const EIND_PAUZE = 3400; // hoe lang "Klaar" blijft staan voor de herstart
 const FADE = 450;
 
 // Intro die als typemachine over het scherm loopt zodra je de pagina opent.
-const INTRO = "Welkom op de DEMO-pagina van Carburateur Service Nederland.\n\nAls wij een revisie voor je mogen uitvoeren, krijg je zo'n link in je e-mail. Dit is onze nieuwste ontwikkeling: we houden je up-to-date over de revisie van jouw carburateur op onze werkbanken.\n\nKijk hieronder mee.";
+const INTRO = "Welkom op de DEMO-pagina van Revisio.\n\nAls wij een revisie voor je mogen uitvoeren, krijg je toegang tot deze link en volg je jouw carburateur op onze werkbank. We houden je up-to-date over de revisie en plaatsen foto's vanaf de werkbank. Je ziet precies wie eraan werkt en wat we tegenkomen.\n\nWe laten ook de stadia zien, zodat je altijd weet waar we in het proces zijn. Kijk hieronder mee.";
 
 export default function DemoPagina() {
   const [aantal, setAantal] = useState(1);      // aantal voltooide stadia (1..5)
@@ -139,7 +140,7 @@ export default function DemoPagina() {
         @keyframes demoPuls{0%,100%{box-shadow:0 0 0 4px rgba(184,137,58,.18)}50%{box-shadow:0 0 0 9px rgba(184,137,58,.04)}}
         @keyframes demoCursor{0%,100%{opacity:1}50%{opacity:0}}
         @keyframes demoBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
-        @keyframes demoPijl{0%,100%{transform:translateY(0);opacity:1}50%{transform:translateY(10px);opacity:.35}}
+        @keyframes demoPijl{0%,100%{transform:translateY(0);opacity:1}50%{transform:translateY(16px);opacity:.2}}
         @media (prefers-reduced-motion: reduce){ .demo-anim{animation:none !important;} }
       `}</style>
 
@@ -154,7 +155,12 @@ export default function DemoPagina() {
           </div>
         </div>
         {typKlaar && (
-          <div className="demo-anim" aria-hidden="true" style={{ textAlign: "center", color: GROEN_LICHT, fontSize: 44, lineHeight: 1, fontWeight: 700, marginTop: 14, animation: "demoPijl 1.5s ease-in-out infinite" }}>&darr;</div>
+          <div className="demo-anim" aria-hidden="true" style={{ textAlign: "center", marginTop: 18, animation: "demoPijl 1.05s ease-in-out infinite" }}>
+            <svg width="64" height="82" viewBox="0 0 24 30" fill="none" stroke={GROEN} strokeWidth={3.2} strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block" }}>
+              <path d="M12 2 V21" />
+              <path d="M3.5 14 L12 24 L20.5 14" />
+            </svg>
+          </div>
         )}
       </div>
 
@@ -266,6 +272,24 @@ export default function DemoPagina() {
           </div>
           <div style={{ marginTop: 16, textAlign: "center" }}>
             <a href="https://www.carbservice.nl" style={{ display: "inline-block", background: GROEN_LICHT, color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 15.5, borderRadius: 999, padding: "12px 26px", boxShadow: "0 8px 20px rgba(47,143,91,.28)" }}>Terug naar carbservice.nl</a>
+          </div>
+
+          {/* Deel-knop plus social-balk, net als in het klantportaal */}
+          <div style={{ marginTop: 30, paddingTop: 24, borderTop: `1px solid ${RAND}`, textAlign: "center" }}>
+            <div style={{ fontSize: 15.5, color: TEKST, lineHeight: 1.55, marginBottom: 13 }}>Deel deze demo gerust met je omgeving.</div>
+            <a href={`https://wa.me/?text=${encodeURIComponent("Bekijk de live demo van Revisio (Carburateur Service): https://revisio-umber.vercel.app/demo")}`} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "#25D366", color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 15.5, borderRadius: 999, padding: "11px 22px", boxShadow: "0 6px 16px rgba(37,211,102,0.30)" }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d={WHATSAPP_PAD} /></svg>
+              Deel via WhatsApp
+            </a>
+
+            <div style={{ marginTop: 28, fontSize: 12.5, letterSpacing: 1.5, textTransform: "uppercase", color: GROEN, fontWeight: 700, marginBottom: 14 }}>Volg Carburateur Service</div>
+            <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: 22 }}>
+              {SOCIALS.map((s) => (
+                <a key={s.naam} href={s.url} target="_blank" rel="noreferrer" aria-label={s.naam} title={s.naam} style={{ color: GROEN, display: "inline-flex" }}>
+                  <svg width="27" height="27" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d={s.pad} /></svg>
+                </a>
+              ))}
+            </div>
           </div>
         </div>
       </div>
