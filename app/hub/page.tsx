@@ -164,7 +164,7 @@ function Hub() {
 }
 
 function Detail({ c, li, taal, setTaal, terug, kopieer, gekopieerd }: { c: Kennblad; li: number; taal: string; setTaal: (t: any) => void; terug: () => void; kopieer: () => void; gekopieerd: boolean }) {
-  const [groot, setGroot] = useState(false);
+  const [grootSrc, setGrootSrc] = useState<string | null>(null);
   return (
     <div style={{ paddingBottom: 60 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
@@ -207,13 +207,12 @@ function Detail({ c, li, taal, setTaal, terug, kopieer, gekopieerd }: { c: Kennb
       <section style={paneel}>
         <h3 style={kop}>Uitvoeringen &amp; tags</h3>
         <table style={tabel}>
-          <thead><tr>{["Uitvoering", "Tag (Typenschild)", "Bestel-nr", "Kleur"].map((h) => <th key={h} style={th}>{h}</th>)}</tr></thead>
+          <thead><tr>{["Uitvoering", "Tag (Typenschild)", "Kleur"].map((h) => <th key={h} style={th}>{h}</th>)}</tr></thead>
           <tbody>
             {c.variants.map((v, i) => (
               <tr key={i}>
                 <td style={td}>{v.name}</td>
                 <td style={{ ...td, fontWeight: 700, color: GOUD, fontVariantNumeric: "tabular-nums" }}>{v.tag}</td>
-                <td style={{ ...td, fontVariantNumeric: "tabular-nums" }}>{v.bestel}</td>
                 <td style={td}>{v.kleur}</td>
               </tr>
             ))}
@@ -257,13 +256,28 @@ function Detail({ c, li, taal, setTaal, terug, kopieer, gekopieerd }: { c: Kennb
       {c.drawing && (
         <section style={paneel}>
           <h3 style={kop}>Blueprint — explosietekening</h3>
-          <button onClick={() => setGroot(true)} style={{ display: "block", width: "100%", border: 0, background: "#fff", padding: 0, cursor: "zoom-in" }}>
+          <button onClick={() => setGrootSrc(c.drawing!)} style={{ display: "block", width: "100%", border: 0, background: "#fff", padding: 0, cursor: "zoom-in" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={c.drawing} alt={`Explosietekening ${c.type} ${c.vehicle}`} style={{ width: "100%", height: "auto", borderRadius: 8, border: `1px solid ${RAND}` }} />
           </button>
           <div style={{ color: GRIJS, fontSize: 12, marginTop: 8, display: "flex", gap: 14, flexWrap: "wrap" }}>
             <span>Klik om groot te bekijken.</span>
             <a href={c.drawing} target="_blank" rel="noreferrer" style={{ color: GROEN, fontWeight: 700, textDecoration: "none" }}>Tekening openen in nieuw tabblad ↗</a>
+          </div>
+        </section>
+      )}
+
+      {/* 2b. Originele kaft-scan — onder de tekening */}
+      {c.kaft_url && (
+        <section style={paneel}>
+          <h3 style={kop}>Origineel kennblad (kaft-scan)</h3>
+          <button onClick={() => setGrootSrc(c.kaft_url!)} style={{ display: "block", width: "100%", border: 0, background: "#fff", padding: 0, cursor: "zoom-in" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={c.kaft_url} alt={`Origineel kennblad ${c.type} ${c.vehicle}`} style={{ width: "100%", height: "auto", borderRadius: 8, border: `1px solid ${RAND}` }} />
+          </button>
+          <div style={{ color: GRIJS, fontSize: 12, marginTop: 8, display: "flex", gap: 14, flexWrap: "wrap" }}>
+            <span>Het originele Pierburg-kennblad. Klik om groot te bekijken.</span>
+            <a href={c.kaft_url} target="_blank" rel="noreferrer" style={{ color: GROEN, fontWeight: 700, textDecoration: "none" }}>Scan openen in nieuw tabblad ↗</a>
           </div>
         </section>
       )}
@@ -278,7 +292,6 @@ function Detail({ c, li, taal, setTaal, terug, kopieer, gekopieerd }: { c: Kennb
                 <th style={{ ...th, width: 52 }}>Nr.</th>
                 <th style={th}>Onderdeel</th>
                 <th style={{ ...th, width: 56, textAlign: "center" }}>Aantal</th>
-                <th style={{ ...th, width: 110 }}>Bestel-nr</th>
               </tr></thead>
               <tbody>
                 {c.onderdelen.map((o, i) => (
@@ -286,7 +299,6 @@ function Detail({ c, li, taal, setTaal, terug, kopieer, gekopieerd }: { c: Kennb
                     <td style={{ ...td, color: GOUD, fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>{o.nr}</td>
                     <td style={td}>{o.naam[li]}</td>
                     <td style={{ ...td, textAlign: "center" }}>{o.aantal}</td>
-                    <td style={{ ...td, fontVariantNumeric: "tabular-nums", color: o.bestell ? TEKST : GRIJS }}>{o.bestell || "–"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -301,10 +313,10 @@ function Detail({ c, li, taal, setTaal, terug, kopieer, gekopieerd }: { c: Kennb
         )}
       </section>
 
-      {groot && c.drawing && (
-        <div onClick={() => setGroot(false)} style={{ position: "fixed", inset: 0, background: "rgba(20,30,25,.88)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 50, cursor: "zoom-out" }}>
+      {grootSrc && (
+        <div onClick={() => setGrootSrc(null)} style={{ position: "fixed", inset: 0, background: "rgba(20,30,25,.88)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 50, cursor: "zoom-out", overflow: "auto" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={c.drawing} alt={`Explosietekening ${c.type} ${c.vehicle}`} style={{ maxWidth: "100%", maxHeight: "100%", borderRadius: 8, background: "#fff" }} />
+          <img src={grootSrc} alt={`${c.type} ${c.vehicle}`} style={{ maxWidth: "100%", maxHeight: "100%", borderRadius: 8, background: "#fff" }} />
         </div>
       )}
     </div>

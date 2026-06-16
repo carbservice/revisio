@@ -861,7 +861,8 @@
     }
    ],
    "onderdelen_bron": "Ersatzteilliste blad p1, opnieuw scherp gelezen en Bild-nummers gecontroleerd (15 jun). 77-79 op de scan iets onzeker.",
-   "cilinders": 4
+   "cilinders": 4,
+   "kaft_url": "/hub/1b1-36-audi80-kaft.jpg"
   },
   {
    "id": "1b3-36-audi80s",
@@ -1654,7 +1655,8 @@
     }
    ],
    "onderdelen_bron": "Ersatzteilliste blad p3, nummering herzien tegen hoge-res scan (15 jun). Twee uitvoeringen (Automatik .09 / Hand .10); bestelnr getoond = Automatik.",
-   "cilinders": 4
+   "cilinders": 4,
+   "kaft_url": "/hub/1b3-36-audi80s-kaft.jpg"
   },
   {
    "id": "1b1-36-vwpassat",
@@ -2449,7 +2451,8 @@
     }
    ],
    "onderdelen_bron": "Ersatzteilliste blad p5, nummering herzien tegen scan (15 jun).",
-   "cilinders": 4
+   "cilinders": 4,
+   "kaft_url": "/hub/1b1-36-vwpassat-kaft.jpg"
   },
   {
    "id": "1b3-36-vwpassat16",
@@ -3163,7 +3166,8 @@
     }
    ],
    "onderdelen_bron": "Ersatzteilliste blad p7, nummering herzien tegen hoge-res scan (15 jun). Twee uitvoeringen (Hand .08 / Automatik .09); bestelnr getoond = Hand.",
-   "cilinders": 4
+   "cilinders": 4,
+   "kaft_url": "/hub/1b3-36-vwpassat16-kaft.jpg"
   },
   {
    "id": "1b1-36-vwiltis",
@@ -3976,7 +3980,8 @@
     }
    ],
    "onderdelen_bron": "Ersatzteilliste blad p9, nummering herzien tegen hoge-res scan (15 jun). Twee uitvoeringen: * BW 24V, ** Zivil 12V.",
-   "cilinders": 4
+   "cilinders": 4,
+   "kaft_url": "/hub/1b1-36-vwiltis-kaft.jpg"
   },
   {
    "id": "1b1-36-vwlt28",
@@ -4861,7 +4866,8 @@
     }
    ],
    "onderdelen_bron": "Ersatzteilliste blad p11, nummering herzien tegen hoge-res scan (15 jun). LT 28 heeft extra delen (vertragingsventiel/dempdoos); nr 34-35 bij afsluitventiel iets onzeker.",
-   "cilinders": 4
+   "cilinders": 4,
+   "kaft_url": "/hub/1b1-36-vwlt28-kaft.jpg"
   },
   {
    "id": "4a1-3254-db250-fruh",
@@ -5817,7 +5823,8 @@
     }
    ],
    "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen.",
-   "cilinders": 6
+   "cilinders": 6,
+   "kaft_url": "/hub/4a1-3254-db250-fruh-kaft.jpg"
   },
   {
    "id": "4a1-3254-db250-spaet",
@@ -6773,7 +6780,8 @@
     }
    ],
    "onderdelen_bron": "Ersatzteilliste blad p15, nummering herzien tegen hoge-res scan (15 jun). Solex 4A1 met geneste samenstellingen (Drosselklappenteil/Schwimmergehäuse/Starter/Vergaserdeckel als groepen).",
-   "cilinders": 6
+   "cilinders": 6,
+   "kaft_url": "/hub/4a1-3254-db250-spaet-kaft.jpg"
   },
   {
    "id": "4a1-3254-db280-weiss",
@@ -7714,7 +7722,8 @@
     }
    ],
    "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen.",
-   "cilinders": 6
+   "cilinders": 6,
+   "kaft_url": "/hub/4a1-3254-db280-weiss-kaft.jpg"
   },
   {
    "id": "4a1-3254-db280-schwarz",
@@ -8645,7 +8654,8 @@
     }
    ],
    "onderdelen_bron": "Ersatzteilliste blad p19, nummering herzien tegen hoge-res scan (15 jun). Solex 4A1 met geneste samenstellingen.",
-   "cilinders": 6
+   "cilinders": 6,
+   "kaft_url": "/hub/4a1-3254-db280-schwarz-kaft.jpg"
   },
   {
    "id": "31pic6-vwpolo-895",
@@ -9415,7 +9425,8 @@
     }
    ],
    "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen.",
-   "cilinders": 4
+   "cilinders": 4,
+   "kaft_url": "/hub/31pic6-vwpolo-895-kaft.jpg"
   },
   {
    "id": "31pic6-vwpolo-1093",
@@ -10253,7 +10264,8 @@
     }
    ],
    "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen.",
-   "cilinders": 4
+   "cilinders": 4,
+   "kaft_url": "/hub/31pic6-vwpolo-1093-kaft.jpg"
   },
   {
    "id": "36-1b1-passat-audi80l",
@@ -11064,7 +11076,8 @@
     }
    ],
    "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen.",
-   "cilinders": 4
+   "cilinders": 4,
+   "kaft_url": "/hub/36-1b1-passat-audi80l-kaft.jpg"
   },
   {
    "id": "36-1b3-vwpassat-16",
@@ -11958,7 +11971,8 @@
     }
    ],
    "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen.",
-   "cilinders": 4
+   "cilinders": 4,
+   "kaft_url": "/hub/36-1b3-vwpassat-16-kaft.jpg"
   },
   {
    "id": "31pic6-vwgolf-1093",
@@ -12810,7 +12824,8 @@
     }
    ],
    "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen.",
-   "cilinders": 4
+   "cilinders": 4,
+   "kaft_url": "/hub/31pic6-vwgolf-1093-kaft.jpg"
   },
   {
    "id": "34pic5-vwpolo-golf",
@@ -13623,7 +13638,8 @@
     }
    ],
    "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen.",
-   "cilinders": 4
+   "cilinders": 4,
+   "kaft_url": "/hub/34pic5-vwpolo-golf-kaft.jpg"
   },
   {
    "id": "36-1b3-golf-jetta-scirocco",
@@ -14345,7 +14361,8 @@
     }
    ],
    "onderdelen_bron": "Ersatzteilliste blad p31, nummering herzien tegen hoge-res scan (15 jun). Twee uitvoeringen (Hand .16 / Automatik .17); bestelnr getoond = Hand.",
-   "cilinders": 4
+   "cilinders": 4,
+   "kaft_url": "/hub/36-1b3-golf-jetta-scirocco-kaft.jpg"
   },
   {
    "id": "36-1b3-audi80s",
@@ -15255,7 +15272,8 @@
     }
    ],
    "onderdelen_bron": "Ersatzteilliste van het bronblad, DE -> NL/EN vertaald (vaste woordenlijst). Bestelnummers steekproefsgewijs; bij twijfel scan naast leggen.",
-   "cilinders": 4
+   "cilinders": 4,
+   "kaft_url": "/hub/36-1b3-audi80s-kaft.jpg"
   }
  ],
  "_verrijkt": "Per kaart: motor (kw/ps/cc/rpm), bouwjaar (von/bis), toepassingen (voertuig/chassis/motorcode), uitvoeringen met tags. Tweede leesronde + handmatige correctie p25/p27."
