@@ -7,6 +7,7 @@
 
 import { useEffect, useRef, useState, CSSProperties } from "react";
 import { SOCIALS, WHATSAPP_PAD } from "@/lib/socials";
+import Lightbox from "@/app/components/Lightbox";
 
 const GROEN = "#1a3c2e";
 const GROEN_LICHT = "#2f8f5b";
@@ -44,6 +45,7 @@ export default function DemoPagina() {
   const [logoOk, setLogoOk] = useState(true);
   const [getypt, setGetypt] = useState("");
   const [typKlaar, setTypKlaar] = useState(false);
+  const [lightbox, setLightbox] = useState<{ fotos: string[]; start: number } | null>(null);
 
   // Typemachine-intro: letter voor letter, met een korte adempauze na een punt
   // of een nieuwe alinea.
@@ -257,7 +259,7 @@ export default function DemoPagina() {
                     {done && (
                       <div style={{ marginTop: 13, display: "flex", flexWrap: "wrap", gap: 8 }}>
                         {st.fotos.map((src, k) => (
-                          <img key={k} src={src} onError={(e) => { const im = e.currentTarget; if (im.dataset.fb) return; im.dataset.fb = "1"; im.src = st.fallback; }} alt="" style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 12, border: `1px solid ${RAND}`, display: "block" }} />
+                          <img key={k} src={src} onClick={() => setLightbox({ fotos: st.fotos, start: k })} onError={(e) => { const im = e.currentTarget; if (im.dataset.fb) return; im.dataset.fb = "1"; im.src = st.fallback; }} alt="" style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 12, border: `1px solid ${RAND}`, display: "block", cursor: "pointer" }} />
                         ))}
                       </div>
                     )}
@@ -293,6 +295,7 @@ export default function DemoPagina() {
           </div>
         </div>
       </div>
+      {lightbox && <Lightbox fotos={lightbox.fotos} start={lightbox.start} onClose={() => setLightbox(null)} />}
     </main>
   );
 }
