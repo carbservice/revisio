@@ -142,6 +142,28 @@ Intern kanban-/planningsbord op `/planning`, dat onze Trello vervangt. Het bord 
 - Fase 3 (later): diepere koppeling met de werkbon-app (stadia/voortgang weerspiegelen), terugschrijven naar Moneybird (opmerkingen/status), automatisch naar Klus factureren schuiven.
 - RLS op de vier `kaart`-tabellen meenemen op vrijdag 19 juni.
 
+### Gedaan op 17 juni 2026 (avond) - meldingen, koppelingen, huisstijl, beveiliging
+
+**Meldingen + dagoverzicht (kaartenbord)**
+- @taggen in de kaart-chat (met keuzelijstje), een belletje met realtime teller in de kop, en een meldingen-banner op `/start` met hyperlinks naar de juiste kaart. Iemand op een kaart zetten geeft ook een melding. Tabel `melding` (eenmalig SQL gedraaid).
+- Einde-dag dagoverzicht per kaartlid: in-app op `/start` ("Sinds gisteren op jouw kaarten") plus een e-mailroute (`/api/planning/dagoverzicht`, nodemailer/Gmail-SMTP) en een GitHub Action om 18:00. De mail verstuurt pas echt na env-vars (`GMAIL_USER`, `GMAIL_APP_PASS`, `CRON_SECRET`); tot dan een veilige preview.
+
+**Koppeling met de monteurs-app (zelfde klus_id)**
+- Stadia -> kolom (auto-verschuiven), voortgangs-% op de kaart, retour-vinkje -> kolom Retouren + melding, en een klant-update-vangnet bij Klus factureren. Handmatig slepen zet de auto-verschuiving voor die kaart uit (`hand_verplaatst`).
+- 14-daagse revisie-klok (tijdelijk, test) die start bij stadium Ontvangst (plank-teller); zichtbaar op de kaart en in het detail. Kolomnamen: "Geaccepteerd -> Te verwachten" en "Binnen - Onderdelen bestellen".
+- Verwachte einddatum in het klantportaal `/volg` (binnenkomst + 14 dagen, met "vaak eerder klaar").
+
+**Huisstijl**
+- Hele platform in het lettertype Karma. Revisio-logo (SVG, `public/revisio-logo.svg`) linksboven op elke pagina; vaste kop-volgorde overal: statusbalk -> "Ingelogd als" -> navigatiebalk. De navigatiebalk staat op elke pagina; admin-knoppen zijn zichtbaar maar geven "Geen ADMIN" voor niet-admins. Leden-bollen niet meer per persoon gekleurd (grijs; actief = groen).
+
+**Beveiliging (lekken gedicht) + livegang**
+- Root (`revisio-umber.vercel.app`) staat nu "under construction" met een discreet inlog-linkje; geen openbare toegang meer tot de omgeving.
+- `/logbook` was een kopie van het cijfer-dashboard ZONDER login (omzet/marges publiek opvraagbaar) -> nu een redirect naar het beveiligde `/dashboard`.
+- `/werkbon-bekijk` stond zonder login open (volledige werkbon) -> nu achter `AuthGate`.
+- Geverifieerd dat alle interne pagina's achter login zitten (start, planning, hub, werkbonnen, dashboards). Publiek-by-design: `/volg` (ordernr + code), `/werkbon` (token), `/demo`.
+- Alles gepusht naar `main` (Vercel-deploy).
+- **OPEN PUNT voor vrijdag 19 juni:** de API-routes (`/api/klussen`, `/api/dashboard`, `/api/werkplaats-stats`, ...) zijn nog zonder login opvraagbaar -> wie de URL raadt, krijgt data. Samen met RLS dichtzetten (rolcheck in de routes + service-role-sleutel).
+
 ## Livegang (13 juni 2026)
 
 - Monteur-app gaat live; eerste klant gaat live op het portaal.
