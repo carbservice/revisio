@@ -198,7 +198,7 @@ function Hub() {
                   <div style={{ height: 150, background: `#f3f6f4 url('${c.drawing}') center/cover no-repeat`, borderBottom: `1px solid ${RAND}` }} />
                 )}
                 <div style={{ padding: "14px 16px 16px" }}>
-                  <div style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 700, color: GROEN }}>{c.fabrikant} {c.type}</div>
+                  <div style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 700, color: GROEN }}>{[c.fabrikant, c.type].filter(Boolean).join(" ")}</div>
                   <div style={{ fontWeight: 700, marginTop: 2 }}>{c.vehicle}</div>
                   <div style={{ color: GRIJS, fontSize: 13, marginTop: 4 }}>{c.engine}</div>
                   {c.bouwjaar && <div style={{ color: GROEN, fontSize: 12.5, fontWeight: 700, marginTop: 3 }}>Bouwjaar: {c.bouwjaar.von}{c.bouwjaar.bis ? ` – ${c.bouwjaar.bis}` : " →"}</div>}
@@ -227,7 +227,7 @@ function Detail({ c, li, taal, setTaal, terug, kopieer, gekopieerd }: { c: Kennb
         <button onClick={terug} style={{ background: "none", border: 0, color: GROEN, fontSize: 15, fontWeight: 700, cursor: "pointer", padding: "14px 0" }}>← terug naar overzicht</button>
         <button onClick={kopieer} style={{ background: gekopieerd ? GOUD : "#fff", color: gekopieerd ? "#fff" : GROEN, border: `1px solid ${gekopieerd ? GOUD : RAND}`, borderRadius: 10, padding: "8px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>{gekopieerd ? "Gekopieerd!" : "🔗 Kopieer link"}</button>
       </div>
-      <div style={{ fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: GROEN }}>{c.fabrikant} {c.type}</div>
+      <div style={{ fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: GROEN }}>{[c.fabrikant, c.type].filter(Boolean).join(" ")}</div>
       <div style={{ fontSize: 17, fontWeight: 700 }}>{c.vehicle}</div>
       <div style={{ color: GRIJS, marginTop: 3 }}>{c.engine} · {c.yearFrom}</div>
       <div style={{ color: GRIJS, fontSize: 12.5, marginTop: 6 }}>Registrier-Nr {c.registrier} · {c.fabrikant}{c.bron_sheets.length ? ` · bronbladen ${c.bron_sheets.join(" & ")}` : ""}</div>
