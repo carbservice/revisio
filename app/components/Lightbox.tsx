@@ -57,7 +57,7 @@ export default function Lightbox({ fotos, start, onClose }: { fotos: Foto[]; sta
       {i < fotos.length - 1 && <button onClick={(e) => { e.stopPropagation(); naar(1); }} aria-label="Volgende" style={pijl("right")}>›</button>}
 
       {fotos.length > 1 && (
-        <div style={{ position: "absolute", bottom: 18, left: 0, right: 0, textAlign: "center", color: "rgba(255,255,255,0.85)", fontSize: 14, fontFamily: "system-ui, -apple-system, sans-serif" }}>{i + 1} / {fotos.length}</div>
+        <div style={{ position: "absolute", bottom: 18, left: 0, right: 0, textAlign: "center", color: "rgba(255,255,255,0.85)", fontSize: 14, fontFamily: "'Karma', Georgia, serif" }}>{i + 1} / {fotos.length}</div>
       )}
     </div>
   );

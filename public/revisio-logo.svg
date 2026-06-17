@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 160" width="520" height="160" role="img" aria-label="Revisio logo">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Karma:wght@600;700&amp;display=swap');
+    .rv-word{font-family:'Karma',Georgia,'Times New Roman',serif;font-weight:700;font-size:92px;fill:#1c4a37;letter-spacing:2px;}
+    .rv-code{font-family:'Karma',Georgia,'Times New Roman',serif;font-weight:600;font-size:15px;fill:#1a1a1a;letter-spacing:2px;}
+  </style>
+  <text x="260" y="92" text-anchor="middle" class="rv-word">REVISIO</text>
+  <polygon points="120,128 330,123 330,133" fill="#b8893a"/>
+  <line x1="316" y1="123.5" x2="316" y2="132.5" stroke="#2a2118" stroke-width="1.2"/>
+  <line x1="322" y1="123.7" x2="322" y2="132.3" stroke="#2a2118" stroke-width="1.2"/>
+  <rect x="330" y="120" width="70" height="16" rx="4" fill="#b8893a"/>
+  <text x="365" y="133" text-anchor="middle" class="rv-code">MB</text>
+</svg>

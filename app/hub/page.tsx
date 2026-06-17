@@ -8,6 +8,8 @@ import { useEffect, useMemo, useState, CSSProperties } from "react";
 import { GROEN, GOUD, TEKST, GRIJS, RAND, BG } from "@/lib/theme";
 import AuthGate, { useGebruiker } from "@/app/components/AuthGate";
 import DashboardNav from "@/app/components/DashboardNav";
+import Systeemstatus from "@/app/components/Systeemstatus";
+import RevisioLogo from "@/app/components/RevisioLogo";
 import { supabase } from "@/lib/supabase";
 import { LABELS, ORDER, Kennblad } from "./data";
 
@@ -153,10 +155,18 @@ function Hub() {
   const li = LANG_INDEX[taal];
 
   return (
-    <main style={{ minHeight: "100vh", background: BG, color: TEKST, fontFamily: "system-ui, -apple-system, sans-serif" }}>
+    <main style={{ minHeight: "100vh", background: BG, color: TEKST, fontFamily: "'Karma', Georgia, serif" }}>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karma:wght@400;500;600;700&display=swap" />
 
-      <div style={{ maxWidth: 1000, margin: "0 auto", padding: "16px 16px 0" }}>
+      <div style={{ maxWidth: 1000, margin: "0 auto", padding: "14px 16px 0" }}>
+        <Systeemstatus />
+        <div style={{ background: "#fff", border: `1px solid ${RAND}`, borderRadius: 14, padding: "10px 16px", marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+          <RevisioLogo />
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ fontSize: 13.5, color: TEKST }}>Ingelogd als <span style={{ fontWeight: 700, color: GROEN }}>{naam || "gebruiker"}</span></div>
+            <button onClick={uitloggen} style={{ border: `1px solid ${RAND}`, background: "#fff", color: GRIJS, borderRadius: 999, padding: "7px 14px", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>Uitloggen</button>
+          </div>
+        </div>
         <DashboardNav isAdmin={isAdmin} />
       </div>
 
@@ -166,10 +176,6 @@ function Hub() {
             <div>
               <div style={{ fontFamily: SERIF, fontSize: 27, fontWeight: 700, letterSpacing: 0.2 }}>Carburateur Hub</div>
               <div style={{ fontSize: 12.5, color: "#bcd6c8", marginTop: 2 }}>Solex · Pierburg · Zenith kennbladen · interne kruisverwijzing</div>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-              <span style={{ fontSize: 13, color: "#bcd6c8" }}>Ingelogd als <span style={{ fontWeight: 700, color: "#fff" }}>{naam || "gebruiker"}</span></span>
-              <button onClick={uitloggen} style={{ background: "rgba(255,255,255,.12)", color: "#fff", border: "1px solid rgba(255,255,255,.25)", borderRadius: 10, padding: "8px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Uitloggen</button>
             </div>
           </div>
           <div style={{ marginTop: 18, display: "flex", alignItems: "center", gap: 10, background: "#fff", borderRadius: 12, padding: "11px 14px", boxShadow: "0 8px 24px rgba(10,40,25,.18)" }}>

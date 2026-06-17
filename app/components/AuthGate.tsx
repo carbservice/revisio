@@ -80,7 +80,7 @@ export default function AuthGate({ requireAdmin = false, children }: { requireAd
 
   if (status === "ok") return <GebruikerContext.Provider value={{ naam, isAdmin, uitloggen }}>{children}</GebruikerContext.Provider>;
 
-  const wrap: CSSProperties = { minHeight: "100vh", background: BG, color: TEKST, fontFamily: "system-ui, -apple-system, sans-serif", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 };
+  const wrap: CSSProperties = { minHeight: "100vh", background: BG, color: TEKST, fontFamily: "'Karma', Georgia, serif", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 };
   const kaart: CSSProperties = { background: "#fff", border: `1px solid ${RAND}`, borderRadius: 18, padding: 28, maxWidth: 380, width: "100%", boxShadow: KAART_SCHADUW };
 
   if (status === "laden") return <main style={wrap}><p style={{ color: GRIJS }}>Laden...</p></main>;

@@ -1,0 +1,26 @@
+name: Dagoverzicht planning
+
+# Tikt elke werkdag om 18:00 (Amsterdam) de dagoverzicht-route aan, die elk
+# kaartlid een opsomming mailt van wat er sinds gisteren op zijn kaarten
+# gebeurde. Draait in de cloud van GitHub.
+#
+# Let op: GitHub-cron is UTC en kent geen zomertijd. 16:00 UTC = 18:00 in de
+# zomer (CEST) en 17:00 in de winter (CET). Goed genoeg voor een einde-dag-mail.
+#
+# Vereist de GitHub-secret CRON_SECRET (gelijk aan de env-var CRON_SECRET in
+# Vercel). Mailen zelf gebruikt GMAIL_USER en GMAIL_APP_PASS in Vercel.
+
+on:
+  schedule:
+    - cron: "0 16 * * 1-5" # werkdagen, 18:00 Amsterdam (zomertijd)
+  workflow_dispatch: {} # handmatig starten kan ook (Actions-tab)
+
+jobs:
+  mail:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Tik de dagoverzicht-route aan
+        run: |
+          curl -s -m 60 -X POST \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            "https://revisio-umber.vercel.app/api/planning/dagoverzicht"

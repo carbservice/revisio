@@ -4,6 +4,7 @@
 // zelf wanneer een update (en welke foto's) zichtbaar worden voor de klant.
 
 import { supabase } from "@/lib/supabase";
+import { REVISIE_DOEL_DAGEN } from "@/app/planning/planning-config";
 
 const STADIA = [
   { stap: "ontvangen", label: "Ontvangen op de werkbank", pct: 20 },
@@ -103,6 +104,15 @@ export async function GET(req) {
     }
     const stadium = stappen.length ? stappen[stappen.length - 1].label : "";
 
+    // Verwachte einddatum voor de klant: binnenkomst (Ontvangst) + revisie-doel.
+    // Alleen zodra de klus binnen is en nog niet klaar.
+    const binnenOp = (vMap["ontvangen"] && vMap["ontvangen"].gedaan_op) || null;
+    let verwachteEind = null;
+    if (binnenOp && pct < 100) {
+      const d = new Date(new Date(binnenOp).getTime() + REVISIE_DOEL_DAGEN * 86400000);
+      if (Number.isFinite(d.getTime())) verwachteEind = d.toISOString();
+    }
+
     return Response.json({
       nummer: link.nummer,
       klant: link.klant,
@@ -113,6 +123,7 @@ export async function GET(req) {
       actiefStap,
       stadium,
       stappen,
+      verwachteEind,
       algemeneFotos: fByStap["algemeen"] || [],
       gepubliceerd: stappen.length > 0 || (fByStap["algemeen"] || []).length > 0,
     });

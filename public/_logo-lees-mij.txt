@@ -1,0 +1,12 @@
+Revisio-logo voor de startpagina
+=================================
+
+Het logo staat actief:  revisio-logo.svg  (SVG, haarscherp op elk formaat)
+Het verschijnt linksboven op de startpagina (/start), ~42px hoog.
+
+Wil je het logo vervangen?
+- Zet je nieuwe versie hier neer als  revisio-logo.svg  (vervangt de oude).
+- Liefst SVG. Een PNG kan ook: noem 'm dan revisio-logo.png en geef het door,
+  dan wijs ik de startpagina ernaar.
+
+Zolang het bestand ontbreekt, valt de pagina netjes terug op de tekst "Revisio".

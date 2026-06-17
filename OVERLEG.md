@@ -116,6 +116,32 @@ Getest in de werkplaats door Rens en Lukas, onder andere op een offerte met twee
 **Aandachtspunt opslag**
 - Interne foto's groeien hard: gratis Supabase is 1 GB, dus ~30-40 zulke klussen. Richting Supabase Pro bij dit volume. Idee: opslag-meter in het dashboard en een opschoonscript.
 
+### Gedaan op 17 juni 2026 (avond) - Planningsbord (Trello-vervanger)
+
+Intern kanban-/planningsbord op `/planning`, dat onze Trello vervangt. Het bord is de planning- en overzichtslaag; de werkbon-app blijft de uitvoeringslaag. De klus is de bron: `klus_id` is dezelfde sleutel als in de werkbon-app en Moneybird, dus bord en werkbon-app zijn twee vensters op dezelfde klus.
+
+**Fase 1 (af)**
+- Vaste, sleepbare kolommen: Werkplaats kaartenbak, Retouren, Binnenkomst, Onderdelen bestellen, Revisie uitvoeren, Klus factureren, Klaar / archief.
+- Twee soorten kaarten: klus-kaart (aan `klus_id`) en vrije planningskaart (priors/dagplanning).
+- Slepen tussen kolommen met opslaan van fase en volgorde; verplaatsen reset de verouderingsklok.
+- Leden: standaard staat het team (CG, JM, LE) op een nieuwe kaart; handmatig toe te voegen/verwijderen. Initialen-cirkels op de kaart.
+- Checklists per kaart, afvinkbaar, met X/Y-voortgang op de voorkant (zoals Trello 2/6).
+- Kaart-detail (modaal): titel, omschrijving, leden, checklist, plus een chat met automatisch activiteitenlog (verplaatst, afgevinkt, lid toegevoegd). Realtime via Supabase, zodat we elkaar live zien schrijven. Deep-link per kaart: `/planning/[kaart_id]`, met kopieer-knop.
+- Verouderingskleur (dagen in de huidige kolom): 7 dagen geel, 14 oranje, 30 rood. Drempels en kleuren staan in `app/planning/planning-config.ts`, makkelijk bij te stellen.
+- Achter de login (`AuthGate`), tegel op het start-dashboard. Toegankelijk voor elke ingelogde collega (monteurs zijn kaartleden voor de dagplanning), niet alleen admin.
+
+**Fase 2 (af) - Moneybird inbound**
+- `/api/planning/sync`: geaccepteerde offerte uit Moneybird wordt automatisch een klus-kaart in Binnenkomst (met `klus_id`), inclusief het standaardteam. Draait bij het openen van het bord en via de knop "Synchroniseer Moneybird".
+- Gefactureerd-status: zodra een klus niet meer geaccepteerd is (dus gefactureerd), krijgt de kaart automatisch het label "Gefactureerd" (heropende klus: label weer weg). Puur uitlezen; nog niet automatisch naar de kolom Klus factureren geschoven.
+- Klant, voertuig en bedrag komen live uit Moneybird via `/api/klussen` (gekoppeld op `klus_id`), niet dubbel opgeslagen.
+
+**Datamodel (Supabase):** `kaart`, `kaart_lid`, `kaart_checklist_item`, `kaart_bericht`. Volledig schema in `planning-schema.sql` (eenmalig in de Supabase SQL-editor plakken; zet ook realtime aan voor deze vier tabellen). RLS voorlopig open, net als de rest; vrijdag 19 juni mee dichtzetten.
+
+**Nog te doen (planningsbord)**
+- Eenmalig `planning-schema.sql` draaien in Supabase, anders blijft het bord leeg.
+- Fase 3 (later): diepere koppeling met de werkbon-app (stadia/voortgang weerspiegelen), terugschrijven naar Moneybird (opmerkingen/status), automatisch naar Klus factureren schuiven.
+- RLS op de vier `kaart`-tabellen meenemen op vrijdag 19 juni.
+
 ## Livegang (13 juni 2026)
 
 - Monteur-app gaat live; eerste klant gaat live op het portaal.
@@ -124,6 +150,7 @@ Getest in de werkplaats door Rens en Lukas, onder andere op een offerte met twee
 
 ## Nog te doen, op korte termijn
 
+- **Week van 22 juni 2026 — DHL-verzendtracking (kaartenbord + klantportaal).** Live verzendbalk (Aangemeld → Sorteren → Onderweg → Bezorgd) in `/volg` plus een tracking-badge op de kaartenbak, om verzend-telefoontjes/mails weg te nemen. Vervoerder is DHL eCommerce/Parcel (`my.dhlecommerce.nl`), niet Express. T&T-link = nummer (JVGL...) + ontvanger-postcode (hebben we uit Moneybird), dus alleen het JVGL-nummer invoeren op de kaart. Start met de Unified Tracking API (developer.dhl.com, één key); fase 2 = auto-match uit de DHL-verzendlijst via de Parcel NL API. Inbound onderdelen (PostNL via Roukama/carburateurwinkel.nl) krijgen alleen een klikbaar linkje, geen API. Blocker nu: API-key/credentials regelen en eerste calls werkend krijgen (was te veel uitzoekwerk op 17 juni). Volledig plan in de projectnotities (`dhl-tracking-plan`).
 - **Woensdag 17 juni 2026, 10:00 — showcase-foto's voor de demo uploaden.** Vijf foto's in `public/demo/`: `ontvangen.jpg`, `diagnose.jpg`, `reviseren.jpg`, `afbouwen.jpg`, `klaar.jpg` (vierkant, klein). Zolang ze ontbreken valt de demo terug op tijdelijke foto's.
 - **Vrijdag 19 juni 2026, 10:00 — RLS dichtzetten (beveiliging).** Grootste risico nu: de database staat open via de publieke sleutel. Volledig stappenplan in `RLS-PLAN.md`. Volgorde: eerst server-routes op de service-role-sleutel, dan pas RLS aan.
 - **Foto-back-up (storage) — combineren met vrijdag 19 juni.** De dagelijkse back-up dekt alleen de database, NIET de foto-bestanden in Supabase Storage. Vallen die om, dan zijn de foto's weg. Vereist dezelfde service-role-sleutel als RLS, dus samen oppakken. Eenvoudige start: een GitHub Action die de bucket downloadt als artifact (werkt zolang het klein is). Schaalbaar bij veel foto's: sync naar goedkope externe opslag (Backblaze B2 of Cloudflare R2, gratis tiers).

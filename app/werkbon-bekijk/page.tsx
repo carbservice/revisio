@@ -5,6 +5,7 @@
 
 import { useEffect, useState, CSSProperties } from "react";
 import { supabase } from "@/lib/supabase";
+import AuthGate from "@/app/components/AuthGate";
 import { GROEN, GROEN_BG, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG } from "@/lib/theme";
 import { euro, duur, datumKort, datumTijd, datumStempel } from "@/lib/format";
 import { Veld, Check, Artikel, Regel } from "@/lib/types";
@@ -100,7 +101,16 @@ function uitArtikelen(rows: any[]): Artikel[] {
   return lijst;
 }
 
-export default function WerkbonBekijk() {
+export default function WerkbonBekijkPagina() {
+  // Interne werkbon, alleen voor ingelogde medewerkers.
+  return (
+    <AuthGate>
+      <WerkbonBekijk />
+    </AuthGate>
+  );
+}
+
+function WerkbonBekijk() {
   const [klusId, setKlusId] = useState<string | null>(null);
   const [laden, setLaden] = useState(true);
   const [kop, setKop] = useState<{ nummer: string; klant: string; voertuig: string }>({ nummer: "", klant: "", voertuig: "" });
@@ -166,7 +176,7 @@ export default function WerkbonBekijk() {
     })();
   }, [klusId]);
 
-  const wrap: CSSProperties = { minHeight: "100vh", background: BG, color: TEKST, fontFamily: "system-ui, -apple-system, sans-serif", padding: "20px 14px", maxWidth: 640, margin: "0 auto" };
+  const wrap: CSSProperties = { minHeight: "100vh", background: BG, color: TEKST, fontFamily: "'Karma', Georgia, serif", padding: "20px 14px", maxWidth: 640, margin: "0 auto" };
   const kaart: CSSProperties = { background: "#fff", border: `1px solid ${RAND}`, borderRadius: 14, padding: 16, marginBottom: 12 };
   const kopstijl: CSSProperties = { fontSize: 13, color: GRIJS, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, margin: "2px 0 12px" };
 

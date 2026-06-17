@@ -29,7 +29,13 @@ const STADIA = [
 
 type Foto = { url: string; rotatie: number };
 type Stap = { stap: string; label: string; pct: number; bericht: string; gedaan_op: string | null; fotos: Foto[] };
-type Data = { nummer: string; klant: string; voertuig: string; klacht: string; monteur: string; pct: number; actiefStap: string | null; stadium: string; stappen: Stap[]; algemeneFotos: Foto[]; gepubliceerd: boolean; fout?: string };
+type Data = { nummer: string; klant: string; voertuig: string; klacht: string; monteur: string; pct: number; actiefStap: string | null; stadium: string; stappen: Stap[]; algemeneFotos: Foto[]; gepubliceerd: boolean; verwachteEind?: string | null; fout?: string };
+
+// Verwachte einddatum klantvriendelijk: "donderdag 2 juli".
+function verwachtDatum(iso: string): string {
+  const d = new Date(iso);
+  return Number.isFinite(d.getTime()) ? d.toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" }) : "";
+}
 
 // Waar moet de carburateur staan? Bij een actief stadium: daar. Anders zakt hij
 // naar het eerstvolgende nog-niet-gedane stadium, zodat hij bij bijvoorbeeld 20%
@@ -315,7 +321,18 @@ function Inner() {
           {!klaar && (
             <div style={{ marginTop: 26, background: `linear-gradient(150deg, ${GROEN_LICHT} 0%, ${GROEN} 75%)`, borderRadius: 16, padding: "18px 22px", color: "#fff" }}>
               <div style={{ fontSize: 12.5, letterSpacing: 1.5, textTransform: "uppercase", color: "rgba(255,255,255,0.82)", fontWeight: 700 }}>Verwachting</div>
-              <div style={{ fontSize: 17, lineHeight: 1.55, marginTop: 5 }}>We verwachten binnen enkele dagen dat jouw carburateur compleet klaar is.</div>
+              {data.verwachteEind ? (
+                <>
+                  <div style={{ fontSize: 17, lineHeight: 1.5, marginTop: 5 }}>
+                    Verwachte einddatum: <span style={{ fontWeight: 700 }}>{verwachtDatum(data.verwachteEind)}</span>.
+                  </div>
+                  <div style={{ fontSize: 15, lineHeight: 1.5, marginTop: 6, color: "rgba(255,255,255,0.9)" }}>
+                    Vaak zijn we eerder klaar. Je krijgt bericht zodra je carburateur gereed is.
+                  </div>
+                </>
+              ) : (
+                <div style={{ fontSize: 17, lineHeight: 1.55, marginTop: 5 }}>Zodra de monteur je pakket ontvangen heeft en aanmeldt, krijg je een verwachte einddatum.</div>
+              )}
             </div>
           )}
 

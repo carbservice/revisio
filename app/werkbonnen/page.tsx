@@ -8,7 +8,6 @@ import { supabase } from "@/lib/supabase";
 import { GROEN, GROEN_BG, GOUD, GOUD_BG, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG, KAART_BG, VELD_BG, VELD_TEKST, VELD_RAND, KAART_SCHADUW } from "@/lib/theme";
 import { duur, mmss, dagenGeleden } from "@/lib/format";
 import type { Klus, Monteur, Regel, Veld, Check, Artikel } from "@/lib/types";
-import DashboardNav from "@/app/components/DashboardNav";
 import ScrollNaarBoven from "@/app/components/ScrollNaarBoven";
 import PaginaKop from "@/app/components/PaginaKop";
 import LaadScherm from "@/app/components/LaadScherm";
@@ -707,7 +706,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
   const artikelenTotaal = artikelen.reduce((s, a) => s + bedragNum(a.bedrag), 0);
   const internFotos = (fotos as any[]).filter((f) => f.stap === `intern-${carburateur}`);
 
-  const wrap: CSSProperties = { minHeight: "100vh", background: BG, color: TEKST, fontFamily: "system-ui, -apple-system, sans-serif", padding: "20px 14px", maxWidth: 520, margin: "0 auto" };
+  const wrap: CSSProperties = { minHeight: "100vh", background: BG, color: TEKST, fontFamily: "'Karma', Georgia, serif", padding: "20px 14px", maxWidth: 520, margin: "0 auto" };
   const kaart: CSSProperties = { background: KAART_BG, border: `1px solid ${RAND}`, borderRadius: 16, padding: 18, marginBottom: 16, boxShadow: KAART_SCHADUW };
   const knop = (bg: string): CSSProperties => ({ background: bg, color: "#fff", border: "none", borderRadius: 12, padding: "16px 20px", fontSize: 17, fontWeight: 700, cursor: "pointer", width: "100%" });
   const inp: CSSProperties = { flex: 1, minWidth: 0, width: "100%", border: `1px solid ${VELD_RAND}`, borderRadius: 8, padding: "9px 10px", fontSize: 14, boxSizing: "border-box", background: VELD_BG, color: VELD_TEKST };
@@ -821,7 +820,6 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
         </div>
       )}
 
-      <DashboardNav isAdmin={isAdmin} />
       <PaginaKop naam={ingelogd.naam} onUitloggen={onUitloggen} titel="Werkplaats Werkbonnen">
         {!open && (
           <div style={kaart}>
@@ -1136,7 +1134,7 @@ export default function WerkplaatsPagina() {
     setIngelogd(null); setEmail(""); setVerstuurd(false); setCode(""); setFout("");
   }
 
-  const wrapL: CSSProperties = { minHeight: "100vh", background: BG, color: TEKST, fontFamily: "system-ui, -apple-system, sans-serif", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 };
+  const wrapL: CSSProperties = { minHeight: "100vh", background: BG, color: TEKST, fontFamily: "'Karma', Georgia, serif", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 };
 
   if (!klaar) return <main style={{ ...wrapL, display: "block", padding: "20px 14px", maxWidth: 600 }}><LaadScherm titel="Werkbonnen laden…" apis={[{ naam: "Inloggen controleren", klaar: false }]} /></main>;
 

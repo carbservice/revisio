@@ -197,7 +197,7 @@ function Dashboard() {
     try { localStorage.setItem("revisio-periode", k); } catch {}
   }
 
-  const buiten: CSSProperties = { minHeight: "100vh", background: BG, padding: "28px 16px", fontFamily: "system-ui, -apple-system, sans-serif", color: TEKST };
+  const buiten: CSSProperties = { minHeight: "100vh", background: BG, padding: "28px 16px", fontFamily: "'Karma', Georgia, serif", color: TEKST };
   const apis = [
     { naam: "Moneybird-cijfers", klaar: (data != null && !!data.status) || !!fout },
     { naam: "Werkplaats-stats", klaar: wp != null },
@@ -344,7 +344,7 @@ function Dashboard() {
   const breed = (key: string) => key === "margeChart";
 
   return (
-    <main style={{ minHeight: "100vh", background: BG, padding: "28px 16px", fontFamily: "system-ui, -apple-system, sans-serif", color: TEKST }}>
+    <main style={{ minHeight: "100vh", background: BG, padding: "28px 16px", fontFamily: "'Karma', Georgia, serif", color: TEKST }}>
       <style jsx>{`
         .rk { transition: box-shadow .15s ease, transform .15s ease, opacity .15s ease; cursor: grab; }
         .rk:hover { box-shadow: 0 8px 20px rgba(26,60,46,.09); transform: translateY(-2px); }
@@ -356,7 +356,6 @@ function Dashboard() {
       `}</style>
       <div style={{ maxWidth: 1120, margin: "0 auto" }}>
 
-        <DashboardNav isAdmin={isAdmin} />
         <ScrollNaarBoven />
         <PaginaKop naam={naam} onUitloggen={uitloggen} titel="Cijfers" />
 

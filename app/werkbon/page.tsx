@@ -34,7 +34,7 @@ export default function VolgRevisie() {
       .catch((e) => { setFout(String(e)); setLaden(false); });
   }, []);
 
-  const wrap: CSSProperties = { minHeight: "100vh", background: BG, color: TEKST, fontFamily: "system-ui, -apple-system, sans-serif", padding: "24px 16px", maxWidth: 560, margin: "0 auto" };
+  const wrap: CSSProperties = { minHeight: "100vh", background: BG, color: TEKST, fontFamily: "'Karma', Georgia, serif", padding: "24px 16px", maxWidth: 560, margin: "0 auto" };
   const kaart: CSSProperties = { background: "#fff", border: `1px solid ${RAND}`, borderRadius: 16, padding: 20, marginBottom: 14 };
 
   if (laden) return <main style={wrap}><p style={{ color: GRIJS }}>Laden...</p></main>;

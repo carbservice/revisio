@@ -39,6 +39,10 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        {/* Platform-breed lettertype Karma, zodat de naam op elke pagina werkt. */}
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karma:wght@300;400;500;600;700&display=swap" />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

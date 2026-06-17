@@ -10,6 +10,10 @@ import { useEffect, useState, CSSProperties } from "react";
 import { GROEN, GOUD, TEKST, GRIJS, RAND, BG, KAART_SCHADUW } from "@/lib/theme";
 import AuthGate, { useGebruiker } from "@/app/components/AuthGate";
 import Systeemstatus from "@/app/components/Systeemstatus";
+import MeldingBanner from "@/app/planning/MeldingBanner";
+import DagOverzicht from "@/app/planning/DagOverzicht";
+import DashboardNav from "@/app/components/DashboardNav";
+import RevisioLogo from "@/app/components/RevisioLogo";
 import { supabase } from "@/lib/supabase";
 
 const SERIF = "'Karma', Georgia, serif";
@@ -22,6 +26,7 @@ function groet(): string {
 }
 
 const MODULES = [
+  { href: "/planning", icon: "🗂️", titel: "Werkplaats kaartenbord", sub: "Het werkbord: van binnenkomst tot factureren", adminOnly: false },
   { href: "/werkbonnen", icon: "🧾", titel: "Werkbonnen", sub: "Geaccepteerde klussen klaar voor revisie", adminOnly: false },
   { href: "/hub", icon: "⚙️", titel: "Carburateur Hub", sub: "Interne database voor alle blueprints", adminOnly: false },
   { href: "/dashboard", icon: "📊", titel: "Cijfers", sub: "Omzet, marges, KPI's", adminOnly: true },
@@ -82,7 +87,7 @@ function Start() {
   const zichtbaar = volgorde.filter((h) => toegestaan.some((m) => m.href === h));
 
   return (
-    <main style={{ minHeight: "100vh", background: BG, color: TEKST, fontFamily: "system-ui, -apple-system, sans-serif" }}>
+    <main style={{ minHeight: "100vh", background: BG, color: TEKST, fontFamily: "'Karma', Georgia, serif" }}>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karma:wght@400;500;600;700&display=swap" />
       <div style={{ maxWidth: 920, margin: "0 auto", padding: "22px 18px 60px" }}>
 
@@ -91,17 +96,25 @@ function Start() {
 
         {/* Naam + uitloggen rechtsboven */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, margin: "14px 0 26px" }}>
-          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", color: GROEN }}>Revisio</div>
+          <RevisioLogo hoogte={42} />
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{ fontSize: 13.5, fontWeight: 700, color: GROEN }}>{naam || "gebruiker"}</span>
+            <span style={{ fontSize: 13.5, color: TEKST }}>Ingelogd als <span style={{ fontWeight: 700, color: GROEN }}>{naam || "gebruiker"}</span></span>
             <button onClick={uitloggen} style={{ border: `1px solid ${RAND}`, background: "#fff", color: GRIJS, borderRadius: 999, padding: "7px 14px", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>Uitloggen</button>
           </div>
         </div>
 
+        {/* Navigatiebalk: zelfde knoppen als op elke pagina */}
+        <DashboardNav isAdmin={isAdmin} />
+
         <h1 style={{ fontFamily: SERIF, fontSize: 34, fontWeight: 700, color: GROEN, margin: "0 0 6px" }}>
           {groet()}, {naam || "collega"}
         </h1>
-        <p style={{ fontSize: 16, color: GRIJS, margin: "0 0 8px" }}>Kies hieronder waar je heen wilt.</p>
+        <p style={{ fontSize: 16, color: GRIJS, margin: "0 0 18px" }}>Kies hieronder waar je heen wilt.</p>
+
+        {/* Persoonlijke meldingen + dagoverzicht uit het planningsbord */}
+        <MeldingBanner />
+        <DagOverzicht />
+
         <p style={{ fontSize: 12.5, color: GRIJS, margin: "0 0 22px" }}>Tip: versleep de vakken om je eigen volgorde te bepalen.</p>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16 }}>
