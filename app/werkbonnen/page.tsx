@@ -333,8 +333,21 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
     setFotos(f || []);
   }
 
+  // Opslaan-bij-openen: leg een geopende klus vast in werkbon_links, zodat 'ie
+  // vindbaar blijft na facturatie -- ook als er nooit met de klant is gedeeld.
+  // (token is verplicht, maar wordt pas "actief" als je echt deelt.)
+  async function bewaarKlus(k: Klus) {
+    try {
+      const { data } = await supabase.from("werkbon_links").select("klus_id").eq("klus_id", k.id).limit(1);
+      if (data && data[0]) return; // bestaat al (gedeeld of eerder geopend)
+      const token = (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2)).replace(/-/g, "");
+      await supabase.from("werkbon_links").insert({ token, toegangscode: maakCode(), klus_id: k.id, nummer: k.nummer || "", klant: k.klant || "", voertuig: k.voertuig || "", klacht: k.klacht || "" });
+    } catch { /* niet kritiek; zolang de offerte accepted is blijft 'ie toch zichtbaar */ }
+  }
+
   function openKlus(k: Klus) {
     eersteLaad.current = true;
+    bewaarKlus(k); // vastleggen zodat de klus na facturatie niet verdwijnt
     setOpen(k); setPopup(true); setTimerPopup(false); setHandMin(""); setNotitie(""); setOpgeslagen(false); setLimiet(""); setAutoMelding("");
     setDiagnoseLijst([]); setDiagTekst(""); setDiagFout("");
     setStapPopup(null); setStapNotitie(""); setFotoMelding(""); setDeelLink("");

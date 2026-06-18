@@ -164,6 +164,11 @@ Intern kanban-/planningsbord op `/planning`, dat onze Trello vervangt. Het bord 
 - Alles gepusht naar `main` (Vercel-deploy).
 - **OPEN PUNT voor vrijdag 19 juni:** de API-routes (`/api/klussen`, `/api/dashboard`, `/api/werkplaats-stats`, ...) zijn nog zonder login opvraagbaar -> wie de URL raadt, krijgt data. Samen met RLS dichtzetten (rolcheck in de routes + service-role-sleutel).
 
+### Gedaan op 18 juni 2026 (bugfix uit gebruik)
+
+- **Klus verdween na facturatie (opgelost).** Een klus met alleen interne foto's, nooit met de klant gedeeld, viel na factureren uit beeld: niet meer "accepted" in Moneybird en niet in `werkbon_links`. Dit was de bekende fase-2-valkuil. Opgelost met **opslaan-bij-openen**: zodra een monteur een klus opent, leggen we 'm vast in `werkbon_links` (nummer/klant/voertuig + token), zodat 'ie ook na facturatie vindbaar blijft. Eén klus (2026-0549, Jan Hidding) handmatig hersteld; de foto's stonden er nog (data hangt aan `klus_id`).
+- **Interne foto-upload verbeterd.** Laadbalk (foto X van N) + goed/afkeur-resultaat, robuustere knop (ref i.p.v. label) en een "open in Chrome/Safari"-hint, omdat de WhatsApp-in-app-browser foto-uploads blokkeert.
+
 ## Livegang (13 juni 2026)
 
 - Monteur-app gaat live; eerste klant gaat live op het portaal.
