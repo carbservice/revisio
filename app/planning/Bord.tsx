@@ -147,6 +147,19 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
     return () => window.removeEventListener("popstate", uitPad);
   }, []);
 
+  // In-place een kaart openen (vanuit een @klus-link of een melding) zonder
+  // volledige paginanavigatie -> geen remount/herlaad van het hele bord.
+  useEffect(() => {
+    function opOpen(e: Event) {
+      const id = (e as CustomEvent).detail as string;
+      if (!id) return;
+      setOpenId(id);
+      window.history.pushState({}, "", `/planning/${id}`);
+    }
+    window.addEventListener("revisio:open-kaart", opOpen as EventListener);
+    return () => window.removeEventListener("revisio:open-kaart", opOpen as EventListener);
+  }, []);
+
   function open(id: string) {
     setOpenId(id);
     window.history.pushState({}, "", `/planning/${id}`);

@@ -49,7 +49,13 @@ export default function MeldingBel() {
   async function klik(m: Melding) {
     if (!m.gelezen) await supabase.from("melding").update({ gelezen: true }).eq("id", m.id);
     setOpen(false);
-    if (m.kaart_id) router.push(`/planning/${m.kaart_id}`);
+    if (!m.kaart_id) return;
+    // Al op het bord? Dan in-place openen (geen volledige herlaad), anders navigeren.
+    if (typeof window !== "undefined" && window.location.pathname.startsWith("/planning")) {
+      window.dispatchEvent(new CustomEvent("revisio:open-kaart", { detail: m.kaart_id }));
+    } else {
+      router.push(`/planning/${m.kaart_id}`);
+    }
   }
   async function allesGelezen() {
     if (!code) return;

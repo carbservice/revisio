@@ -115,6 +115,7 @@ export default function KaartDetail({
     const volgorde = items.length;
     await supabase.from("kaart_checklist_item").insert({ kaart_id: kaart.id, tekst, volgorde });
     await log(`voegde checklist-punt toe: "${tekst}"`);
+    await meldTags(tekst, "checklist");
     await laad();
     onWijzig();
   }
@@ -146,42 +147,64 @@ export default function KaartDetail({
     await Promise.all(nieuw.map((i) => supabase.from("kaart_checklist_item").update({ volgorde: i.volgorde }).eq("id", i.id)));
   }
 
-  // --- Chat met @taggen (collega's en offertenummers) ----------------------
+  // --- @taggen (collega's en offertenummers), herbruikbaar voor chat + checklist
   // Keuzelijstje zodra het laatste woord met @ begint. Begint het met een
   // cijfer, dan suggereren we offertenummers (klussen); anders collega's.
-  const mentionMatch = /(?:^|\s)@([\w-]*)$/.exec(chat);
-  const q = mentionMatch ? mentionMatch[1] : "";
-  const qLaag = q.toLowerCase();
-  const isNummer = /^\d/.test(q);
   type Sug = { soort: "persoon" | "klus"; waarde: string; titel: string; sub: string };
-  const suggesties: Sug[] = !mentionMatch ? [] : isNummer
-    ? (klusIndex || []).filter((k) => k.nummer && k.nummer.toLowerCase().includes(qLaag)).slice(0, 8)
-        .map((k) => ({ soort: "klus", waarde: k.nummer, titel: k.nummer, sub: k.klant }))
-    : TEAM.filter((l) => l.code !== mijnCode && (l.naam.toLowerCase().startsWith(qLaag) || l.code.toLowerCase().startsWith(qLaag)))
-        .map((l) => ({ soort: "persoon", waarde: l.naam, titel: l.naam, sub: l.code }));
-
-  function kies(waarde: string) {
-    setChat((prev) => prev.replace(/@([\w-]*)$/, `@${waarde} `));
+  function bouwSuggesties(q: string): Sug[] {
+    const ql = q.toLowerCase();
+    if (/^\d/.test(q)) {
+      return (klusIndex || []).filter((k) => k.nummer && k.nummer.toLowerCase().includes(ql)).slice(0, 8)
+        .map((k) => ({ soort: "klus", waarde: k.nummer, titel: k.nummer, sub: k.klant }));
+    }
+    return TEAM.filter((l) => l.code !== mijnCode && (l.naam.toLowerCase().startsWith(ql) || l.code.toLowerCase().startsWith(ql)))
+      .map((l) => ({ soort: "persoon", waarde: l.naam, titel: l.naam, sub: l.code }));
   }
+  const chatMatch = /(?:^|\s)@([\w-]*)$/.exec(chat);
+  const suggesties: Sug[] = chatMatch ? bouwSuggesties(chatMatch[1]) : [];
+  const itemMatch = /(?:^|\s)@([\w-]*)$/.exec(nieuwItem);
+  const itemSug: Sug[] = itemMatch ? bouwSuggesties(itemMatch[1]) : [];
+  function kies(waarde: string) { setChat((prev) => prev.replace(/@([\w-]*)$/, `@${waarde} `)); }
+  function kiesItem(waarde: string) { setNieuwItem((prev) => prev.replace(/@([\w-]*)$/, `@${waarde} `)); }
 
-  // Maakt van @2026-XXXX in een bericht een klikbare link naar de kaart (of de
-  // werkbon als er nog geen kaart is).
+  // Tekst met @2026-XXXX (klus -> link) en @Naam (collega -> gemarkeerd).
   function renderTekst(tekst: string): ReactNode[] {
-    const re = /@(\d{4}-\d{2,6})/g;
+    const namen = TEAM.map((l) => l.naam).sort((a, b) => b.length - a.length).map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+    const re = new RegExp(`@(\\d{4}-\\d{2,6}|${namen.join("|")})`, "g");
     const out: ReactNode[] = [];
     let last = 0, m: RegExpExecArray | null, i = 0;
     while ((m = re.exec(tekst)) !== null) {
       if (m.index > last) out.push(tekst.slice(last, m.index));
-      const nummer = m[1];
-      const k = (klusIndex || []).find((x) => x.nummer === nummer);
-      const href = k ? (k.kaart_id ? `/planning/${k.kaart_id}` : `/werkbonnen?klus=${k.klus_id}`) : null;
-      out.push(href
-        ? <a key={`r${i}`} href={href} title={k?.klant} style={{ color: GROEN, fontWeight: 700, textDecoration: "none", background: "#e7f0ea", borderRadius: 5, padding: "0 4px" }}>@{nummer}</a>
-        : `@${nummer}`);
+      const val = m[1];
+      if (/^\d{4}-/.test(val)) {
+        const k = (klusIndex || []).find((x) => x.nummer === val);
+        const chipStijl = { color: GROEN, fontWeight: 700, textDecoration: "none", background: "#e7f0ea", borderRadius: 5, padding: "0 4px", cursor: "pointer" } as const;
+        if (k?.kaart_id) {
+          const kid = k.kaart_id;
+          // In-place openen (geen volledige paginanavigatie).
+          out.push(<span key={`r${i}`} role="link" title={k.klant} onClick={() => window.dispatchEvent(new CustomEvent("revisio:open-kaart", { detail: kid }))} style={chipStijl}>@{val}</span>);
+        } else if (k) {
+          out.push(<a key={`r${i}`} href={`/werkbonnen?klus=${k.klus_id}`} title={k.klant} style={chipStijl}>@{val}</a>);
+        } else {
+          out.push(`@${val}`);
+        }
+      } else {
+        out.push(<span key={`p${i}`} style={{ color: GROEN, fontWeight: 700 }}>@{val}</span>);
+      }
       last = m.index + m[0].length; i++;
     }
     if (last < tekst.length) out.push(tekst.slice(last));
     return out;
+  }
+
+  // Stuur een tag-melding naar de genoemde collega's (niet jezelf).
+  async function meldTags(tekst: string, context: string) {
+    const genoemd = TEAM.filter((l) => l.code !== mijnCode && new RegExp(`@(?:${l.code}|${l.naam})\\b`, "i").test(tekst));
+    if (!genoemd.length) return;
+    await supabase.from("melding").insert(genoemd.map((l) => ({
+      ontvanger: l.code, kaart_id: kaart.id, van: gebruiker, soort: "tag",
+      tekst: `${gebruiker} noemde je (${context}): "${tekst.length > 90 ? tekst.slice(0, 90) + "..." : tekst}"`,
+    })));
   }
 
   async function stuur() {
@@ -189,15 +212,7 @@ export default function KaartDetail({
     if (!tekst) return;
     setChat("");
     await supabase.from("kaart_bericht").insert({ kaart_id: kaart.id, auteur: gebruiker, tekst, soort: "chat" });
-
-    // Getagde collega's een melding sturen (niet jezelf).
-    const genoemd = TEAM.filter((l) => l.code !== mijnCode && new RegExp(`@(?:${l.code}|${l.naam})\\b`, "i").test(tekst));
-    if (genoemd.length) {
-      await supabase.from("melding").insert(genoemd.map((l) => ({
-        ontvanger: l.code, kaart_id: kaart.id, van: gebruiker, soort: "tag",
-        tekst: `${gebruiker} noemde je: "${tekst.length > 90 ? tekst.slice(0, 90) + "..." : tekst}"`,
-      })));
-    }
+    await meldTags(tekst, "chat");
   }
 
   function kopieerLink() {
@@ -272,7 +287,7 @@ export default function KaartDetail({
 
         <div style={{ display: "grid", gridTemplateColumns: smal ? "1fr" : "1fr 1fr", gap: 18, marginTop: 14 }}>
           {/* Links: omschrijving, leden, checklist */}
-          <div>
+          <div style={{ minWidth: 0 }}>
             <div style={kopje}>Omschrijving</div>
             <textarea
               value={omschrijving} onChange={(e) => setOmschrijving(e.target.value)} onBlur={bewaarOmschrijving}
@@ -317,19 +332,36 @@ export default function KaartDetail({
                   style={{ cursor: "grab", color: "#b9b4a8", fontSize: 14, lineHeight: 1, userSelect: "none" }}
                 >⠿</span>
                 <input type="checkbox" checked={it.gedaan} onChange={() => wisselItem(it)} style={{ width: 16, height: 16, cursor: "pointer" }} />
-                <span style={{ flex: 1, fontSize: 13, color: it.gedaan ? GRIJS : TEKST, textDecoration: it.gedaan ? "line-through" : "none" }}>{it.tekst}</span>
+                <span style={{ flex: 1, minWidth: 0, overflowWrap: "anywhere", fontSize: 13, color: it.gedaan ? GRIJS : TEKST, textDecoration: it.gedaan ? "line-through" : "none" }}>{renderTekst(it.tekst)}</span>
                 <button onClick={() => verwijderItem(it)} style={{ border: "none", background: "transparent", color: GRIJS, cursor: "pointer", fontSize: 15, lineHeight: 1 }}>×</button>
               </div>
             ))}
-            <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
-              <input value={nieuwItem} onChange={(e) => setNieuwItem(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") voegItemToe(); }}
-                placeholder="Nieuw punt" style={{ flex: 1, boxSizing: "border-box", border: `1.5px solid ${RAND}`, borderRadius: 8, padding: "8px 10px", fontSize: 13 }} />
-              <button onClick={voegItemToe} style={knopGroen}>+</button>
+            <div style={{ position: "relative", marginTop: 6 }}>
+              {itemSug.length > 0 && (
+                <div style={mentionLijst}>
+                  {itemSug.map((s) => (
+                    <button key={s.soort + s.waarde} onMouseDown={(e) => { e.preventDefault(); kiesItem(s.waarde); }} style={mentionRij}>
+                      <span style={{ width: 20, height: 20, borderRadius: "50%", background: GROEN, color: "#fff", fontSize: s.soort === "klus" ? 12 : 9, fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{s.soort === "klus" ? "#" : s.sub}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: TEKST }}>{s.titel}</span>
+                      {s.soort === "klus" && s.sub && <span style={{ fontSize: 12, color: GRIJS, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.sub}</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div style={{ display: "flex", gap: 6 }}>
+                <input value={nieuwItem} onChange={(e) => setNieuwItem(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (itemSug.length && (e.key === "Enter" || e.key === "Tab")) { e.preventDefault(); kiesItem(itemSug[0].waarde); return; }
+                    if (e.key === "Enter") voegItemToe();
+                  }}
+                  placeholder="Nieuw punt  (@ om te taggen)" style={{ flex: 1, boxSizing: "border-box", border: `1.5px solid ${RAND}`, borderRadius: 8, padding: "8px 10px", fontSize: 13 }} />
+                <button onClick={voegItemToe} style={knopGroen}>+</button>
+              </div>
             </div>
           </div>
 
           {/* Rechts: chat + log */}
-          <div style={{ display: "flex", flexDirection: "column", minHeight: 320 }}>
+          <div style={{ display: "flex", flexDirection: "column", minHeight: 320, minWidth: 0 }}>
             <div style={kopje}>Chat en log</div>
             <div ref={scrollRef} style={chatVlak}>
               {berichten.length === 0 && <div style={{ color: GRIJS, fontSize: 12.5 }}>Nog geen berichten.</div>}
@@ -340,7 +372,7 @@ export default function KaartDetail({
               ) : (
                 <div key={b.id} style={{ margin: "7px 0" }}>
                   <div style={{ fontSize: 11, fontWeight: 800, color: GROEN }}>{b.auteur} <span style={{ color: GRIJS, fontWeight: 600 }}>· {tijd(b.tijdstip)}</span></div>
-                  <div style={{ fontSize: 13, color: TEKST, background: "#fff", border: `1px solid ${RAND}`, borderRadius: 8, padding: "7px 9px", marginTop: 2, whiteSpace: "pre-wrap" }}>{renderTekst(b.tekst)}</div>
+                  <div style={{ fontSize: 13, color: TEKST, background: "#fff", border: `1px solid ${RAND}`, borderRadius: 8, padding: "7px 9px", marginTop: 2, whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{renderTekst(b.tekst)}</div>
                 </div>
               ))}
             </div>
