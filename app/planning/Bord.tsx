@@ -5,7 +5,7 @@
 // verouderingskleur per kaart. De klus is de bron: een klus-kaart hangt aan
 // klus_id, dezelfde sleutel als in de werkbon-app en Moneybird.
 
-import { useCallback, useEffect, useRef, useState, CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, CSSProperties } from "react";
 import { supabase } from "@/lib/supabase";
 import { GROEN, GOUD, TEKST, GRIJS, RAND, BG, KAART_SCHADUW } from "@/lib/theme";
 import { useGebruiker } from "@/app/components/AuthGate";
@@ -211,6 +211,15 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
 
   const openKaart = openId ? kaarten.find((k) => k.id === openId) || null : null;
 
+  // Offertenummer -> klus/kaart, voor het @taggen van orders in de chat.
+  const klusIndex = useMemo(() => {
+    const kaartByKlus = new Map<string, string>();
+    kaarten.forEach((k) => { if (k.type === "klus" && k.klus_id) kaartByKlus.set(k.klus_id, k.id); });
+    return Object.values(klussen)
+      .filter((kl) => kl.nummer)
+      .map((kl) => ({ nummer: kl.nummer, klus_id: String(kl.id), klant: kl.klant, kaart_id: kaartByKlus.get(String(kl.id)) || null }));
+  }, [klussen, kaarten]);
+
   // --- Render --------------------------------------------------------------
   return (
     <main style={{ minHeight: "100vh", background: BG, color: TEKST, fontFamily: "'Karma', Georgia, serif" }}>
@@ -304,6 +313,7 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
           mijnCode={mijnCode}
           klantOnuitgegeven={openKaart.klus_id ? !!klusStatus[openKaart.klus_id]?.onuitgegeven : false}
           binnenOp={openKaart.klus_id ? klusStatus[openKaart.klus_id]?.binnenOp ?? null : null}
+          klusIndex={klusIndex}
           onSluit={sluit}
           onWijzig={herlaad}
         />

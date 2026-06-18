@@ -5,7 +5,7 @@
 // live zien schrijven en afvinken. Omdat de kaart aan klus_id hangt, leest de
 // werkbon-app op dezelfde klus mee.
 
-import { useEffect, useRef, useState, CSSProperties } from "react";
+import { useEffect, useRef, useState, CSSProperties, ReactNode } from "react";
 import { supabase } from "@/lib/supabase";
 import { GROEN, GOUD, TEKST, GRIJS, RAND } from "@/lib/theme";
 import {
@@ -15,10 +15,12 @@ import {
 
 const SERIF = "'Karma', Georgia, serif";
 
+type KlusRef = { nummer: string; klus_id: string; klant: string; kaart_id: string | null };
+
 export default function KaartDetail({
-  kaart, klus, gebruiker, mijnCode, klantOnuitgegeven, binnenOp, onSluit, onWijzig,
+  kaart, klus, gebruiker, mijnCode, klantOnuitgegeven, binnenOp, klusIndex, onSluit, onWijzig,
 }: {
-  kaart: Kaart; klus?: Klus; gebruiker: string; mijnCode: string | null; klantOnuitgegeven?: boolean; binnenOp?: string | null; onSluit: () => void; onWijzig: () => void;
+  kaart: Kaart; klus?: Klus; gebruiker: string; mijnCode: string | null; klantOnuitgegeven?: boolean; binnenOp?: string | null; klusIndex?: KlusRef[]; onSluit: () => void; onWijzig: () => void;
 }) {
   const [titel, setTitel] = useState(kaart.titel);
   const [omschrijving, setOmschrijving] = useState(kaart.omschrijving);
@@ -144,15 +146,42 @@ export default function KaartDetail({
     await Promise.all(nieuw.map((i) => supabase.from("kaart_checklist_item").update({ volgorde: i.volgorde }).eq("id", i.id)));
   }
 
-  // --- Chat met @taggen ----------------------------------------------------
-  // Toon een keuzelijstje zodra het laatste woord met @ begint.
-  const mentionMatch = /(?:^|\s)@(\w*)$/.exec(chat);
-  const suggesties = mentionMatch
-    ? TEAM.filter((l) => l.code !== mijnCode && (l.naam.toLowerCase().startsWith(mentionMatch[1].toLowerCase()) || l.code.toLowerCase().startsWith(mentionMatch[1].toLowerCase())))
-    : [];
+  // --- Chat met @taggen (collega's en offertenummers) ----------------------
+  // Keuzelijstje zodra het laatste woord met @ begint. Begint het met een
+  // cijfer, dan suggereren we offertenummers (klussen); anders collega's.
+  const mentionMatch = /(?:^|\s)@([\w-]*)$/.exec(chat);
+  const q = mentionMatch ? mentionMatch[1] : "";
+  const qLaag = q.toLowerCase();
+  const isNummer = /^\d/.test(q);
+  type Sug = { soort: "persoon" | "klus"; waarde: string; titel: string; sub: string };
+  const suggesties: Sug[] = !mentionMatch ? [] : isNummer
+    ? (klusIndex || []).filter((k) => k.nummer && k.nummer.toLowerCase().includes(qLaag)).slice(0, 8)
+        .map((k) => ({ soort: "klus", waarde: k.nummer, titel: k.nummer, sub: k.klant }))
+    : TEAM.filter((l) => l.code !== mijnCode && (l.naam.toLowerCase().startsWith(qLaag) || l.code.toLowerCase().startsWith(qLaag)))
+        .map((l) => ({ soort: "persoon", waarde: l.naam, titel: l.naam, sub: l.code }));
 
-  function kiesMention(naam: string) {
-    setChat((prev) => prev.replace(/@(\w*)$/, `@${naam} `));
+  function kies(waarde: string) {
+    setChat((prev) => prev.replace(/@([\w-]*)$/, `@${waarde} `));
+  }
+
+  // Maakt van @2026-XXXX in een bericht een klikbare link naar de kaart (of de
+  // werkbon als er nog geen kaart is).
+  function renderTekst(tekst: string): ReactNode[] {
+    const re = /@(\d{4}-\d{2,6})/g;
+    const out: ReactNode[] = [];
+    let last = 0, m: RegExpExecArray | null, i = 0;
+    while ((m = re.exec(tekst)) !== null) {
+      if (m.index > last) out.push(tekst.slice(last, m.index));
+      const nummer = m[1];
+      const k = (klusIndex || []).find((x) => x.nummer === nummer);
+      const href = k ? (k.kaart_id ? `/planning/${k.kaart_id}` : `/werkbonnen?klus=${k.klus_id}`) : null;
+      out.push(href
+        ? <a key={`r${i}`} href={href} title={k?.klant} style={{ color: GROEN, fontWeight: 700, textDecoration: "none", background: "#e7f0ea", borderRadius: 5, padding: "0 4px" }}>@{nummer}</a>
+        : `@${nummer}`);
+      last = m.index + m[0].length; i++;
+    }
+    if (last < tekst.length) out.push(tekst.slice(last));
+    return out;
   }
 
   async function stuur() {
@@ -311,17 +340,18 @@ export default function KaartDetail({
               ) : (
                 <div key={b.id} style={{ margin: "7px 0" }}>
                   <div style={{ fontSize: 11, fontWeight: 800, color: GROEN }}>{b.auteur} <span style={{ color: GRIJS, fontWeight: 600 }}>· {tijd(b.tijdstip)}</span></div>
-                  <div style={{ fontSize: 13, color: TEKST, background: "#fff", border: `1px solid ${RAND}`, borderRadius: 8, padding: "7px 9px", marginTop: 2, whiteSpace: "pre-wrap" }}>{b.tekst}</div>
+                  <div style={{ fontSize: 13, color: TEKST, background: "#fff", border: `1px solid ${RAND}`, borderRadius: 8, padding: "7px 9px", marginTop: 2, whiteSpace: "pre-wrap" }}>{renderTekst(b.tekst)}</div>
                 </div>
               ))}
             </div>
             <div style={{ position: "relative", marginTop: 8 }}>
               {suggesties.length > 0 && (
                 <div style={mentionLijst}>
-                  {suggesties.map((l) => (
-                    <button key={l.code} onMouseDown={(e) => { e.preventDefault(); kiesMention(l.naam); }} style={mentionRij}>
-                      <span style={{ width: 20, height: 20, borderRadius: "50%", background: GROEN, color: "#fff", fontSize: 9, fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{l.code}</span>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: TEKST }}>{l.naam}</span>
+                  {suggesties.map((s) => (
+                    <button key={s.soort + s.waarde} onMouseDown={(e) => { e.preventDefault(); kies(s.waarde); }} style={mentionRij}>
+                      <span style={{ width: 20, height: 20, borderRadius: "50%", background: GROEN, color: "#fff", fontSize: s.soort === "klus" ? 12 : 9, fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{s.soort === "klus" ? "#" : s.sub}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: TEKST }}>{s.titel}</span>
+                      {s.soort === "klus" && s.sub && <span style={{ fontSize: 12, color: GRIJS, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.sub}</span>}
                     </button>
                   ))}
                 </div>
@@ -330,7 +360,7 @@ export default function KaartDetail({
                 <input
                   value={chat} onChange={(e) => setChat(e.target.value)}
                   onKeyDown={(e) => {
-                    if (suggesties.length && (e.key === "Enter" || e.key === "Tab")) { e.preventDefault(); kiesMention(suggesties[0].naam); return; }
+                    if (suggesties.length && (e.key === "Enter" || e.key === "Tab")) { e.preventDefault(); kies(suggesties[0].waarde); return; }
                     if (e.key === "Enter") stuur();
                   }}
                   placeholder="Schrijf een bericht...  (@ om te taggen)"
