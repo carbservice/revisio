@@ -272,7 +272,12 @@ export default function KaartDetail({
             <div style={{ fontSize: 13, color: TEKST }}><b>{klus.klant}</b>{klus.nummer ? ` · ${klus.nummer}` : ""}</div>
             {klus.voertuig && <div style={{ fontSize: 12.5, color: GRIJS, marginTop: 2 }}>{klus.voertuig}</div>}
             {klus.klacht && <div style={{ fontSize: 12.5, color: GRIJS, marginTop: 2 }}>Klacht: {klus.klacht}</div>}
-            <a href={`/werkbonnen?klus=${kaart.klus_id}`} style={{ display: "inline-block", marginTop: 8, fontSize: 12.5, fontWeight: 700, color: GROEN }}>Open in de werkbon-app →</a>
+            <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 8, alignItems: "center" }}>
+              <a href={`/werkbonnen?klus=${kaart.klus_id}`} style={{ fontSize: 12.5, fontWeight: 700, color: GROEN }}>Open in de werkbon-app →</a>
+              {kaart.gefactureerd && (
+                <a href={`/api/factuur?klus_id=${kaart.klus_id}`} target="_blank" rel="noreferrer" style={{ fontSize: 12.5, fontWeight: 700, color: "#6b5410" }}>📄 Factuur (PDF) →</a>
+              )}
+            </div>
           </div>
         )}
 
