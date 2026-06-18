@@ -9,6 +9,7 @@ import { useEffect, useState, ReactNode, CSSProperties, createContext, useContex
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { GROEN, GRIJS, RAND, BG, TEKST, ROOD, KAART_SCHADUW } from "@/lib/theme";
+import { useInactiviteitsUitlog, wisInactiviteit } from "@/app/components/useInactiviteit";
 
 type Status = "laden" | "uit" | "geen-toegang" | "ok";
 
@@ -52,6 +53,9 @@ export default function AuthGate({ requireAdmin = false, children }: { requireAd
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Automatisch uitloggen na 2 uur inactiviteit zodra je bent ingelogd.
+  useInactiviteitsUitlog(status === "ok", uitloggen);
+
   async function inloggen() {
     const adres = email.trim();
     if (!adres) return;
@@ -74,6 +78,7 @@ export default function AuthGate({ requireAdmin = false, children }: { requireAd
   }
 
   async function uitloggen() {
+    wisInactiviteit();
     await supabase.auth.signOut();
     setEmail(""); setCode(""); setVerstuurd(false); setStatus("uit");
   }

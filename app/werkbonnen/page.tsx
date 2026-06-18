@@ -12,6 +12,7 @@ import ScrollNaarBoven from "@/app/components/ScrollNaarBoven";
 import PaginaKop from "@/app/components/PaginaKop";
 import LaadScherm from "@/app/components/LaadScherm";
 import Lightbox from "@/app/components/Lightbox";
+import { useInactiviteitsUitlog, wisInactiviteit } from "@/app/components/useInactiviteit";
 import BlokOpmerkingen from "./components/BlokOpmerkingen";
 import BlokArtikelen from "./components/BlokArtikelen";
 import BlokEindcontrole from "./components/BlokEindcontrole";
@@ -1071,6 +1072,9 @@ export default function WerkplaatsPagina() {
   const [klaar, setKlaar] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
+  // Automatisch uitloggen na 2 uur inactiviteit (gedeelde werkplaats-computers).
+  useInactiviteitsUitlog(!!ingelogd, uitloggen);
+
   // Koppel een ingelogd e-mailadres aan een monteur in app_gebruikers.
   // Geen match of niet actief: meteen weer uitloggen en toegang weigeren.
   async function koppelGebruiker(authEmail: string | undefined | null) {
@@ -1130,6 +1134,7 @@ export default function WerkplaatsPagina() {
   }
 
   async function uitloggen() {
+    wisInactiviteit();
     await supabase.auth.signOut();
     setIngelogd(null); setEmail(""); setVerstuurd(false); setCode(""); setFout("");
   }
