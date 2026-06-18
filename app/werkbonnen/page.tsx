@@ -865,9 +865,18 @@ function WerkplaatsApp({ ingelogd, isAdmin, isManager, onUitloggen }: { ingelogd
                 {fotos.filter((f) => f.stap === stapInfo.id).length >= 3 ? (
                   <div style={{ textAlign: "center", background: "#efece4", color: GRIJS, borderRadius: 12, padding: "13px", fontSize: 14, fontWeight: 700, marginBottom: 10 }}>Maximaal 3 foto's voor dit stadium</div>
                 ) : (
-                  <label style={{ display: "block", textAlign: "center", background: GOUD, color: "#fff", borderRadius: 12, padding: "13px", fontSize: 15, fontWeight: 700, cursor: "pointer", marginBottom: 10 }}>
-                    Maak foto ({fotos.filter((f) => f.stap === stapInfo.id).length}/3)
-                    <input type="file" accept="image/*" capture="environment" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadFoto(f, stapInfo.id); e.currentTarget.value = ""; }} />
+                  <label style={{ display: "block", textAlign: "center", background: GOUD, color: "#fff", borderRadius: 12, padding: "12px 13px", fontSize: 15, fontWeight: 700, cursor: "pointer", marginBottom: 10 }}>
+                    Foto toevoegen ({fotos.filter((f) => f.stap === stapInfo.id).length}/3)
+                    <div style={{ fontSize: 11.5, fontWeight: 600, opacity: 0.9, marginTop: 1 }}>Maak een foto of kies uit je galerij</div>
+                    <input type="file" accept="image/*" multiple style={{ display: "none" }} onChange={(e) => {
+                      const files = e.target.files ? Array.from(e.target.files) : [];
+                      const input = e.currentTarget; input.value = "";
+                      if (!files.length) return;
+                      const al = fotos.filter((f) => f.stap === stapInfo.id).length;
+                      const ruimte = Math.max(0, 3 - al);
+                      if (files.length > ruimte) setFotoMelding(`Maximaal 3 foto's per stadium — de eerste ${ruimte} ${ruimte === 1 ? "wordt" : "worden"} toegevoegd.`);
+                      (async () => { for (const f of files.slice(0, ruimte)) { await uploadFoto(f, stapInfo.id); } })();
+                    }} />
                   </label>
                 )}
                 {fotoMelding && <div style={{ fontSize: 13, color: GROEN, fontWeight: 600, marginBottom: 10 }}>{fotoMelding}</div>}
