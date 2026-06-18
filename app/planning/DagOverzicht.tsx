@@ -44,30 +44,36 @@ export default function DagOverzicht() {
           <span style={{ fontSize: 13.5, fontWeight: 800, color: GROEN }}>Sinds gisteren op jouw kaarten</span>
           <span style={{ fontSize: 12, color: GRIJS }}>{totaal} {totaal === 1 ? "update" : "updates"} op {kaarten.length} {kaarten.length === 1 ? "kaart" : "kaarten"}</span>
         </span>
-        <span style={{ fontSize: 12, color: GRIJS, fontWeight: 700 }}>{open ? "Inklappen" : "Uitklappen"}</span>
+        <span style={{ fontSize: 12, color: GRIJS, fontWeight: 700 }}>{open ? "Inklappen" : "Alles uitklappen"}</span>
       </button>
 
-      {open && (
-        <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 12 }}>
-          {kaarten.map((k) => (
+      {/* Altijd: kaarttitels. Ingeklapt tonen we eronder alleen de @tags;
+          uitgeklapt alle details (chats + afvinken). */}
+      <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 11 }}>
+        {kaarten.map((k) => {
+          const tags = k.regels.filter((r) => r.soort === "chat" && r.tekst.includes("@"));
+          const zichtbaar = open ? k.regels : tags;
+          return (
             <div key={k.kaart_id}>
               <Link href={`/planning/${k.kaart_id}`} style={{ fontSize: 13, fontWeight: 800, color: GROEN, textDecoration: "none" }}>
-                {k.titel} <span style={{ color: GRIJS, fontWeight: 600 }}>openen →</span>
+                {k.titel}{!open && <span style={{ color: GRIJS, fontWeight: 600 }}> · {k.regels.length} {k.regels.length === 1 ? "update" : "updates"}</span>} <span style={{ color: GRIJS, fontWeight: 600 }}>openen →</span>
               </Link>
-              <ul style={{ margin: "5px 0 0", padding: 0, listStyle: "none" }}>
-                {k.regels.map((r, i) => (
-                  <li key={i} style={{ fontSize: 12.5, color: TEKST, padding: "2px 0", lineHeight: 1.4 }}>
-                    <span style={{ color: GRIJS }}>{tijd(r.tijdstip)}</span>{" "}
-                    {r.soort === "log"
-                      ? <span style={{ color: GRIJS, fontStyle: "italic" }}>{r.auteur} {r.tekst}</span>
-                      : <span><b style={{ color: GROEN }}>{r.auteur}:</b> {r.tekst}</span>}
-                  </li>
-                ))}
-              </ul>
+              {zichtbaar.length > 0 && (
+                <ul style={{ margin: "5px 0 0", padding: 0, listStyle: "none" }}>
+                  {zichtbaar.map((r, i) => (
+                    <li key={i} style={{ fontSize: 12.5, color: TEKST, padding: "2px 0", lineHeight: 1.4 }}>
+                      <span style={{ color: GRIJS }}>{tijd(r.tijdstip)}</span>{" "}
+                      {r.soort === "log"
+                        ? <span style={{ color: GRIJS, fontStyle: "italic" }}>{r.auteur} {r.tekst}</span>
+                        : <span><b style={{ color: GROEN }}>{r.auteur}:</b> {r.tekst}</span>}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
-          ))}
-        </div>
-      )}
+          );
+        })}
+      </div>
     </div>
   );
 }
