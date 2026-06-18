@@ -13,7 +13,7 @@ import { bouwDigest, sindsGisteren, type DigestKaart } from "./dagoverzicht-lib"
 
 export default function DagOverzicht() {
   const [kaarten, setKaarten] = useState<DigestKaart[]>([]);
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false); // standaard ingeklapt: rustige startpagina
 
   useEffect(() => {
     let levend = true;
