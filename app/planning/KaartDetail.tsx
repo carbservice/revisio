@@ -19,9 +19,9 @@ const SERIF = "'Karma', Georgia, serif";
 type KlusRef = { nummer: string; klus_id: string; klant: string; kaart_id: string | null };
 
 export default function KaartDetail({
-  kaart, klus, gebruiker, mijnCode, klantOnuitgegeven, binnenOp, klusIndex, onSluit, onWijzig,
+  kaart, klus, gebruiker, mijnCode, klantOnuitgegeven, binnenOp, arbeidOver, klusIndex, onSluit, onWijzig,
 }: {
-  kaart: Kaart; klus?: Klus; gebruiker: string; mijnCode: string | null; klantOnuitgegeven?: boolean; binnenOp?: string | null; klusIndex?: KlusRef[]; onSluit: () => void; onWijzig: () => void;
+  kaart: Kaart; klus?: Klus; gebruiker: string; mijnCode: string | null; klantOnuitgegeven?: boolean; binnenOp?: string | null; arbeidOver?: boolean; klusIndex?: KlusRef[]; onSluit: () => void; onWijzig: () => void;
 }) {
   const [titel, setTitel] = useState(kaart.titel);
   const [omschrijving, setOmschrijving] = useState(kaart.omschrijving);
@@ -301,6 +301,14 @@ export default function KaartDetail({
             <span style={{ fontSize: 12.5, color: "#8a2a1c", fontWeight: 700 }}>Let op: de laatste klant-update is nog niet gepusht.</span>
             <span style={{ fontSize: 12, color: "#8a2a1c" }}> Doe dat vóór je factureert, anders kan het daarna niet meer. </span>
             <a href={`/werkbonnen?klus=${kaart.klus_id}`} style={{ fontSize: 12.5, fontWeight: 700, color: "#8a2a1c", textDecoration: "underline" }}>Naar de werkbon →</a>
+          </div>
+        )}
+
+        {arbeidOver && (
+          <div style={{ background: "#fbdcd5", border: "1px solid #e08a78", borderRadius: 10, padding: "9px 12px", marginTop: 8 }}>
+            <span style={{ fontSize: 12.5, color: "#9c2b1b", fontWeight: 800 }}>⚠ Arbeid voorbij de geoffreerde uren. </span>
+            <span style={{ fontSize: 12, color: "#9c2b1b" }}>De geschreven tijd loopt voorbij de geoffreerde arbeid. Bel de klant of maak een interne keuze. </span>
+            <a href={`/werkbonnen?klus=${kaart.klus_id}`} style={{ fontSize: 12.5, fontWeight: 700, color: "#9c2b1b", textDecoration: "underline" }}>Bekijk in de werkbon →</a>
           </div>
         )}
 

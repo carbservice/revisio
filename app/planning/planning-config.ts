@@ -164,7 +164,7 @@ export type Kaart = {
 
 // Afgeleide klus-status uit de monteurs-app (klus_voortgang/werkbon_retour).
 // binnenOp = wanneer de klus fysiek binnenkwam (plank-teller, stadium Ontvangst).
-export type KlusStatus = { pct: number; retour: boolean; onuitgegeven: boolean; binnenOp: string | null; akkoord?: string | null };
+export type KlusStatus = { pct: number; retour: boolean; onuitgegeven: boolean; binnenOp: string | null; akkoord?: string | null; arbeidOver?: boolean };
 
 export type ChecklistItem = {
   id: string;

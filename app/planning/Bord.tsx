@@ -51,13 +51,16 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
   const laadKlusStatus = useCallback(async (klusIds: string[]) => {
     const ids = [...new Set(klusIds)];
     if (ids.length === 0) { setKlusStatus({}); return; }
-    const [vRes, rRes, aRes] = await Promise.all([
+    const [vRes, rRes, aRes, wRes] = await Promise.all([
       supabase.from("klus_voortgang").select("klus_id, stap, gedaan_op, gepubliceerd_op").in("klus_id", ids),
       supabase.from("werkbon_retour").select("klus_id, is_retour"),
       supabase.from("klant_akkoord").select("klus_id, status, aangemaakt_op").in("klus_id", ids).order("aangemaakt_op", { ascending: false }),
+      supabase.from("werkbon_links").select("klus_id, arbeid_gemeld").in("klus_id", ids),
     ]);
     const akkoord: Record<string, string> = {};
     (aRes.data || []).forEach((a: { klus_id: string; status: string }) => { if (!(a.klus_id in akkoord)) akkoord[a.klus_id] = a.status; });
+    const arbeidOver: Record<string, boolean> = {};
+    (wRes.data || []).forEach((w: { klus_id: string; arbeid_gemeld: boolean }) => { if (w.arbeid_gemeld) arbeidOver[w.klus_id] = true; });
     const stappen: Record<string, string[]> = {};
     const onuitgegeven: Record<string, boolean> = {};
     const binnenOp: Record<string, string> = {};
@@ -69,7 +72,7 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
     const retour = new Set<string>();
     (rRes.data || []).forEach((r: { klus_id: string; is_retour: boolean }) => { if (r.is_retour) retour.add(String(r.klus_id).split("#")[0]); });
     const uit: Record<string, KlusStatus> = {};
-    ids.forEach((id) => { uit[id] = { pct: voortgangPct(stappen[id] || []), retour: retour.has(id), onuitgegeven: !!onuitgegeven[id], binnenOp: binnenOp[id] || null, akkoord: akkoord[id] || null }; });
+    ids.forEach((id) => { uit[id] = { pct: voortgangPct(stappen[id] || []), retour: retour.has(id), onuitgegeven: !!onuitgegeven[id], binnenOp: binnenOp[id] || null, akkoord: akkoord[id] || null, arbeidOver: !!arbeidOver[id] }; });
     setKlusStatus(uit);
   }, []);
 
@@ -383,6 +386,7 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
           mijnCode={mijnCode}
           klantOnuitgegeven={openKaart.klus_id ? !!klusStatus[openKaart.klus_id]?.onuitgegeven : false}
           binnenOp={openKaart.klus_id ? klusStatus[openKaart.klus_id]?.binnenOp ?? null : null}
+          arbeidOver={openKaart.klus_id ? !!klusStatus[openKaart.klus_id]?.arbeidOver : false}
           klusIndex={klusIndex}
           onSluit={sluit}
           onWijzig={herlaad}
@@ -422,6 +426,7 @@ function Tegel({
         <div style={{ fontSize: 13.5, fontWeight: 700, color: TEKST, lineHeight: 1.3 }}>{titel}</div>
         <div style={{ display: "flex", gap: 5, flexShrink: 0, alignItems: "center" }}>
           {meldingen > 0 && <span title={`${meldingen} nieuwe melding(en) voor jou`} style={belBadge}>🔔 {meldingen}</span>}
+          {status?.arbeidOver && <span title="Geschreven tijd is voorbij de geoffreerde arbeid" style={labelArbeid}>⚠ Arbeid</span>}
           {status?.akkoord === "open" && <span title="Wacht op klant-akkoord voor extra kosten" style={labelAkkoordWacht}>✍ Akkoord?</span>}
           {status?.akkoord === "akkoord" && <span title="Klant akkoord met extra kosten" style={labelAkkoordOk}>✓ Akkoord</span>}
           {status?.akkoord === "afgewezen" && <span title="Klant niet akkoord met extra kosten" style={labelAkkoordNee}>✗ Niet akkoord</span>}
@@ -504,6 +509,10 @@ const belBadge: CSSProperties = {
 const labelGefactureerd: CSSProperties = {
   flexShrink: 0, fontSize: 10, fontWeight: 800, color: "#6b5410", background: "#f7f0db",
   border: `1px solid ${GOUD}`, borderRadius: 999, padding: "1px 7px",
+};
+const labelArbeid: CSSProperties = {
+  flexShrink: 0, fontSize: 10, fontWeight: 800, color: "#9c2b1b", background: "#fbdcd5",
+  border: "1px solid #e08a78", borderRadius: 999, padding: "1px 7px", whiteSpace: "nowrap",
 };
 const labelAkkoordWacht: CSSProperties = {
   flexShrink: 0, fontSize: 10, fontWeight: 800, color: "#8a5a00", background: "#ffe7b8",
