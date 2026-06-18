@@ -185,6 +185,20 @@ Intern kanban-/planningsbord op `/planning`, dat onze Trello vervangt. Het bord 
 **Stadia-foto's uit de galerij**
 - De stadia-fotoknop forceerde de camera (`capture="environment"`). Nu biedt de telefoon **camera óf galerij** aan, en je kunt **meerdere tegelijk** kiezen (afgekapt op het maximum van 3, omdat de 3-max-check op de vertraagde React-state leunt). Knop heet nu "Foto toevoegen" met hint.
 
+**Arbeid-overschrijding zichtbaar op de planningskaart**
+- De arbeid-alarm-melding linkte naar de kaart, maar daar stond niets over de overschrijding. Nu: rood label **"⚠ Arbeid"** op de tegel + een notitie in het kaart-detail met link naar de werkbon. Bron: `werkbon_links.arbeid_gemeld`. (Het label blijft staan als "dit is gebeurd"-markering, ook na tijdcorrectie.)
+
+**Klant-akkoordblok verplaatst + titel**
+- Het akkoord-blok in de werkbon staat nu **onder de stadia** (logischer) en heet **"EXTRA KOSTEN?"** met "Vul in en vraag de klant om akkoord."
+
+**Factuur-PDF en offerte op de kaart**
+- `/api/factuur?klus_id=...` matcht de offerte aan de Moneybird-factuur (zelfde contact + voertuig-referentie) en geeft de **factuur-PDF inline** terug (volgt de `download_pdf`-redirect naar de signed URL). Knop **"📄 Factuur (PDF)"** op gefactureerde klus-kaarten.
+- `/api/offerte?klus_id=...` stuurt door naar de **offerte in de Moneybird-app** (redirect-route houdt het admin-id server-side). Knop **"🧾 Offerte in Moneybird"** op elke klus-kaart.
+- QR-scanner: geen aparte scanner nodig — de geprinte label heeft een QR die met de gewone telefooncamera de werkbon van die klus opent.
+
+**Lukas backend-e-mail**
+- Lukas (LE, manager) verhuisd van `lukas@carbservice.nl` naar **lukaslwdeesch@gmail.com** (werkt sneller). Aangepast in zowel `app_gebruikers` (login + meldingen/mail) als de `TEAM`-lijst in `planning-config.ts` (anders valt de melding→code-koppeling weg).
+
 ## Livegang (13 juni 2026)
 
 - Monteur-app gaat live; eerste klant gaat live op het portaal.
@@ -196,7 +210,7 @@ Intern kanban-/planningsbord op `/planning`, dat onze Trello vervangt. Het bord 
 - **Week van 22 juni 2026 — DHL-verzendtracking (kaartenbord + klantportaal).** Live verzendbalk (Aangemeld → Sorteren → Onderweg → Bezorgd) in `/volg` plus een tracking-badge op de kaartenbak, om verzend-telefoontjes/mails weg te nemen. Vervoerder is DHL eCommerce/Parcel (`my.dhlecommerce.nl`), niet Express. T&T-link = nummer (JVGL...) + ontvanger-postcode (hebben we uit Moneybird), dus alleen het JVGL-nummer invoeren op de kaart. Start met de Unified Tracking API (developer.dhl.com, één key); fase 2 = auto-match uit de DHL-verzendlijst via de Parcel NL API. Inbound onderdelen (PostNL via Roukama/carburateurwinkel.nl) krijgen alleen een klikbaar linkje, geen API. Blocker nu: API-key/credentials regelen en eerste calls werkend krijgen (was te veel uitzoekwerk op 17 juni). Volledig plan in de projectnotities (`dhl-tracking-plan`).
 - **Woensdag 17 juni 2026, 10:00 — showcase-foto's voor de demo uploaden.** Vijf foto's in `public/demo/`: `ontvangen.jpg`, `diagnose.jpg`, `reviseren.jpg`, `afbouwen.jpg`, `klaar.jpg` (vierkant, klein). Zolang ze ontbreken valt de demo terug op tijdelijke foto's.
 - **Vrijdag 19 juni 2026, 10:00 — Beveiligingssessie (RLS + API + rol-test).** Grootste risico nu: de database staat open via de publieke sleutel. Volledig stappenplan in `RLS-PLAN.md`. Agenda met de learnings van 17-18 juni:
-  - **API-routes afschermen (het échte gat).** `/api/dashboard`, `/api/klussen`, `/api/werkplaats-stats`, `/api/planning/*` enz. zijn nu zonder login opvraagbaar -> wie de URL raadt, krijgt data. **Belangrijke learning: "elke pagina achter login" sluit dit NIET af** — pagina's zijn dicht (AuthGate / eigen login op werkbonnen), maar de API's zijn losse endpoints en hebben hun eigen sessie-/rolcheck nodig. Server-routes eerst op de service-role-sleutel, dan rolcheck (admin/manager/monteur) per route.
+  - **API-routes afschermen (het échte gat).** `/api/dashboard`, `/api/klussen`, `/api/werkplaats-stats`, `/api/planning/*`, en de nieuwe `/api/factuur`, `/api/offerte`, `/api/alarm/arbeid` enz. zijn nu zonder login opvraagbaar -> wie de URL raadt, krijgt data (factuur-PDF en offerte zijn financieel gevoelig). **Belangrijke learning: "elke pagina achter login" sluit dit NIET af** — pagina's zijn dicht (AuthGate / eigen login op werkbonnen), maar de API's zijn losse endpoints en hebben hun eigen sessie-/rolcheck nodig. Server-routes eerst op de service-role-sleutel, dan rolcheck (admin/manager/monteur) per route. Uitzondering die publiek-by-design blijft: `/api/akkoord` en `/api/werkbon-publiek` (valideren via token of ordernr+code).
   - **RLS aanzetten** op alle tabellen (hub_*, kaart*, melding, werkbon_*, klus_*, app_gebruikers, werkbon_links, klant_akkoord) met policies per rol. Let op de nieuwe routes `/api/alarm/arbeid` en `/api/akkoord` (deze laatste is publiek-by-design, maar valideert via token/ordernr+code). Volgorde: eerst server-routes op service-role, dan pas RLS aan (anders breekt de anon-key-app).
   - **Rol × knop × pagina testen.** Log in als elke rol (admin, manager, monteur) en klik elke knop/pagina: geen onterechte slotjes (zoals de admin-slotjes op /werkbonnen, nu gefixt: die pagina miste de GebruikerProvider) én geen toegang die niet mag. Manager = alles behalve `/dashboard` (cijfers). Let op: zo'n "deny te veel" is veilig en valt buiten een lek-audit, dus apart testen.
   - **Storage-policy** `carburateur-blueprints` terug naar alleen-lezen (nu anon-write).
