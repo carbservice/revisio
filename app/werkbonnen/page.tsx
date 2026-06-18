@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { GROEN, GROEN_BG, GOUD, GOUD_BG, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG, KAART_BG, VELD_BG, VELD_TEKST, VELD_RAND, KAART_SCHADUW } from "@/lib/theme";
 import { duur, mmss, dagenGeleden } from "@/lib/format";
+import { UURTARIEF_EX_BTW, geoffreerdeUren } from "@/lib/tarief";
 import type { Klus, Monteur, Regel, Veld, Check, Artikel } from "@/lib/types";
 import ScrollNaarBoven from "@/app/components/ScrollNaarBoven";
 import PaginaKop from "@/app/components/PaginaKop";
@@ -206,6 +207,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
   const autoTimer = useRef<any>(null);
   const eersteLaad = useRef(true);
   const vuil = useRef(false); // er zijn niet-opgeslagen wijzigingen
+  const arbeidGepost = useRef<string | null>(null); // arbeid-alarm al getriggerd voor deze klus
 
   // log helper, faalt stil zodat het nooit een actie blokkeert
   async function log(klusId: string, actie: string, detail?: string) {
@@ -734,6 +736,20 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
   const artikelenTotaal = artikelen.reduce((s, a) => s + bedragNum(a.bedrag), 0);
   const internFotos = (fotos as any[]).filter((f) => f.stap === `intern-${carburateur}`);
 
+  // Arbeid-discrepantie: geschreven tijd vs geoffreerde arbeid (Moneybird).
+  const geofArbeid = open?.geoffreerdeArbeid || 0;
+  const geofUren = geoffreerdeUren(geofArbeid);
+  const werkUren = totaal / 60;
+  const arbeidOver = geofArbeid > 0 && werkUren > geofUren;
+
+  // Bij overschrijding eenmalig de manager waarschuwen (route is idempotent).
+  useEffect(() => {
+    if (!open || !arbeidOver || arbeidGepost.current === open.id) return;
+    arbeidGepost.current = open.id;
+    fetch("/api/alarm/arbeid", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ klus_id: open.id }) }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, arbeidOver]);
+
   const wrap: CSSProperties = { minHeight: "100vh", background: BG, color: TEKST, fontFamily: "'Karma', Georgia, serif", padding: "20px 14px", maxWidth: 520, margin: "0 auto" };
   const kaart: CSSProperties = { background: KAART_BG, border: `1px solid ${RAND}`, borderRadius: 16, padding: 18, marginBottom: 16, boxShadow: KAART_SCHADUW };
   const knop = (bg: string): CSSProperties => ({ background: bg, color: "#fff", border: "none", borderRadius: 12, padding: "16px 20px", fontSize: 17, fontWeight: 700, cursor: "pointer", width: "100%" });
@@ -923,6 +939,15 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
             <button onClick={sluitKlus} style={{ border: "none", background: "transparent", color: GROEN, fontWeight: 700, fontSize: 14, cursor: "pointer", padding: "4px 0" }}>← Klussen</button>
             <button onClick={async () => { try { await navigator.clipboard?.writeText(window.location.href); } catch {} setKlusLinkKop(true); setTimeout(() => setKlusLinkKop(false), 1800); }} style={{ border: `1px solid ${RAND}`, background: klusLinkKop ? GOUD_BG : "#fff", color: klusLinkKop ? "#6b5410" : GROEN, fontWeight: 700, fontSize: 12.5, cursor: "pointer", borderRadius: 999, padding: "5px 12px" }}>{klusLinkKop ? "Gekopieerd!" : "🔗 Kopieer link"}</button>
           </div>
+
+          {arbeidOver && (
+            <div style={{ background: ROOD_BG, border: `1.5px solid ${ROOD}`, borderRadius: 12, padding: "12px 14px", marginBottom: 10 }}>
+              <div style={{ fontSize: 14.5, fontWeight: 800, color: ROOD }}>⚠ Geoffreerde arbeid voorbij</div>
+              <div style={{ fontSize: 13, color: ROOD, marginTop: 3, lineHeight: 1.45 }}>
+                Geschreven: <b>{werkUren.toFixed(1)} u</b> van <b>{geofUren.toFixed(1)} u</b> geoffreerd (€{geofArbeid.toFixed(0)} arbeid &middot; €{UURTARIEF_EX_BTW}/u ex btw). De manager is op de hoogte. Klant bellen of een interne keuze maken.
+              </div>
+            </div>
+          )}
 
           <div style={kaart}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>

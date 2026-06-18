@@ -1,7 +1,7 @@
 // Gedeelde datatypes voor werkbonnen, klussen en monteurs.
 // Eén plek aanpassen werkt door op alle pagina's die hieruit importeren.
 
-export type Klus = { id: string; nummer: string; klant: string; voertuig: string; klacht: string; bedrag: number; datum: string; getekend: string; status?: "geaccepteerd" | "gefactureerd" };
+export type Klus = { id: string; nummer: string; klant: string; voertuig: string; klacht: string; bedrag: number; geoffreerdeArbeid?: number; datum: string; getekend: string; status?: "geaccepteerd" | "gefactureerd" };
 export type Monteur = { id: string; naam: string };
 export type Regel = { id: string; monteur_naam: string; minuten: number; notitie: string | null; aangemaakt_op: string };
 export type Veld = { key: string; veld_type: string; label: string; eenheid: string; positie: number; binnenkomst: string; afleveren: string };

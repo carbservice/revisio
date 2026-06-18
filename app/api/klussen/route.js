@@ -7,6 +7,7 @@
 //     hele Moneybird-factuurhistorie binnen te trekken.
 
 import { supabase } from "@/lib/supabase";
+import { geoffreerdeArbeidUit } from "@/lib/tarief";
 
 const ADMIN = process.env.MONEYBIRD_ADMIN;
 const TOKEN = process.env.MONEYBIRD_TOKEN;
@@ -60,6 +61,7 @@ export async function GET() {
       voertuig: schoon(e.reference),
       klacht: klachtUit(e.custom_fields),
       bedrag: Number(e.total_price_incl_tax || 0),
+      geoffreerdeArbeid: geoffreerdeArbeidUit(e),
       datum: e.accepted_at || e.estimate_date || "",
       getekend: e.accepted_at || "",
       status: "geaccepteerd",
@@ -84,6 +86,7 @@ export async function GET() {
           voertuig: l.voertuig || "",
           klacht: l.klacht || "",
           bedrag: 0,
+          geoffreerdeArbeid: 0,
           datum: "",
           getekend: "",
           status: "gefactureerd",
