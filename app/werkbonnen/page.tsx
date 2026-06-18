@@ -13,6 +13,7 @@ import PaginaKop from "@/app/components/PaginaKop";
 import LaadScherm from "@/app/components/LaadScherm";
 import Lightbox from "@/app/components/Lightbox";
 import { useInactiviteitsUitlog, wisInactiviteit } from "@/app/components/useInactiviteit";
+import { GebruikerProvider } from "@/app/components/AuthGate";
 import BlokOpmerkingen from "./components/BlokOpmerkingen";
 import BlokArtikelen from "./components/BlokArtikelen";
 import BlokEindcontrole from "./components/BlokEindcontrole";
@@ -1129,6 +1130,7 @@ export default function WerkplaatsPagina() {
   const [code, setCode] = useState("");
   const [klaar, setKlaar] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isManager, setIsManager] = useState(false);
 
   // Automatisch uitloggen na 2 uur inactiviteit (gedeelde werkplaats-computers).
   useInactiviteitsUitlog(!!ingelogd, uitloggen);
@@ -1136,7 +1138,7 @@ export default function WerkplaatsPagina() {
   // Koppel een ingelogd e-mailadres aan een monteur in app_gebruikers.
   // Geen match of niet actief: meteen weer uitloggen en toegang weigeren.
   async function koppelGebruiker(authEmail: string | undefined | null) {
-    if (!authEmail) { setIngelogd(null); setIsAdmin(false); return; }
+    if (!authEmail) { setIngelogd(null); setIsAdmin(false); setIsManager(false); return; }
     const adres = authEmail.toLowerCase();
     const { data, error } = await supabase.from("app_gebruikers").select("id, naam, rol, actief, email").ilike("email", adres).limit(1);
     const g = data && data[0];
@@ -1144,12 +1146,13 @@ export default function WerkplaatsPagina() {
     if (error || !match || !g!.actief) {
       setFout(error ? "Er ging iets mis, probeer het nog eens." : "Dit e-mailadres heeft geen toegang. Vraag de beheerder om je toe te voegen.");
       await supabase.auth.signOut();
-      setIngelogd(null); setIsAdmin(false);
+      setIngelogd(null); setIsAdmin(false); setIsManager(false);
       return;
     }
     setFout("");
     setIngelogd({ id: g!.id as string, naam: g!.naam as string });
     setIsAdmin(g!.rol === "admin");
+    setIsManager(g!.rol === "manager");
   }
 
   // Bij laden de bestaande sessie ophalen en luisteren naar in-/uitloggen.
@@ -1201,7 +1204,11 @@ export default function WerkplaatsPagina() {
 
   if (!klaar) return <main style={{ ...wrapL, display: "block", padding: "20px 14px", maxWidth: 600 }}><LaadScherm titel="Werkbonnen laden…" apis={[{ naam: "Inloggen controleren", klaar: false }]} /></main>;
 
-  if (ingelogd) return <WerkplaatsApp ingelogd={ingelogd} isAdmin={isAdmin} onUitloggen={uitloggen} />;
+  if (ingelogd) return (
+    <GebruikerProvider naam={ingelogd.naam} isAdmin={isAdmin} isManager={isManager} uitloggen={uitloggen}>
+      <WerkplaatsApp ingelogd={ingelogd} isAdmin={isAdmin} onUitloggen={uitloggen} />
+    </GebruikerProvider>
+  );
 
   return (
     <main style={wrapL}>

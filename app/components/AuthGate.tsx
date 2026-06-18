@@ -18,6 +18,12 @@ type Status = "laden" | "uit" | "geen-toegang" | "ok";
 const GebruikerContext = createContext<{ naam: string; isAdmin: boolean; isManager: boolean; uitloggen: () => void }>({ naam: "", isAdmin: false, isManager: false, uitloggen: () => {} });
 export function useGebruiker() { return useContext(GebruikerContext); }
 
+// Voor pagina's met een eigen login (zoals /werkbonnen): zo werkt useGebruiker()
+// daar ook, en kloppen de rol-knoppen in de navigatiebalk.
+export function GebruikerProvider({ naam, isAdmin, isManager, uitloggen, children }: { naam: string; isAdmin: boolean; isManager: boolean; uitloggen: () => void; children: ReactNode }) {
+  return <GebruikerContext.Provider value={{ naam, isAdmin, isManager, uitloggen }}>{children}</GebruikerContext.Provider>;
+}
+
 export default function AuthGate({ requireAdmin = false, requireBeheer = false, children }: { requireAdmin?: boolean; requireBeheer?: boolean; children: ReactNode }) {
   const [status, setStatus] = useState<Status>("laden");
   const [naam, setNaam] = useState("");
