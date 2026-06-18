@@ -37,6 +37,12 @@
   background-clip: padding-box;
 }
 
+/* Checklist-regels (zoals Trello): hover licht de regel op, sleephandvat
+   verschijnt pas bij hover zodat het afvinkvakje vooraan leidt. */
+.checklist-rij:hover { background: #f4f2ec; }
+.checklist-grip { opacity: 0; transition: opacity .12s ease; }
+.checklist-rij:hover .checklist-grip { opacity: 0.8; }
+
 body {
   background: var(--background);
   color: var(--foreground);

@@ -320,20 +320,22 @@ export default function KaartDetail({
             {items.map((it) => (
               <div
                 key={it.id}
+                className="checklist-rij"
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => { e.preventDefault(); verplaatsItem(it.id); }}
-                style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "9px 2px", borderTop: `1px solid ${RAND}`, opacity: sleepItem === it.id ? 0.4 : 1 }}
+                style={{ display: "flex", alignItems: "flex-start", gap: 9, padding: "9px 6px", borderRadius: 7, opacity: sleepItem === it.id ? 0.4 : 1 }}
               >
                 <span
+                  className="checklist-grip"
                   draggable
                   onDragStart={(e) => { setSleepItem(it.id); e.dataTransfer.effectAllowed = "move"; }}
                   onDragEnd={() => setSleepItem(null)}
                   title="Sleep om te ordenen"
-                  style={{ cursor: "grab", color: "#b9b4a8", fontSize: 14, lineHeight: 1, userSelect: "none", marginTop: 2 }}
+                  style={{ cursor: "grab", color: "#b9b4a8", fontSize: 14, lineHeight: 1, userSelect: "none", marginTop: 3 }}
                 >⠿</span>
-                <input type="checkbox" checked={it.gedaan} onChange={() => wisselItem(it)} style={{ width: 16, height: 16, cursor: "pointer", marginTop: 1, flexShrink: 0 }} />
-                <span style={{ flex: 1, minWidth: 0, overflowWrap: "anywhere", fontSize: 13, lineHeight: 1.45, color: it.gedaan ? GRIJS : TEKST, textDecoration: it.gedaan ? "line-through" : "none" }}>{renderTekst(it.tekst)}</span>
-                <button onClick={() => verwijderItem(it)} style={{ border: "none", background: "transparent", color: GRIJS, cursor: "pointer", fontSize: 15, lineHeight: 1 }}>×</button>
+                <input type="checkbox" checked={it.gedaan} onChange={() => wisselItem(it)} style={{ width: 17, height: 17, cursor: "pointer", marginTop: 2, flexShrink: 0, accentColor: GROEN }} />
+                <span style={{ flex: 1, minWidth: 0, overflowWrap: "anywhere", fontSize: 13.5, lineHeight: 1.5, color: it.gedaan ? GRIJS : TEKST, textDecoration: it.gedaan ? "line-through" : "none" }}>{renderTekst(it.tekst)}</span>
+                <button onClick={() => verwijderItem(it)} title="Verwijderen" style={{ border: "none", background: "transparent", color: GRIJS, cursor: "pointer", fontSize: 16, lineHeight: 1, marginTop: 1, flexShrink: 0 }}>×</button>
               </div>
             ))}
             <div style={{ position: "relative", marginTop: 6 }}>
