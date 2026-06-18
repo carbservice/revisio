@@ -130,6 +130,16 @@
     border-radius:999px; padding:6px 15px; box-shadow:0 6px 18px rgba(0,0,0,.08); pointer-events:none;
   }
   .hint b{ color:var(--groen); }
+
+  /* Mobiel: stat-pillen en subtitel weg, alleen het logo blijft netjes staan */
+  @media (max-width: 720px){
+    .kop{ padding:10px 16px; }
+    .merk .sub{ display:none; }
+    .stats{ display:none; }
+    .intro{ width:88vw; padding:0 18px; }
+    .intro .groot{ font-size:38px; }
+    .ms{ width:84vw; }
+  }
 </style>
 </head>
 <body>
