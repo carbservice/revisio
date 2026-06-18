@@ -199,6 +199,15 @@ Intern kanban-/planningsbord op `/planning`, dat onze Trello vervangt. Het bord 
 **Lukas backend-e-mail**
 - Lukas (LE, manager) verhuisd van `lukas@carbservice.nl` naar **lukaslwdeesch@gmail.com** (werkt sneller). Aangepast in zowel `app_gebruikers` (login + meldingen/mail) als de `TEAM`-lijst in `planning-config.ts` (anders valt de melding→code-koppeling weg).
 
+**Foto-preview per stadium (werkbon)**
+- Onder elk stadium-knopje in het Voortgang-blok staat nu een mini-thumbnail van de eerste foto + een 📷-telbadge, zodat de monteur in één oogopslag ziet bij welke stadia al foto's staan (zonder elk stadium te openen).
+
+**Interne roadmap-deelpagina**
+- Een losse, zelfstandige "wat we bouwden"-tijdlijn (`public/de-reis-van-revisio-<token>.html`) op een niet-raadbare URL, om met de privé-kring te delen. Geen klantdata; intern uurtarief eruit gelaten. Niet gelinkt vanuit de app. Mobiele layout meegenomen.
+
+**Learning: offerte accepteren via de Moneybird API**
+- Niet `mark_as_accepted` (404), maar **`PATCH /estimates/{id}/change_state.json`** met body `{"state":"accepted"}`. De offerte moet wél minstens **één geselecteerde (niet-optionele) regel** hebben, anders weigert Moneybird met "Select at least one line" (422).
+
 ## Livegang (13 juni 2026)
 
 - Monteur-app gaat live; eerste klant gaat live op het portaal.
