@@ -67,6 +67,13 @@ export default function KaartDetail({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kaart.id]);
 
+  // Bij openen: jouw ongelezen meldingen voor deze kaart op gelezen zetten,
+  // zodat het per-kaart belletje op het bord dooft.
+  useEffect(() => {
+    if (!mijnCode) return;
+    supabase.from("melding").update({ gelezen: true }).eq("ontvanger", mijnCode).eq("kaart_id", kaart.id).eq("gelezen", false).then(() => {});
+  }, [kaart.id, mijnCode]);
+
   // Naar onderen scrollen bij een nieuw bericht.
   useEffect(() => { const el = scrollRef.current; if (el) el.scrollTop = el.scrollHeight; }, [berichten.length]);
 

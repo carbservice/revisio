@@ -38,6 +38,7 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
   const [nieuwInFase, setNieuwInFase] = useState<FaseSleutel | null>(null);
   const [nieuwTekst, setNieuwTekst] = useState("");
   const [mijnCode, setMijnCode] = useState<string | null>(null);
+  const [meldingPerKaart, setMeldingPerKaart] = useState<Record<string, number>>({});
   const herlaadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Slepen op de achtergrond om horizontaal te scrollen (pannen).
   const bordRef = useRef<HTMLDivElement | null>(null);
@@ -98,6 +99,15 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
     herlaadTimer.current = setTimeout(() => { herlaad(); }, 250);
   }, [herlaad]);
 
+  // Ongelezen meldingen (@tags / op kaart gezet) per kaart, voor jou.
+  const laadMeldingen = useCallback(async (code: string | null) => {
+    if (!code) { setMeldingPerKaart({}); return; }
+    const { data } = await supabase.from("melding").select("kaart_id").eq("ontvanger", code).eq("gelezen", false);
+    const m: Record<string, number> = {};
+    (data || []).forEach((r: { kaart_id: string | null }) => { if (r.kaart_id) m[r.kaart_id] = (m[r.kaart_id] || 0) + 1; });
+    setMeldingPerKaart(m);
+  }, []);
+
   const laadKlussen = useCallback(async () => {
     try {
       const res = await fetch("/api/klussen", { cache: "no-store" });
@@ -119,9 +129,11 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
   useEffect(() => {
     (async () => {
       const { data } = await supabase.auth.getUser();
-      setMijnCode(codeVoorEmail(data.user?.email));
+      const code = codeVoorEmail(data.user?.email);
+      setMijnCode(code);
       await synchroniseer();
       await laadKlussen();
+      await laadMeldingen(code);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -136,6 +148,16 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
       .subscribe();
     return () => { supabase.removeChannel(kanaal); };
   }, [herlaadStraks]);
+
+  // Realtime: per-kaart belletje meteen bijwerken bij een nieuwe/gelezen melding.
+  useEffect(() => {
+    if (!mijnCode) return;
+    const kanaal = supabase
+      .channel(`bord-melding-${mijnCode}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "melding", filter: `ontvanger=eq.${mijnCode}` }, () => laadMeldingen(mijnCode))
+      .subscribe();
+    return () => { supabase.removeChannel(kanaal); };
+  }, [mijnCode, laadMeldingen]);
 
   // Deep-link: kaart-URL bijhouden zonder de pagina te herladen.
   useEffect(() => {
@@ -313,6 +335,7 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
                   kaart={k}
                   klus={k.klus_id ? klussen[k.klus_id] : undefined}
                   status={k.klus_id ? klusStatus[k.klus_id] : undefined}
+                  meldingen={meldingPerKaart[k.id] || 0}
                   leden={leden[k.id] || []}
                   tel={checklist[k.id]}
                   gesleept={sleepId === k.id}
@@ -367,9 +390,9 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
 
 // --- Kaart-tegel -----------------------------------------------------------
 function Tegel({
-  kaart, klus, status, leden, tel, gesleept, onDragStart, onDragEnd, onDropVoor, onOpen,
+  kaart, klus, status, meldingen = 0, leden, tel, gesleept, onDragStart, onDragEnd, onDropVoor, onOpen,
 }: {
-  kaart: Kaart; klus?: Klus; status?: KlusStatus; leden: string[]; tel?: Tellingen; gesleept: boolean;
+  kaart: Kaart; klus?: Klus; status?: KlusStatus; meldingen?: number; leden: string[]; tel?: Tellingen; gesleept: boolean;
   onDragStart: () => void; onDragEnd: () => void; onDropVoor: (e: React.DragEvent) => void; onOpen: () => void;
 }) {
   const sig = veroudering(kaart.entered_stage_at, kaart.fase);
@@ -393,7 +416,10 @@ function Tegel({
     >
       <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "flex-start" }}>
         <div style={{ fontSize: 13.5, fontWeight: 700, color: TEKST, lineHeight: 1.3 }}>{titel}</div>
-        {kaart.gefactureerd && <span style={labelGefactureerd}>Gefactureerd</span>}
+        <div style={{ display: "flex", gap: 5, flexShrink: 0, alignItems: "center" }}>
+          {meldingen > 0 && <span title={`${meldingen} nieuwe melding(en) voor jou`} style={belBadge}>🔔 {meldingen}</span>}
+          {kaart.gefactureerd && <span style={labelGefactureerd}>Gefactureerd</span>}
+        </div>
       </div>
 
       {klus && (
@@ -464,6 +490,10 @@ const lidBol: CSSProperties = {
   display: "inline-flex", alignItems: "center", justifyContent: "center", border: "2px solid #fff",
 };
 const checklistBadge: CSSProperties = { fontSize: 11, fontWeight: 700, borderRadius: 6, padding: "2px 7px" };
+const belBadge: CSSProperties = {
+  flexShrink: 0, fontSize: 10.5, fontWeight: 800, color: "#6b5410", background: "#f7eecd",
+  border: `1px solid ${GOUD}`, borderRadius: 999, padding: "1px 7px", whiteSpace: "nowrap",
+};
 const labelGefactureerd: CSSProperties = {
   flexShrink: 0, fontSize: 10, fontWeight: 800, color: "#6b5410", background: "#f7f0db",
   border: `1px solid ${GOUD}`, borderRadius: 999, padding: "1px 7px",
