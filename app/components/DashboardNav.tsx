@@ -8,22 +8,27 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, CSSProperties } from "react";
 import { GROEN, GRIJS, RAND, ROOD, ROOD_BG } from "@/lib/theme";
+import { useGebruiker } from "@/app/components/AuthGate";
 
-// adminOnly = alleen zichtbaar voor admins. Start, Kaartenbord, Werkbonnen en
-// Hub zijn voor iedereen. Eén bron voor de navigatie op elke pagina.
+// rol bepaalt de toegang: "iedereen" (alle ingelogde collega's), "beheer"
+// (admin of manager) of "admin" (alleen admin). Eén bron voor elke pagina.
 const items = [
-  { href: "/start", label: "🏠 Start", adminOnly: false },
-  { href: "/planning", label: "🗂️ Kaartenbord", adminOnly: false },
-  { href: "/werkbonnen", label: "🧾 Werkbonnen", adminOnly: false },
-  { href: "/hub", label: "⚙️ Carburateur Hub", adminOnly: false },
-  { href: "/dashboard", label: "📊 Cijfers", adminOnly: true },
-  { href: "/dashboard/werkplaats", label: "🔧 Werkplaats Dashboard", adminOnly: true },
-];
+  { href: "/start", label: "🏠 Start", rol: "iedereen" },
+  { href: "/planning", label: "🗂️ Kaartenbord", rol: "iedereen" },
+  { href: "/werkbonnen", label: "🧾 Werkbonnen", rol: "iedereen" },
+  { href: "/hub", label: "⚙️ Carburateur Hub", rol: "iedereen" },
+  { href: "/dashboard/werkplaats", label: "🔧 Werkplaats Dashboard", rol: "beheer" },
+  { href: "/dashboard", label: "📊 Cijfers", rol: "admin" },
+] as const;
 
-export default function DashboardNav({ isAdmin = false }: { isAdmin?: boolean }) {
+export default function DashboardNav({ isAdmin: isAdminProp }: { isAdmin?: boolean }) {
   const pad = usePathname();
-  // Welke admin-knop net "Geen ADMIN" toont (na een klik door een niet-admin).
+  const { isAdmin: isAdminCtx, isManager } = useGebruiker();
+  const isAdmin = isAdminProp ?? isAdminCtx;
+  // Welke knop net een weigering toont (na een klik zonder toegang).
   const [weiger, setWeiger] = useState<string | null>(null);
+
+  const mag = (rol: string) => rol === "iedereen" || (rol === "admin" && isAdmin) || (rol === "beheer" && (isAdmin || isManager));
 
   const basis: CSSProperties = {
     flex: "1 1 110px", textAlign: "center", borderRadius: 12, padding: "13px 12px",
@@ -35,10 +40,11 @@ export default function DashboardNav({ isAdmin = false }: { isAdmin?: boolean })
       {items.map((it) => {
         // /planning/[kaart_id] hoort ook bij het Kaartenbord.
         const actief = pad === it.href || (it.href === "/planning" && pad.startsWith("/planning/"));
-        const opSlot = it.adminOnly && !isAdmin; // wel zichtbaar, maar geen toegang
+        const opSlot = !mag(it.rol); // wel zichtbaar, maar geen toegang
 
         if (opSlot) {
           const toon = weiger === it.href;
+          const weigerTekst = it.rol === "admin" ? "Geen ADMIN" : "Geen toegang";
           return (
             <button
               key={it.href}
@@ -50,7 +56,7 @@ export default function DashboardNav({ isAdmin = false }: { isAdmin?: boolean })
                 border: `1.5px solid ${toon ? ROOD : RAND}`,
               }}
             >
-              {toon ? "Geen ADMIN" : `${it.label} 🔒`}
+              {toon ? weigerTekst : `${it.label} 🔒`}
             </button>
           );
         }

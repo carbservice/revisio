@@ -27,13 +27,17 @@ function groet(): string {
 }
 
 const MODULES = [
-  { href: "/planning", icon: "🗂️", titel: "Werkplaats kaartenbord", sub: "Het werkbord: van binnenkomst tot factureren", adminOnly: false },
-  { href: "/werkbonnen", icon: "🧾", titel: "Werkbonnen", sub: "Geaccepteerde klussen klaar voor revisie", adminOnly: false },
-  { href: "/hub", icon: "⚙️", titel: "Carburateur Hub", sub: "Interne database voor alle blueprints", adminOnly: false },
-  { href: "/dashboard", icon: "📊", titel: "Cijfers", sub: "Omzet, marges, KPI's", adminOnly: true },
-  { href: "/dashboard/werkplaats", icon: "🔧", titel: "Werkplaats", sub: "Dit is het interne werkplaatsdashboard", adminOnly: true },
-];
+  { href: "/planning", icon: "🗂️", titel: "Werkplaats kaartenbord", sub: "Het werkbord: van binnenkomst tot factureren", rol: "iedereen" },
+  { href: "/werkbonnen", icon: "🧾", titel: "Werkbonnen", sub: "Geaccepteerde klussen klaar voor revisie", rol: "iedereen" },
+  { href: "/hub", icon: "⚙️", titel: "Carburateur Hub", sub: "Interne database voor alle blueprints", rol: "iedereen" },
+  { href: "/dashboard/werkplaats", icon: "🔧", titel: "Werkplaats", sub: "Dit is het interne werkplaatsdashboard", rol: "beheer" },
+  { href: "/dashboard", icon: "📊", titel: "Cijfers", sub: "Omzet, marges, KPI's", rol: "admin" },
+] as const;
 const OPSLAG = "revisio-start-volgorde";
+
+function magZien(rol: string, isAdmin: boolean, isManager: boolean) {
+  return rol === "iedereen" || (rol === "admin" && isAdmin) || (rol === "beheer" && (isAdmin || isManager));
+}
 
 export default function StartPagina() {
   return (
@@ -44,8 +48,8 @@ export default function StartPagina() {
 }
 
 function Start() {
-  const { naam, isAdmin, uitloggen } = useGebruiker();
-  const toegestaan = MODULES.filter((m) => !m.adminOnly || isAdmin);
+  const { naam, isAdmin, isManager, uitloggen } = useGebruiker();
+  const toegestaan = MODULES.filter((m) => magZien(m.rol, isAdmin, isManager));
   const byHref: Record<string, typeof MODULES[number]> = Object.fromEntries(MODULES.map((m) => [m.href, m]));
 
   const [volgorde, setVolgorde] = useState<string[]>(toegestaan.map((m) => m.href));
@@ -55,7 +59,7 @@ function Start() {
   // Volgorde laden, onthouden PER LOGIN: de opslagsleutel bevat het e-mailadres.
   useEffect(() => {
     let levend = true;
-    const alle = MODULES.filter((m) => !m.adminOnly || isAdmin).map((m) => m.href);
+    const alle: string[] = MODULES.filter((m) => magZien(m.rol, isAdmin, isManager)).map((m) => m.href);
     supabase.auth.getUser().then(({ data }) => {
       if (!levend) return;
       const email = (data.user?.email || "").toLowerCase();
@@ -71,7 +75,7 @@ function Start() {
       setVolgorde(alle);
     });
     return () => { levend = false; };
-  }, [isAdmin]);
+  }, [isAdmin, isManager]);
 
   function verplaats(doel: string) {
     if (!sleep || sleep === doel) return;
@@ -137,7 +141,7 @@ function Start() {
                 <div style={{ fontSize: 30 }}>{m.icon}</div>
                 <div style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 700, color: GROEN, marginTop: 8 }}>{m.titel}</div>
                 <div style={{ fontSize: 13.5, color: GRIJS, marginTop: 3 }}>{m.sub}</div>
-                {m.adminOnly && <span style={{ position: "absolute", top: 12, right: 12, fontSize: 10.5, fontWeight: 800, color: "#6b5410", background: "#f7f0db", border: `1px solid ${GOUD}`, borderRadius: 999, padding: "1px 7px" }}>ADMIN</span>}
+                {m.rol !== "iedereen" && <span style={{ position: "absolute", top: 12, right: 12, fontSize: 10.5, fontWeight: 800, color: "#6b5410", background: "#f7f0db", border: `1px solid ${GOUD}`, borderRadius: 999, padding: "1px 7px" }}>{m.rol === "admin" ? "ADMIN" : "BEHEER"}</span>}
               </Link>
             );
           })}

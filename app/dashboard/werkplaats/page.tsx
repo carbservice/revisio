@@ -46,7 +46,7 @@ function bonHref(klusId: string) {
 
 export default function WerkplaatsDashboardPagina() {
   return (
-    <AuthGate requireAdmin>
+    <AuthGate requireBeheer>
       <WerkplaatsDashboard />
     </AuthGate>
   );

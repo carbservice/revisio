@@ -14,13 +14,15 @@ import { useInactiviteitsUitlog, wisInactiviteit } from "@/app/components/useIna
 type Status = "laden" | "uit" | "geen-toegang" | "ok";
 
 // Stelt de ingelogde gebruiker beschikbaar aan de beschermde pagina-inhoud.
-const GebruikerContext = createContext<{ naam: string; isAdmin: boolean; uitloggen: () => void }>({ naam: "", isAdmin: false, uitloggen: () => {} });
+// requireAdmin = alleen admin; requireBeheer = admin of manager.
+const GebruikerContext = createContext<{ naam: string; isAdmin: boolean; isManager: boolean; uitloggen: () => void }>({ naam: "", isAdmin: false, isManager: false, uitloggen: () => {} });
 export function useGebruiker() { return useContext(GebruikerContext); }
 
-export default function AuthGate({ requireAdmin = false, children }: { requireAdmin?: boolean; children: ReactNode }) {
+export default function AuthGate({ requireAdmin = false, requireBeheer = false, children }: { requireAdmin?: boolean; requireBeheer?: boolean; children: ReactNode }) {
   const [status, setStatus] = useState<Status>("laden");
   const [naam, setNaam] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isManager, setIsManager] = useState(false);
   const [email, setEmail] = useState("");
   const [bezig, setBezig] = useState(false);
   const [fout, setFout] = useState("");
@@ -35,9 +37,13 @@ export default function AuthGate({ requireAdmin = false, children }: { requireAd
     const g = data && data[0];
     const match = g && typeof g.email === "string" && g.email.toLowerCase() === adres;
     if (error || !match || !g!.actief) { await supabase.auth.signOut(); setStatus("uit"); return; }
+    const adm = g!.rol === "admin";
+    const man = g!.rol === "manager";
     setNaam(g!.naam as string);
-    setIsAdmin(g!.rol === "admin");
-    if (requireAdmin && g!.rol !== "admin") { setStatus("geen-toegang"); return; }
+    setIsAdmin(adm);
+    setIsManager(man);
+    if (requireAdmin && !adm) { setStatus("geen-toegang"); return; }
+    if (requireBeheer && !adm && !man) { setStatus("geen-toegang"); return; }
     setStatus("ok");
   }
 
@@ -83,7 +89,7 @@ export default function AuthGate({ requireAdmin = false, children }: { requireAd
     setEmail(""); setCode(""); setVerstuurd(false); setStatus("uit");
   }
 
-  if (status === "ok") return <GebruikerContext.Provider value={{ naam, isAdmin, uitloggen }}>{children}</GebruikerContext.Provider>;
+  if (status === "ok") return <GebruikerContext.Provider value={{ naam, isAdmin, isManager, uitloggen }}>{children}</GebruikerContext.Provider>;
 
   const wrap: CSSProperties = { minHeight: "100vh", background: BG, color: TEKST, fontFamily: "'Karma', Georgia, serif", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 };
   const kaart: CSSProperties = { background: "#fff", border: `1px solid ${RAND}`, borderRadius: 18, padding: 28, maxWidth: 380, width: "100%", boxShadow: KAART_SCHADUW };
