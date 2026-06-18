@@ -41,7 +41,7 @@ export type Lid = { code: string; naam: string; kleur: string; email: string };
 export const TEAM: Lid[] = [
   { code: "CG", naam: "Cyriel", kleur: "#1a3c2e", email: "cyrielgaemers@gmail.com" },
   { code: "JM", naam: "Jarno", kleur: "#2f6f8f", email: "morrienjarno@gmail.com" },
-  { code: "LE", naam: "Lukas", kleur: "#8a5a2b", email: "lukas@carbservice.nl" },
+  { code: "LE", naam: "Lukas", kleur: "#8a5a2b", email: "lukaslwdeesch@gmail.com" },
   { code: "LV", naam: "Luuk", kleur: "#6b4e9e", email: "luukveenendaal@icloud.com" },
   { code: "RW", naam: "Rens", kleur: "#a23b2e", email: "rensdewilt@gmail.com" },
   { code: "OS", naam: "Olivier", kleur: "#2e7d5b", email: "oliviersprenkeler@icloud.com" },
