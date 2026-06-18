@@ -9,14 +9,17 @@ export const UURTARIEF_EX_BTW = 106;
 // klus mogelijk, verschillende teksten). Dit is het backend-referentiepunt.
 export const WERKPLAATS_UREN_LEDGER_ID = "442436313943115052";
 
-// Geoffreerde arbeid (euro, ex btw) uit een Moneybird-offerte = som van alle
-// regels op de grootboekrekening Werplaats uren. Geen zulke regel -> 0 (dan geen
-// alarm voor die klus).
+// Geoffreerde arbeid (euro, ex btw) uit een Moneybird-offerte = som van de
+// GEACCEPTEERDE regels op grootboek Werplaats uren. Optionele, niet-gekozen
+// regels (is_selected === false, bv. natstralen/spoedtoeslag) tellen NIET mee,
+// want die heeft de klant niet geaccepteerd. Geen zulke regel -> 0 (geen alarm).
 export function geoffreerdeArbeidUit(estimate: any): number {
   const det = (estimate && estimate.details) || [];
   let som = 0;
   for (const d of det) {
-    if (String(d?.ledger_account_id || "") === WERKPLAATS_UREN_LEDGER_ID) {
+    const opArbeid = String(d?.ledger_account_id || "") === WERKPLAATS_UREN_LEDGER_ID;
+    const gekozen = d?.is_selected !== false; // alleen expliciet niet-gekozen overslaan
+    if (opArbeid && gekozen) {
       const prijs = parseFloat(d?.price || "0") || 0;
       const aantal = parseFloat(d?.amount || "1") || 1;
       som += prijs * aantal;
