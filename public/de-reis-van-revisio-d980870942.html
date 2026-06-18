@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Revisio · Roadmap: wat we bouwden</title>
+<link href="https://fonts.googleapis.com/css2?family=Karma:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --groen:#1a3c2e; --groen2:#2f8f5b; --goud:#b8893a; --goud-bg:#f7eecd;
+    --tekst:#23211c; --grijs:#5a574f; --rand:#dcd8cc; --kaart:#fffdf8;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; height:100%; }
+  body{
+    font-family:'Karma','Times New Roman',serif; color:var(--tekst);
+    background:linear-gradient(180deg,#eaf3ec 0%, #dcebdf 40%, #cfe2d4 100%);
+    overflow:hidden;
+    -webkit-user-select:none; user-select:none;   /* slepen selecteert geen tekst meer */
+  }
+
+  /* Kop linksboven, blijft staan */
+  .kop{
+    position:fixed; top:0; left:0; right:0; z-index:20;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:13px 24px; background:linear-gradient(180deg, rgba(234,243,236,.97), rgba(234,243,236,.0));
+    pointer-events:none;
+  }
+  .merk{ display:flex; align-items:center; gap:12px; }
+  .merk .logo-img{ height:32px; width:auto; display:block; }
+  .merk .logo{ font-size:26px; font-weight:700; letter-spacing:1px; color:var(--groen); }
+  .merk .logo b{ color:var(--goud); }
+  .merk .sub{ font-size:13px; color:var(--grijs); border-left:1px solid var(--rand); padding-left:12px; }
+  .stats{ display:flex; gap:8px; }
+  .pill{ background:var(--kaart); border:1px solid var(--rand); border-radius:999px; padding:5px 12px;
+    font-size:12px; font-weight:600; color:var(--groen); box-shadow:0 4px 14px rgba(26,60,46,.08); }
+  .pill b{ color:var(--goud); }
+
+  /* Heuvels achterin, voor het 'landschap'-gevoel */
+  .heuvels{ position:fixed; left:0; right:0; bottom:0; width:100%; height:200px; z-index:0; pointer-events:none; }
+
+  /* Het horizontale toneel waar je doorheen scrolt */
+  .scene{
+    position:relative; z-index:5; height:100vh; overflow-x:auto; overflow-y:hidden;
+    cursor:grab; scroll-behavior:smooth; -webkit-overflow-scrolling:touch;
+  }
+  .scene.grab{ cursor:grabbing; }
+  .baan{
+    position:relative; display:flex; align-items:stretch; height:100%;
+    padding:0 4vw; width:max-content; min-width:100%;
+  }
+  /* De doorlopende tijdlijn-lijn op halve hoogte */
+  .lijn{
+    position:absolute; left:0; right:0; top:50%; height:7px; transform:translateY(-50%);
+    background:linear-gradient(90deg, var(--groen2), var(--goud));
+    border-radius:999px; box-shadow:0 0 20px rgba(47,143,91,.4); z-index:1;
+  }
+
+  .ms{
+    position:relative; z-index:2; display:grid; grid-template-rows:1fr 72px 1fr;
+    width:296px; flex:0 0 auto; padding:0 7px;
+  }
+  .ms .card{ grid-row:1; align-self:end; margin-bottom:14px; }
+  .ms.onder .card{ grid-row:3; align-self:start; margin-top:14px; margin-bottom:0; }
+  .ms .node{ grid-row:2; position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+
+  .dot{
+    width:22px; height:22px; border-radius:50%; background:var(--kaart);
+    border:5px solid var(--groen2); box-shadow:0 0 0 5px rgba(47,143,91,.14), 0 5px 13px rgba(0,0,0,.18);
+    z-index:3;
+  }
+  .datum{
+    position:absolute; white-space:nowrap; font-weight:700; color:var(--groen);
+    background:var(--goud-bg); border:1px solid var(--goud); border-radius:999px; padding:2px 11px; font-size:12px;
+  }
+  .ms .datum{ top:calc(50% + 19px); }
+  .ms.onder .datum{ top:auto; bottom:calc(50% + 19px); }
+
+  /* Stengel van de dot naar de kaart */
+  .ms .node::before{
+    content:""; position:absolute; left:50%; transform:translateX(-50%);
+    width:3px; background:var(--rand); z-index:1;
+  }
+  .ms .node::before{ bottom:50%; height:50px; }
+  .ms.onder .node::before{ bottom:auto; top:50%; height:50px; }
+
+  .card{
+    position:relative; background:var(--kaart); border:1px solid var(--rand);
+    border-radius:16px; padding:13px 15px 11px; box-shadow:0 14px 30px rgba(26,60,46,.13);
+    border-top:5px solid var(--groen2);
+  }
+  .card .ico{ font-size:21px; line-height:1; }
+  .card h3{ margin:5px 0 2px; font-size:16.5px; font-weight:700; color:var(--groen); }
+  .card .mijl{ font-size:11px; letter-spacing:1.3px; text-transform:uppercase; color:var(--goud); font-weight:700; }
+  .card ul{ margin:8px 0 0; padding:0; list-style:none; }
+  .card li{ font-size:12px; line-height:1.4; color:var(--tekst); padding-left:15px; position:relative; margin-bottom:4px; }
+  .card li::before{ content:"›"; position:absolute; left:2px; color:var(--groen2); font-weight:700; }
+  .card li b{ color:var(--groen); }
+
+  /* De vonk: gouden origine-accent */
+  .ms.vonk .card{ border-top-color:var(--goud); background:#fffdf6; }
+  .ms.vonk .dot{ border-color:var(--goud); box-shadow:0 0 0 5px rgba(184,137,58,.16), 0 5px 13px rgba(0,0,0,.18); }
+  /* Toekomst: gestippeld gouden accent */
+  .ms.toekomst .card{ border-top-color:var(--goud); border-style:dashed; background:#fffdf6; }
+  .ms.toekomst .card li b{ color:var(--goud); }
+  .ms.toekomst .dot{ border-color:var(--goud); box-shadow:0 0 0 5px rgba(184,137,58,.16), 0 5px 13px rgba(0,0,0,.18); }
+  .ms.toekomst .datum{ background:#fff; }
+
+  /* Beginvignet met intro: alles BOVEN de lijn */
+  .intro{ flex:0 0 auto; display:grid; grid-template-rows:1fr 72px 1fr; width:380px; padding:0 24px; z-index:2; }
+  .intro .inhoud{ grid-row:1; align-self:end; padding-bottom:16px; }
+  .intro .groot{ font-size:42px; font-weight:700; color:var(--groen); line-height:1.02; }
+  .intro p{ font-size:14.5px; color:var(--tekst); line-height:1.6; margin:13px 0 0; }
+  .intro .scroll{ font-size:13px; color:var(--grijs); font-weight:600; margin-top:14px; }
+  .intro .node{ grid-row:2; position:relative; display:flex; align-items:center; justify-content:flex-end; }
+  .intro .node .dot{ border-color:var(--goud); }
+
+  /* Eindvignet */
+  .eind{ flex:0 0 auto; display:flex; flex-direction:column; justify-content:center; align-items:center; width:300px; z-index:2; }
+  .eind .next{
+    font-size:54px; font-weight:700; letter-spacing:2px; line-height:1; text-align:center;
+    background:linear-gradient(120deg, var(--groen2), var(--goud)); -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .eind .pijl{ font-size:36px; color:var(--goud); margin-top:6px; }
+  .eind p{ font-size:13.5px; color:var(--grijs); text-align:center; max-width:230px; margin:12px 0 0; line-height:1.5; }
+
+  .hint{
+    position:fixed; bottom:16px; left:50%; transform:translateX(-50%); z-index:20;
+    font-size:12.5px; color:var(--grijs); background:rgba(255,253,248,.85); border:1px solid var(--rand);
+    border-radius:999px; padding:6px 15px; box-shadow:0 6px 18px rgba(0,0,0,.08); pointer-events:none;
+  }
+  .hint b{ color:var(--groen); }
+</style>
+</head>
+<body>
+
+  <div class="kop">
+    <div class="merk">
+      <img class="logo-img" src="revisio-logo.svg" alt="Revisio" onerror="this.style.display='none';document.getElementById('logotext').style.display='inline'">
+      <span id="logotext" class="logo" style="display:none">REVIS<b>I</b>O</span>
+      <span class="sub">Roadmap: wat we bouwden</span>
+    </div>
+    <div class="stats">
+      <span class="pill">Live sinds <b>13 juni 2026</b></span>
+      <span class="pill"><b>5</b> mijlpalen</span>
+      <span class="pill">Stand: <b>18 juni 2026</b></span>
+    </div>
+  </div>
+
+  <svg class="heuvels" viewBox="0 0 1440 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,130 C240,80 480,175 720,130 C960,85 1200,165 1440,120 L1440,200 L0,200 Z" fill="#bcd6c2" opacity="0.6"/>
+    <path d="M0,160 C260,120 520,195 780,155 C1040,120 1240,185 1440,155 L1440,200 L0,200 Z" fill="#a7c8af" opacity="0.7"/>
+  </svg>
+
+  <div class="scene" id="scene">
+    <div class="baan">
+      <div class="lijn"></div>
+
+      <!-- Intro / het begin (boven de lijn) -->
+      <div class="intro">
+        <div class="inhoud">
+          <div class="groot">Het<br/>begin</div>
+          <p>Een idee om een <b>werkplaats-app</b> te maken, zodat we de <b>werkelijke kosten per revisie</b> konden introduceren. Het liep al snel uit tot een heel platform: de <b>cijfers</b>, de <b>werkplaats­planning</b>, én een <b>klantportaal</b> waar iedereen z'n eigen ingestuurde revisie kan volgen.</p>
+          <div class="scroll">Scroll mee door de tijdlijn →</div>
+        </div>
+        <div class="node"><div class="dot"></div></div>
+      </div>
+
+      <!-- 20 mei -->
+      <div class="ms onder vonk">
+        <div class="card">
+          <div class="ico">✨</div>
+          <div class="mijl">Stap 1 · De vonk</div>
+          <h3>Etentje met Ivo Adelaar</h3>
+          <ul>
+            <li>Inspirerend gesprek over zélf bouwen met moderne tools</li>
+            <li><b>Claude AI</b>: de AI die meedenkt en de code mee schrijft</li>
+            <li><b>Visual Studio</b>: de werkbank (editor) waarin we bouwen</li>
+            <li><b>Supabase</b>: database, login en opslag (de achterkant)</li>
+            <li><b>Vercel</b>: zet de app met één druk live op internet</li>
+          </ul>
+        </div>
+        <div class="node"><div class="dot"></div><div class="datum">20 mei 2026</div></div>
+      </div>
+
+      <!-- 12 juni -->
+      <div class="ms boven">
+        <div class="card">
+          <div class="ico">🔒</div>
+          <div class="mijl">Mijlpaal 01</div>
+          <h3>Fundament &amp; login</h3>
+          <ul>
+            <li>Alle code <b>veiliggesteld op GitHub</b></li>
+            <li>Gedeelde basis in <i>/lib</i>; huisstijl gelijkgetrokken</li>
+            <li><b>E-maillogin</b> via Supabase Auth (magic link + code)</li>
+            <li>Dashboards achter login met <b>admin-rol</b></li>
+            <li><b>Systeemstatus-balk</b> + storingsalarm per kwartier</li>
+            <li>Fotocompressie, bulk-upload, lightbox</li>
+          </ul>
+        </div>
+        <div class="node"><div class="dot"></div><div class="datum">12 juni 2026</div></div>
+      </div>
+
+      <!-- 13 juni -->
+      <div class="ms onder">
+        <div class="card">
+          <div class="ico">🚀</div>
+          <div class="mijl">Mijlpaal 02</div>
+          <h3>Livegang</h3>
+          <ul>
+            <li><b>Monteurs-app live</b> op <i>/werkbonnen</i></li>
+            <li><b>Eerste klant live</b> op het portaal <i>/volg</i></li>
+            <li>Klantvriendelijke stadia + meelopend carburateur-icoon</li>
+            <li><b>Dagelijkse database-back-up</b></li>
+            <li>Pincode eruit, e-mailadres erin</li>
+          </ul>
+        </div>
+        <div class="node"><div class="dot"></div><div class="datum">13 juni 2026</div></div>
+      </div>
+
+      <!-- Tussenstap: Claude in VS + auto-goedkeuren -->
+      <div class="ms boven vonk">
+        <div class="card">
+          <div class="ico">⚡</div>
+          <div class="mijl">Tussenstap</div>
+          <h3>Claude AI op turbo in de editor</h3>
+          <ul>
+            <li>Anthropic <b>Claude AI</b> direct gekoppeld binnen <b>Visual Studio</b></li>
+            <li>Prompt-afhandeling op <b>automatisch goedkeuren</b> gezet</li>
+            <li>Resultaat: veel sneller bouwen, minder klikken tussendoor</li>
+          </ul>
+        </div>
+        <div class="node"><div class="dot"></div><div class="datum">tussendoor</div></div>
+      </div>
+
+      <!-- 14 juni -->
+      <div class="ms onder">
+        <div class="card">
+          <div class="ico">🎬</div>
+          <div class="mijl">Mijlpaal 03</div>
+          <h3>Demo &amp; robuustheid</h3>
+          <ul>
+            <li>Zelflopende <b>demo-omgeving</b> <i>/demo</i></li>
+            <li>Klussen blijven <b>vindbaar ná facturatie</b></li>
+            <li><b>Interne foto's</b> per carburateur (onbeperkt)</li>
+            <li>Deelbare klus-URL voor collega's</li>
+          </ul>
+        </div>
+        <div class="node"><div class="dot"></div><div class="datum">14 juni 2026</div></div>
+      </div>
+
+      <!-- 17 juni -->
+      <div class="ms boven">
+        <div class="card">
+          <div class="ico">📋</div>
+          <div class="mijl">Mijlpaal 04</div>
+          <h3>Planningsbord &amp; meldingen</h3>
+          <ul>
+            <li>Eigen <b>kanban-bord</b> op <i>/planning</i>: Trello eruit</li>
+            <li>Kaart-detail met <b>realtime chat</b> + activiteitenlog</li>
+            <li><b>Moneybird-sync</b>: offerte wordt automatisch een kaart</li>
+            <li><b>@taggen</b>, belletje, banner &amp; einde-dag dagoverzicht</li>
+            <li>Koppeling monteurs-app: stadia → kolom, voortgang-%</li>
+            <li>Platform in <b>Karma</b> + Revisio-logo; voordeur dicht</li>
+          </ul>
+        </div>
+        <div class="node"><div class="dot"></div><div class="datum">17 juni 2026</div></div>
+      </div>
+
+      <!-- 18 juni -->
+      <div class="ms onder">
+        <div class="card">
+          <div class="ico">🛠️</div>
+          <div class="mijl">Mijlpaal 05</div>
+          <h3>Slimmer &amp; klantgericht</h3>
+          <ul>
+            <li><b>Arbeid-alarm</b>: geschreven tijd vs. de geoffreerde arbeid</li>
+            <li><b>Klant-akkoord</b> voor extra kosten mét handtekening</li>
+            <li><b>Factuur-PDF</b> &amp; offerte-in-Moneybird op de kaart</li>
+            <li>Stadia-foto's nu ook <b>uit de galerij</b></li>
+            <li>Klus-herstel na facturatie: niets raakt kwijt</li>
+          </ul>
+        </div>
+        <div class="node"><div class="dot"></div><div class="datum">18 juni 2026</div></div>
+      </div>
+
+      <!-- Toekomst 1 -->
+      <div class="ms boven toekomst">
+        <div class="card">
+          <div class="ico">📊</div>
+          <div class="mijl">Toekomst</div>
+          <h3>Marketing &amp; verzending</h3>
+          <ul>
+            <li><b>ROAS-dashboard</b>: Return on ad spend live in beeld</li>
+            <li><b>Meta Ads API</b> + <b>Google Ads API</b> gekoppeld voor de echte cijfers</li>
+            <li><b>DHL-tracking</b> in het klantportaal: verzendstatus live in <i>/volg</i></li>
+          </ul>
+        </div>
+        <div class="node"><div class="dot"></div><div class="datum">binnenkort</div></div>
+      </div>
+
+      <!-- Toekomst 2 -->
+      <div class="ms onder toekomst">
+        <div class="card">
+          <div class="ico">🧭</div>
+          <div class="mijl">Toekomst</div>
+          <h3>Op de kaart</h3>
+          <ul>
+            <li>API's &amp; <b>RLS</b> volledig dichtzetten (beveiliging)</li>
+            <li><b>Support-mailportaal</b> voor klantvragen</li>
+            <li>Eigen domein <b>app.carbservice.nl</b></li>
+            <li>Carburateur-<b>Hub als offerte-engine</b></li>
+            <li>Bon waterdicht: eigen klussen-tabel</li>
+          </ul>
+        </div>
+        <div class="node"><div class="dot"></div><div class="datum">later</div></div>
+      </div>
+
+      <!-- Eindvignet -->
+      <div class="eind">
+        <div class="next">WHAT<br/>NEXT?</div>
+        <div class="pijl">→</div>
+        <p>Dit is pas het begin. De volgende mijlpaal schrijven we zelf.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="hint">Sleep of scroll horizontaal <b>→</b></div>
+
+<script>
+  // Sleep-om-te-pannen + muiswiel → horizontaal scrollen. Tekstselectie staat
+  // via CSS (user-select:none) uit, dus slepen kopieert geen tekst meer.
+  const scene = document.getElementById('scene');
+  let neer = false, startX = 0, startL = 0;
+  scene.addEventListener('pointerdown', (e) => { neer = true; scene.classList.add('grab'); startX = e.clientX; startL = scene.scrollLeft; e.preventDefault(); });
+  scene.addEventListener('pointermove', (e) => { if (!neer) return; scene.scrollLeft = startL - (e.clientX - startX); });
+  const los = () => { neer = false; scene.classList.remove('grab'); };
+  scene.addEventListener('pointerup', los);
+  scene.addEventListener('pointerleave', los);
+  scene.addEventListener('wheel', (e) => { if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { scene.scrollLeft += e.deltaY; e.preventDefault(); } }, { passive: false });
+  // Pijltjestoetsen
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') scene.scrollLeft += 300;
+    if (e.key === 'ArrowLeft') scene.scrollLeft -= 300;
+  });
+</script>
+</body>
+</html>
