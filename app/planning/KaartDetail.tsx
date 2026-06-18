@@ -277,6 +277,7 @@ export default function KaartDetail({
               {kaart.gefactureerd && (
                 <a href={`/api/factuur?klus_id=${kaart.klus_id}`} target="_blank" rel="noreferrer" style={{ fontSize: 12.5, fontWeight: 700, color: "#6b5410" }}>📄 Factuur (PDF) →</a>
               )}
+              <a href={`/api/offerte?klus_id=${kaart.klus_id}`} target="_blank" rel="noreferrer" style={{ fontSize: 12.5, fontWeight: 700, color: "#6b5410" }}>🧾 Offerte in Moneybird →</a>
             </div>
           </div>
         )}
