@@ -1060,9 +1060,16 @@ function WerkplaatsApp({ ingelogd, isAdmin, isManager, onUitloggen }: { ingelogd
                 const bg = done ? GROEN : next ? GOUD : "#fff";
                 const bd = done ? GROEN : next ? GOUD : RAND;
                 const tc = (done || next) ? "#fff" : GRIJS;
+                const stapFotos = fotos.filter((f) => f.stap === s.id);
                 return (
-                  <button key={s.id} onClick={() => { setStapNotitie(""); setFotoMelding(""); setStapPopup(s.id); }} style={{ flex: 1, minWidth: 0, border: `1.5px solid ${bd}`, background: bg, color: tc, borderRadius: 8, padding: "10px 2px", fontSize: 10, fontWeight: 700, cursor: "pointer", lineHeight: 1.2, textAlign: "center", overflowWrap: "anywhere", hyphens: "auto" }}>
-                    {done ? "✓ " : ""}{s.kort}
+                  <button key={s.id} onClick={() => { setStapNotitie(""); setFotoMelding(""); setStapPopup(s.id); }} style={{ flex: 1, minWidth: 0, border: `1.5px solid ${bd}`, background: bg, color: tc, borderRadius: 8, padding: "8px 2px", fontSize: 10, fontWeight: 700, cursor: "pointer", lineHeight: 1.2, textAlign: "center", overflowWrap: "anywhere", hyphens: "auto", display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                    <span>{done ? "✓ " : ""}{s.kort}</span>
+                    {stapFotos.length > 0 && (
+                      <span style={{ position: "relative", width: "100%", display: "block" }}>
+                        <img src={stapFotos[0].url} alt="" style={{ width: "100%", height: 28, objectFit: "cover", borderRadius: 4, display: "block", border: "1px solid rgba(255,255,255,0.5)" }} />
+                        <span style={{ position: "absolute", right: 2, bottom: 2, background: "rgba(0,0,0,0.62)", color: "#fff", fontSize: 8.5, fontWeight: 800, borderRadius: 6, padding: "0 4px", lineHeight: "13px" }}>{stapFotos.length === 1 ? "📷" : `📷${stapFotos.length}`}</span>
+                      </span>
+                    )}
                   </button>
                 );
               })}
