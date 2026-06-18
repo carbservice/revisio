@@ -204,6 +204,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
 
   const autoTimer = useRef<any>(null);
   const eersteLaad = useRef(true);
+  const vuil = useRef(false); // er zijn niet-opgeslagen wijzigingen
 
   // log helper, faalt stil zodat het nooit een actie blokkeert
   async function log(klusId: string, actie: string, detail?: string) {
@@ -261,6 +262,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
   useEffect(() => {
     if (!open) return;
     if (eersteLaad.current) { eersteLaad.current = false; return; }
+    vuil.current = true;
     if (autoTimer.current) clearTimeout(autoTimer.current);
     autoTimer.current = setTimeout(() => { bewaarWerkbon(true); }, 2500);
     return () => { if (autoTimer.current) clearTimeout(autoTimer.current); };
@@ -358,6 +360,8 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
   }
 
   function sluitKlus() {
+    if (autoTimer.current) { clearTimeout(autoTimer.current); autoTimer.current = null; }
+    if (vuil.current) bewaarWerkbon(true); // flush eventuele niet-opgeslagen wijzigingen
     setOpen(null);
     if (typeof window !== "undefined") window.history.replaceState(null, "", window.location.pathname);
   }
@@ -714,6 +718,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
         await supabase.from("werkbon_retour").delete().eq("klus_id", sleutel);
       }
 
+      vuil.current = false;
       log(open.id, auto ? "werkbon automatisch opgeslagen" : "werkbon opgeslagen");
 
       if (auto) { setAutoMelding("Automatisch opgeslagen " + new Date().toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })); }
