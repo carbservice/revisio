@@ -132,7 +132,7 @@ function bedragNum(s: string) {
   return isNaN(n) ? 0 : n;
 }
 
-function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; isAdmin: boolean; onUitloggen: () => void }) {
+function WerkplaatsApp({ ingelogd, isAdmin, isManager, onUitloggen }: { ingelogd: Monteur; isAdmin: boolean; isManager: boolean; onUitloggen: () => void }) {
   const [monteur, setMonteur] = useState<Monteur | null>(ingelogd);
   const [klussen, setKlussen] = useState<Klus[]>([]);
   const [totalen, setTotalen] = useState<Record<string, number>>({});
@@ -208,6 +208,11 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
   const eersteLaad = useRef(true);
   const vuil = useRef(false); // er zijn niet-opgeslagen wijzigingen
   const arbeidGepost = useRef<string | null>(null); // arbeid-alarm al getriggerd voor deze klus
+  const [akkVerzoek, setAkkVerzoek] = useState<any>(null); // laatste klant-akkoord van deze klus
+  const [akkOms, setAkkOms] = useState("");
+  const [akkBedrag, setAkkBedrag] = useState("");
+  const [akkBezig, setAkkBezig] = useState(false);
+  const [akkNieuw, setAkkNieuw] = useState(false); // forceer het nieuw-verzoek-formulier
 
   // log helper, faalt stil zodat het nooit een actie blokkeert
   async function log(klusId: string, actie: string, detail?: string) {
@@ -750,6 +755,30 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, arbeidOver]);
 
+  // Klant-akkoord (extra kosten): laatste verzoek van deze klus, live bijgewerkt.
+  async function laadAkkoord(klusId: string) {
+    const { data } = await supabase.from("klant_akkoord").select("*").eq("klus_id", klusId).order("aangemaakt_op", { ascending: false }).limit(1);
+    setAkkVerzoek(data && data[0] ? data[0] : null);
+  }
+  useEffect(() => {
+    setAkkNieuw(false);
+    if (!open) { setAkkVerzoek(null); return; }
+    const klusId = open.id;
+    laadAkkoord(klusId);
+    const ch = supabase.channel(`akkoord-${klusId}`).on("postgres_changes", { event: "*", schema: "public", table: "klant_akkoord", filter: `klus_id=eq.${klusId}` }, () => laadAkkoord(klusId)).subscribe();
+    return () => { supabase.removeChannel(ch); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+  async function vraagAkkoord() {
+    if (!open || !akkOms.trim() || akkBezig) return;
+    setAkkBezig(true);
+    const n = parseFloat(akkBedrag.replace(",", "."));
+    const { error } = await supabase.from("klant_akkoord").insert({ klus_id: open.id, omschrijving: akkOms.trim(), bedrag: Number.isFinite(n) ? n : null, aangevraagd_door: ingelogd.naam });
+    setAkkBezig(false);
+    if (!error) { setAkkOms(""); setAkkBedrag(""); setAkkNieuw(false); laadAkkoord(open.id); }
+  }
+  const magAkkoord = isAdmin || isManager;
+
   const wrap: CSSProperties = { minHeight: "100vh", background: BG, color: TEKST, fontFamily: "'Karma', Georgia, serif", padding: "20px 14px", maxWidth: 520, margin: "0 auto" };
   const kaart: CSSProperties = { background: KAART_BG, border: `1px solid ${RAND}`, borderRadius: 16, padding: 18, marginBottom: 16, boxShadow: KAART_SCHADUW };
   const knop = (bg: string): CSSProperties => ({ background: bg, color: "#fff", border: "none", borderRadius: 12, padding: "16px 20px", fontSize: 17, fontWeight: 700, cursor: "pointer", width: "100%" });
@@ -1003,6 +1032,41 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
             )}
           </div>
 
+          {magAkkoord && (
+            <div style={{ ...kaart, marginTop: 14 }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: GROEN }}>Klant-akkoord — extra kosten</div>
+              {akkVerzoek && akkVerzoek.status === "open" && !akkNieuw ? (
+                <div style={{ marginTop: 8 }}>
+                  <div style={{ display: "inline-block", fontSize: 12.5, fontWeight: 800, color: "#6b5410", background: GOUD_BG, border: `1px solid ${GOUD}`, borderRadius: 999, padding: "3px 11px" }}>Wacht op de klant</div>
+                  <div style={{ fontSize: 13.5, color: TEKST, marginTop: 8 }}>{akkVerzoek.omschrijving}{akkVerzoek.bedrag != null ? ` — €${Number(akkVerzoek.bedrag).toFixed(2)}` : ""}</div>
+                  <div style={{ fontSize: 12.5, color: GRIJS, marginTop: 4 }}>De klant ziet dit op zijn revisiepagina en kan daar tekenen.</div>
+                </div>
+              ) : akkVerzoek && (akkVerzoek.status === "akkoord" || akkVerzoek.status === "afgewezen") && !akkNieuw ? (
+                <div style={{ marginTop: 8 }}>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: akkVerzoek.status === "akkoord" ? GROEN : ROOD }}>
+                    {akkVerzoek.status === "akkoord" ? "✓ Klant akkoord" : "✗ Klant niet akkoord"}
+                    {akkVerzoek.voornaam ? ` — ${akkVerzoek.voornaam} ${akkVerzoek.achternaam || ""}` : ""}
+                  </div>
+                  <div style={{ fontSize: 13.5, color: TEKST, marginTop: 6 }}>{akkVerzoek.omschrijving}{akkVerzoek.bedrag != null ? ` — €${Number(akkVerzoek.bedrag).toFixed(2)}` : ""}</div>
+                  {akkVerzoek.status === "akkoord" && akkVerzoek.handtekening && (
+                    <img src={akkVerzoek.handtekening} alt="handtekening" style={{ marginTop: 8, maxWidth: 240, border: `1px solid ${RAND}`, borderRadius: 8, background: "#fff", display: "block" }} />
+                  )}
+                  <button onClick={() => setAkkNieuw(true)} style={{ marginTop: 10, border: "none", background: "transparent", color: GROEN, fontWeight: 700, fontSize: 13, cursor: "pointer", padding: 0 }}>+ Nieuw verzoek aanmaken</button>
+                </div>
+              ) : (
+                <div style={{ marginTop: 8 }}>
+                  <div style={{ fontSize: 13, color: GRIJS, marginBottom: 8, lineHeight: 1.5 }}>Eerst bellen met de klant. Vul dan in waar je akkoord op vraagt; de klant tekent op zijn revisiepagina.</div>
+                  <input value={akkOms} onChange={(e) => setAkkOms(e.target.value)} placeholder="Bijv. Verhoging van de indicatieve offerte: extra herstelwerk" style={{ ...inp, width: "100%" }} />
+                  <div style={{ display: "flex", gap: 8, marginTop: 8, alignItems: "center", flexWrap: "wrap" }}>
+                    <input value={akkBedrag} onChange={(e) => setAkkBedrag(e.target.value)} placeholder="Bedrag €" inputMode="decimal" style={{ ...inp, width: 130 }} />
+                    <button onClick={vraagAkkoord} disabled={akkBezig || !akkOms.trim()} style={{ background: GROEN, color: "#fff", border: "none", borderRadius: 999, padding: "10px 18px", fontSize: 14, fontWeight: 700, cursor: akkBezig || !akkOms.trim() ? "default" : "pointer", opacity: akkBezig || !akkOms.trim() ? 0.6 : 1 }}>{akkBezig ? "Bezig…" : "Naar klant sturen"}</button>
+                    {akkNieuw && akkVerzoek && <button onClick={() => setAkkNieuw(false)} style={{ border: "none", background: "transparent", color: GRIJS, fontSize: 13, cursor: "pointer" }}>Annuleren</button>}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           <div ref={voortgangRef} style={kaart}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
               <span style={kopstijl}>Voortgang</span>
@@ -1231,7 +1295,7 @@ export default function WerkplaatsPagina() {
 
   if (ingelogd) return (
     <GebruikerProvider naam={ingelogd.naam} isAdmin={isAdmin} isManager={isManager} uitloggen={uitloggen}>
-      <WerkplaatsApp ingelogd={ingelogd} isAdmin={isAdmin} onUitloggen={uitloggen} />
+      <WerkplaatsApp ingelogd={ingelogd} isAdmin={isAdmin} isManager={isManager} onUitloggen={uitloggen} />
     </GebruikerProvider>
   );
 

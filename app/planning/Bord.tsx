@@ -51,10 +51,13 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
   const laadKlusStatus = useCallback(async (klusIds: string[]) => {
     const ids = [...new Set(klusIds)];
     if (ids.length === 0) { setKlusStatus({}); return; }
-    const [vRes, rRes] = await Promise.all([
+    const [vRes, rRes, aRes] = await Promise.all([
       supabase.from("klus_voortgang").select("klus_id, stap, gedaan_op, gepubliceerd_op").in("klus_id", ids),
       supabase.from("werkbon_retour").select("klus_id, is_retour"),
+      supabase.from("klant_akkoord").select("klus_id, status, aangemaakt_op").in("klus_id", ids).order("aangemaakt_op", { ascending: false }),
     ]);
+    const akkoord: Record<string, string> = {};
+    (aRes.data || []).forEach((a: { klus_id: string; status: string }) => { if (!(a.klus_id in akkoord)) akkoord[a.klus_id] = a.status; });
     const stappen: Record<string, string[]> = {};
     const onuitgegeven: Record<string, boolean> = {};
     const binnenOp: Record<string, string> = {};
@@ -66,7 +69,7 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
     const retour = new Set<string>();
     (rRes.data || []).forEach((r: { klus_id: string; is_retour: boolean }) => { if (r.is_retour) retour.add(String(r.klus_id).split("#")[0]); });
     const uit: Record<string, KlusStatus> = {};
-    ids.forEach((id) => { uit[id] = { pct: voortgangPct(stappen[id] || []), retour: retour.has(id), onuitgegeven: !!onuitgegeven[id], binnenOp: binnenOp[id] || null }; });
+    ids.forEach((id) => { uit[id] = { pct: voortgangPct(stappen[id] || []), retour: retour.has(id), onuitgegeven: !!onuitgegeven[id], binnenOp: binnenOp[id] || null, akkoord: akkoord[id] || null }; });
     setKlusStatus(uit);
   }, []);
 
@@ -145,6 +148,7 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
       .on("postgres_changes", { event: "*", schema: "public", table: "kaart" }, herlaadStraks)
       .on("postgres_changes", { event: "*", schema: "public", table: "kaart_lid" }, herlaadStraks)
       .on("postgres_changes", { event: "*", schema: "public", table: "kaart_checklist_item" }, herlaadStraks)
+      .on("postgres_changes", { event: "*", schema: "public", table: "klant_akkoord" }, herlaadStraks)
       .subscribe();
     return () => { supabase.removeChannel(kanaal); };
   }, [herlaadStraks]);
@@ -418,6 +422,9 @@ function Tegel({
         <div style={{ fontSize: 13.5, fontWeight: 700, color: TEKST, lineHeight: 1.3 }}>{titel}</div>
         <div style={{ display: "flex", gap: 5, flexShrink: 0, alignItems: "center" }}>
           {meldingen > 0 && <span title={`${meldingen} nieuwe melding(en) voor jou`} style={belBadge}>🔔 {meldingen}</span>}
+          {status?.akkoord === "open" && <span title="Wacht op klant-akkoord voor extra kosten" style={labelAkkoordWacht}>✍ Akkoord?</span>}
+          {status?.akkoord === "akkoord" && <span title="Klant akkoord met extra kosten" style={labelAkkoordOk}>✓ Akkoord</span>}
+          {status?.akkoord === "afgewezen" && <span title="Klant niet akkoord met extra kosten" style={labelAkkoordNee}>✗ Niet akkoord</span>}
           {kaart.gefactureerd && <span style={labelGefactureerd}>Gefactureerd</span>}
         </div>
       </div>
@@ -497,6 +504,18 @@ const belBadge: CSSProperties = {
 const labelGefactureerd: CSSProperties = {
   flexShrink: 0, fontSize: 10, fontWeight: 800, color: "#6b5410", background: "#f7f0db",
   border: `1px solid ${GOUD}`, borderRadius: 999, padding: "1px 7px",
+};
+const labelAkkoordWacht: CSSProperties = {
+  flexShrink: 0, fontSize: 10, fontWeight: 800, color: "#8a5a00", background: "#ffe7b8",
+  border: "1px solid #e0a23a", borderRadius: 999, padding: "1px 7px", whiteSpace: "nowrap",
+};
+const labelAkkoordOk: CSSProperties = {
+  flexShrink: 0, fontSize: 10, fontWeight: 800, color: "#1d6b3f", background: "#d7f0df",
+  border: "1px solid #74c08b", borderRadius: 999, padding: "1px 7px", whiteSpace: "nowrap",
+};
+const labelAkkoordNee: CSSProperties = {
+  flexShrink: 0, fontSize: 10, fontWeight: 800, color: "#9c2b1b", background: "#fbdcd5",
+  border: "1px solid #e08a78", borderRadius: 999, padding: "1px 7px", whiteSpace: "nowrap",
 };
 const kaartToevoegKnop: CSSProperties = {
   width: "100%", textAlign: "left", background: "transparent", border: "none", color: GRIJS,

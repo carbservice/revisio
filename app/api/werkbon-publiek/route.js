@@ -113,6 +113,16 @@ export async function GET(req) {
       if (Number.isFinite(d.getTime())) verwachteEind = d.toISOString();
     }
 
+    // Laatste klant-akkoord-verzoek (extra kosten). Open => klant moet tekenen;
+    // beantwoord => we tonen een bevestiging. We sturen nooit de handtekening terug.
+    const { data: akks } = await supabase
+      .from("klant_akkoord")
+      .select("id, omschrijving, bedrag, status, aangemaakt_op, beantwoord_op, voornaam, achternaam")
+      .eq("klus_id", link.klus_id)
+      .order("aangemaakt_op", { ascending: false })
+      .limit(1);
+    const akkoordVerzoek = akks && akks[0] ? akks[0] : null;
+
     return Response.json({
       nummer: link.nummer,
       klant: link.klant,
@@ -124,6 +134,7 @@ export async function GET(req) {
       stadium,
       stappen,
       verwachteEind,
+      akkoordVerzoek,
       algemeneFotos: fByStap["algemeen"] || [],
       gepubliceerd: stappen.length > 0 || (fByStap["algemeen"] || []).length > 0,
     });

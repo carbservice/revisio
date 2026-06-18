@@ -9,6 +9,7 @@
 import { Suspense, useCallback, useEffect, useRef, useState, CSSProperties } from "react";
 import { useSearchParams } from "next/navigation";
 import Lightbox from "@/app/components/Lightbox";
+import Handtekening from "@/app/components/Handtekening";
 import { SOCIALS, WHATSAPP_PAD } from "@/lib/socials";
 
 const GROEN = "#1a3c2e";
@@ -29,7 +30,8 @@ const STADIA = [
 
 type Foto = { url: string; rotatie: number };
 type Stap = { stap: string; label: string; pct: number; bericht: string; gedaan_op: string | null; fotos: Foto[] };
-type Data = { nummer: string; klant: string; voertuig: string; klacht: string; monteur: string; pct: number; actiefStap: string | null; stadium: string; stappen: Stap[]; algemeneFotos: Foto[]; gepubliceerd: boolean; verwachteEind?: string | null; fout?: string };
+type AkkoordVerzoek = { id: string; omschrijving: string; bedrag: number | null; status: string; voornaam: string | null; achternaam: string | null; beantwoord_op: string | null };
+type Data = { nummer: string; klant: string; voertuig: string; klacht: string; monteur: string; pct: number; actiefStap: string | null; stadium: string; stappen: Stap[]; algemeneFotos: Foto[]; gepubliceerd: boolean; verwachteEind?: string | null; akkoordVerzoek?: AkkoordVerzoek | null; fout?: string };
 
 // Verwachte einddatum klantvriendelijk: "donderdag 2 juli".
 function verwachtDatum(iso: string): string {
@@ -62,6 +64,13 @@ function Inner() {
   const [logoOk, setLogoOk] = useState(true);
   const [lightbox, setLightbox] = useState<{ fotos: Foto[]; start: number } | null>(null);
   const [vul, setVul] = useState(0);
+  // Klant-akkoord (extra kosten)
+  const [aVoornaam, setAVoornaam] = useState("");
+  const [aAchternaam, setAAchternaam] = useState("");
+  const [aHandtekening, setAHandtekening] = useState<string | null>(null);
+  const [aBezig, setABezig] = useState(false);
+  const [aKlaar, setAKlaar] = useState<string | null>(null);
+  const [aFout, setAFout] = useState("");
   const [centers, setCenters] = useState<number[]>([]);
   const [replay, setReplay] = useState(0);
   const tijdlijnRef = useRef<HTMLDivElement | null>(null);
@@ -133,6 +142,31 @@ function Inner() {
       .catch((e) => setFout(String(e)))
       .finally(() => setLaden(false));
   }, [t, nr, code]);
+
+  async function stuurAkkoord(akkoord: boolean) {
+    const v = data?.akkoordVerzoek;
+    if (!v) return;
+    setAFout("");
+    if (akkoord && (!aVoornaam.trim() || !aAchternaam.trim() || !aHandtekening)) {
+      setAFout("Vul je voor- en achternaam in en zet je handtekening.");
+      return;
+    }
+    setABezig(true);
+    try {
+      const auth = t ? { token: t } : { nr, code };
+      const r = await fetch("/api/akkoord", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ akkoord_id: v.id, akkoord, voornaam: aVoornaam, achternaam: aAchternaam, handtekening: aHandtekening, ...auth }),
+      });
+      const j = await r.json();
+      if (j.ok || j.alBeantwoord) setAKlaar(j.status || (akkoord ? "akkoord" : "afgewezen"));
+      else setAFout(j.fout || "Er ging iets mis. Probeer het opnieuw.");
+    } catch {
+      setAFout("Er ging iets mis. Probeer het opnieuw.");
+    } finally {
+      setABezig(false);
+    }
+  }
 
   const wrap: CSSProperties = {
     minHeight: "100vh",
@@ -222,6 +256,45 @@ function Inner() {
             <div style={labelStijl}>Je offertenummer</div>
             <div style={{ fontSize: 38, fontWeight: 700, color: GROEN, letterSpacing: 0.5, lineHeight: 1.1, marginTop: 4 }}>{data.nummer}</div>
           </div>
+
+          {data.akkoordVerzoek && (() => {
+            const v = data.akkoordVerzoek!;
+            const status = aKlaar || v.status;
+            if (status === "akkoord") return (
+              <div style={{ marginTop: 22, background: GROEN_BG, border: `1px solid ${RAND}`, borderRadius: 16, padding: "18px 20px" }}>
+                <div style={{ fontSize: 19, fontWeight: 700, color: GROEN }}>✓ Je akkoord is geregistreerd</div>
+                <div style={{ fontSize: 16, color: TEKST, marginTop: 6, lineHeight: 1.55 }}>Bedankt{(aVoornaam || v.voornaam) ? `, ${aVoornaam || v.voornaam}` : ""}. We gaan verder met de revisie.</div>
+              </div>
+            );
+            if (status === "afgewezen") return (
+              <div style={{ marginTop: 22, background: "#fdecea", border: "1px solid #e7b7ad", borderRadius: 16, padding: "18px 20px" }}>
+                <div style={{ fontSize: 19, fontWeight: 700, color: "#9c3b2b" }}>Je hebt niet akkoord gegeven</div>
+                <div style={{ fontSize: 16, color: TEKST, marginTop: 6, lineHeight: 1.55 }}>We nemen contact met je op om het samen te bespreken.</div>
+              </div>
+            );
+            const inputStijl: CSSProperties = { flex: 1, minWidth: 140, padding: "11px 13px", border: `1.5px solid ${RAND}`, borderRadius: 10, fontSize: 16, fontFamily: "inherit", color: TEKST, background: "#fff" };
+            return (
+              <div style={{ marginTop: 22, background: "#fff7ed", border: "1.5px solid #f0b95a", borderRadius: 16, padding: "18px 20px" }}>
+                <div style={{ fontSize: 12.5, letterSpacing: 1.5, textTransform: "uppercase", color: "#b4791b", fontWeight: 700 }}>Akkoord gevraagd</div>
+                <div style={{ fontSize: 19, fontWeight: 700, color: GROEN, marginTop: 6 }}>Extra kosten op je revisie</div>
+                {v.omschrijving && <div style={{ fontSize: 16, lineHeight: 1.55, color: TEKST, marginTop: 6 }}>{v.omschrijving}</div>}
+                {v.bedrag != null && <div style={{ fontSize: 24, fontWeight: 700, color: GROEN, marginTop: 8 }}>&euro; {Number(v.bedrag).toFixed(2)}</div>}
+                <div style={{ fontSize: 15, color: GRIJS, marginTop: 10, lineHeight: 1.55 }}>Ga je akkoord? Vul je naam in en zet hieronder je handtekening.</div>
+                <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
+                  <input value={aVoornaam} onChange={(e) => setAVoornaam(e.target.value)} placeholder="Voornaam" style={inputStijl} />
+                  <input value={aAchternaam} onChange={(e) => setAAchternaam(e.target.value)} placeholder="Achternaam" style={inputStijl} />
+                </div>
+                <div style={{ marginTop: 12 }}>
+                  <Handtekening onChange={setAHandtekening} />
+                </div>
+                {aFout && <div style={{ color: "#b22", fontSize: 14, marginTop: 8 }}>{aFout}</div>}
+                <div style={{ display: "flex", gap: 10, marginTop: 14, flexWrap: "wrap" }}>
+                  <button onClick={() => stuurAkkoord(true)} disabled={aBezig} style={{ flex: 1, minWidth: 180, background: GROEN, color: "#fff", border: "none", borderRadius: 999, padding: "13px 20px", fontSize: 16, fontWeight: 700, cursor: aBezig ? "default" : "pointer", opacity: aBezig ? 0.6 : 1, fontFamily: "inherit" }}>{aBezig ? "Bezig…" : "Akkoord & ondertekenen"}</button>
+                  <button onClick={() => stuurAkkoord(false)} disabled={aBezig} style={{ background: "#fff", color: "#9c3b2b", border: "1.5px solid #e7b7ad", borderRadius: 999, padding: "13px 18px", fontSize: 15, fontWeight: 700, cursor: aBezig ? "default" : "pointer", fontFamily: "inherit" }}>Niet akkoord</button>
+                </div>
+              </div>
+            );
+          })()}
 
           {data.voertuig && (
             <div style={{ marginTop: 18 }}>
