@@ -39,6 +39,10 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
   const [nieuwTekst, setNieuwTekst] = useState("");
   const [mijnCode, setMijnCode] = useState<string | null>(null);
   const herlaadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Slepen op de achtergrond om horizontaal te scrollen (pannen).
+  const bordRef = useRef<HTMLDivElement | null>(null);
+  const pan = useRef({ actief: false, startX: 0, startScroll: 0 });
+  const [pannen, setPannen] = useState(false);
 
   // --- Data laden ----------------------------------------------------------
   // Leest de stadia/retour uit de monteurs-app en leidt per klus af: voortgang
@@ -209,6 +213,23 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
     await herlaad();
   }
 
+  // Pannen: start alleen op de achtergrond, niet op een kaart/knop/invoer.
+  function panStart(e: React.MouseEvent) {
+    if (e.button !== 0) return;
+    if ((e.target as HTMLElement).closest('[draggable="true"], button, input, textarea, a, select')) return;
+    const el = bordRef.current;
+    if (!el) return;
+    pan.current = { actief: true, startX: e.clientX, startScroll: el.scrollLeft };
+    setPannen(true);
+  }
+  function panMove(e: React.MouseEvent) {
+    if (!pan.current.actief || !bordRef.current) return;
+    bordRef.current.scrollLeft = pan.current.startScroll - (e.clientX - pan.current.startX);
+  }
+  function panEind() {
+    if (pan.current.actief) { pan.current.actief = false; setPannen(false); }
+  }
+
   const openKaart = openId ? kaarten.find((k) => k.id === openId) || null : null;
 
   // Offertenummer -> klus/kaart, voor het @taggen van orders in de chat.
@@ -246,13 +267,22 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
         </p>
       </div>
 
-      {/* Kolommen (horizontaal scrollbaar, ook op mobiel) */}
-      <div style={{ display: "flex", gap: 14, padding: "0 16px 40px", overflowX: "auto", WebkitOverflowScrolling: "touch", alignItems: "flex-start" }}>
+      {/* Kolommen: horizontaal scrollbaar (touch), of slepen op de achtergrond. */}
+      <div
+        ref={bordRef}
+        className="revisio-scroll"
+        onMouseDown={panStart}
+        onMouseMove={panMove}
+        onMouseUp={panEind}
+        onMouseLeave={panEind}
+        style={{ display: "flex", gap: 14, padding: "0 16px 40px", overflowX: "auto", WebkitOverflowScrolling: "touch", alignItems: "flex-start", cursor: pannen ? "grabbing" : "grab", userSelect: pannen ? "none" : "auto" }}
+      >
         {FASES.map((f) => {
           const kolomKaarten = kaarten.filter((k) => k.fase === f.sleutel).sort((a, b) => a.positie - b.positie);
           return (
             <div
               key={f.sleutel}
+              className="revisio-scroll"
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => { e.preventDefault(); dropIn(f.sleutel, kolomKaarten.length); }}
               style={kolom}

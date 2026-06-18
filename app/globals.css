@@ -19,6 +19,24 @@
   }
 }
 
+/* Nette, groene scrollbars voor het kaartenbord en de kolommen. */
+.revisio-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #1a3c2e transparent;
+}
+.revisio-scroll::-webkit-scrollbar { width: 11px; height: 12px; }
+.revisio-scroll::-webkit-scrollbar-track { background: transparent; }
+.revisio-scroll::-webkit-scrollbar-thumb {
+  background: #1a3c2e;
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+.revisio-scroll::-webkit-scrollbar-thumb:hover {
+  background: #2d5a45;
+  background-clip: padding-box;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
