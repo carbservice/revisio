@@ -26,6 +26,7 @@ export default function KaartDetail({
   const [items, setItems] = useState<ChecklistItem[]>([]);
   const [berichten, setBerichten] = useState<Bericht[]>([]);
   const [nieuwItem, setNieuwItem] = useState("");
+  const [sleepItem, setSleepItem] = useState<string | null>(null); // checklist-item dat gesleept wordt
   const [chat, setChat] = useState("");
   const [gekopieerd, setGekopieerd] = useState(false);
   const [smal, setSmal] = useState(() => typeof window !== "undefined" && window.innerWidth < 720);
@@ -126,6 +127,21 @@ export default function KaartDetail({
     await log(`verwijderde checklist-punt: "${it.tekst}"`);
     await laad();
     onWijzig();
+  }
+  // Sleep een checklist-punt naar de plek van een ander punt; volgorde opslaan.
+  async function verplaatsItem(doelId: string) {
+    const sleep = sleepItem;
+    setSleepItem(null);
+    if (!sleep || sleep === doelId) return;
+    const lijst = [...items].sort((a, b) => a.volgorde - b.volgorde);
+    const van = lijst.findIndex((i) => i.id === sleep);
+    const naar = lijst.findIndex((i) => i.id === doelId);
+    if (van < 0 || naar < 0) return;
+    const [verplaatst] = lijst.splice(van, 1);
+    lijst.splice(naar, 0, verplaatst);
+    const nieuw = lijst.map((i, idx) => ({ ...i, volgorde: idx }));
+    setItems(nieuw); // optimistisch; realtime houdt het bij andere kijkers gelijk
+    await Promise.all(nieuw.map((i) => supabase.from("kaart_checklist_item").update({ volgorde: i.volgorde }).eq("id", i.id)));
   }
 
   // --- Chat met @taggen ----------------------------------------------------
@@ -258,7 +274,19 @@ export default function KaartDetail({
               </div>
             )}
             {items.map((it) => (
-              <div key={it.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "3px 0" }}>
+              <div
+                key={it.id}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => { e.preventDefault(); verplaatsItem(it.id); }}
+                style={{ display: "flex", alignItems: "center", gap: 8, padding: "3px 0", opacity: sleepItem === it.id ? 0.4 : 1 }}
+              >
+                <span
+                  draggable
+                  onDragStart={(e) => { setSleepItem(it.id); e.dataTransfer.effectAllowed = "move"; }}
+                  onDragEnd={() => setSleepItem(null)}
+                  title="Sleep om te ordenen"
+                  style={{ cursor: "grab", color: "#b9b4a8", fontSize: 14, lineHeight: 1, userSelect: "none" }}
+                >⠿</span>
                 <input type="checkbox" checked={it.gedaan} onChange={() => wisselItem(it)} style={{ width: 16, height: 16, cursor: "pointer" }} />
                 <span style={{ flex: 1, fontSize: 13, color: it.gedaan ? GRIJS : TEKST, textDecoration: it.gedaan ? "line-through" : "none" }}>{it.tekst}</span>
                 <button onClick={() => verwijderItem(it)} style={{ border: "none", background: "transparent", color: GRIJS, cursor: "pointer", fontSize: 15, lineHeight: 1 }}>×</button>
