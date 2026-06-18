@@ -43,8 +43,8 @@ export async function POST(request) {
     const geofUren = geoffreerdeUren(geofArbeid);
     if (!(werkUren > geofUren)) return Response.json({ nogNietOver: true });
 
-    // Managers.
-    const { data: mgrs } = await supabase.from("app_gebruikers").select("naam, email").eq("rol", "manager").eq("actief", true);
+    // Managers en admins krijgen het alarm.
+    const { data: mgrs } = await supabase.from("app_gebruikers").select("naam, email").in("rol", ["manager", "admin"]).eq("actief", true);
     const managers = (mgrs || []).map((m) => ({ naam: m.naam, email: m.email, code: codeVoorEmail(m.email) })).filter((m) => m.code);
 
     // Kaart van deze klus (voor de melding-link).

@@ -4,14 +4,19 @@
 // Backend-uurtarief (ex btw) waarmee we de geschreven monteur-tijd waarderen.
 export const UURTARIEF_EX_BTW = 106;
 
-// Haalt de geoffreerde arbeid (euro, ex btw) uit een Moneybird-offerte: de som
-// van de regels waarvan de omschrijving "arbeid" bevat. Geen arbeid-regel ->
-// 0 (dan geen alarm voor die klus).
+// Grootboekrekening waarop ALLE arbeid wordt geboekt: "Werplaats uren" (80500.01).
+// We tellen alle offerte-regels op deze rekening op (meerdere arbeidsregels per
+// klus mogelijk, verschillende teksten). Dit is het backend-referentiepunt.
+export const WERKPLAATS_UREN_LEDGER_ID = "442436313943115052";
+
+// Geoffreerde arbeid (euro, ex btw) uit een Moneybird-offerte = som van alle
+// regels op de grootboekrekening Werplaats uren. Geen zulke regel -> 0 (dan geen
+// alarm voor die klus).
 export function geoffreerdeArbeidUit(estimate: any): number {
   const det = (estimate && estimate.details) || [];
   let som = 0;
   for (const d of det) {
-    if (/arbeid/i.test(d?.description || "")) {
+    if (String(d?.ledger_account_id || "") === WERKPLAATS_UREN_LEDGER_ID) {
       const prijs = parseFloat(d?.price || "0") || 0;
       const aantal = parseFloat(d?.amount || "1") || 1;
       som += prijs * aantal;
