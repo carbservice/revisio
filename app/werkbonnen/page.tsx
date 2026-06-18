@@ -700,7 +700,10 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
       if (crows.length) await supabase.from("werkbon_checklist").insert(crows);
 
       await supabase.from("werkbon_artikelen").delete().eq("klus_id", sleutel);
-      const arows = artikelen.filter((a) => a.naam.trim() && bedragNum(a.bedrag) > 0).map((a) => ({ klus_id: sleutel, naam: a.naam.trim(), bedrag: bedragNum(a.bedrag), monteur_naam: monteur?.naam || null }));
+      // Extra (zelf toegevoegde) artikelen altijd bewaren zodra ze een naam hebben,
+      // ook zonder prijs -> anders raken verbruiksitems zonder ingevulde prijs zoek.
+      // Standaard-artikelen alleen bij een prijs > 0 (anders telt alles als gebruikt).
+      const arows = artikelen.filter((a) => a.naam.trim() && (!a.vast || bedragNum(a.bedrag) > 0)).map((a) => ({ klus_id: sleutel, naam: a.naam.trim(), bedrag: bedragNum(a.bedrag), monteur_naam: monteur?.naam || null }));
       if (arows.length) await supabase.from("werkbon_artikelen").insert(arows);
 
       await supabase.from("werkbon_opmerking").upsert({ klus_id: sleutel, tekst: opmerking.trim() || null, monteur_naam: monteur?.naam || null, bijgewerkt_op: new Date().toISOString() });
