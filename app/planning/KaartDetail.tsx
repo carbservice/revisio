@@ -322,17 +322,17 @@ export default function KaartDetail({
                 key={it.id}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => { e.preventDefault(); verplaatsItem(it.id); }}
-                style={{ display: "flex", alignItems: "center", gap: 8, padding: "3px 0", opacity: sleepItem === it.id ? 0.4 : 1 }}
+                style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "9px 2px", borderTop: `1px solid ${RAND}`, opacity: sleepItem === it.id ? 0.4 : 1 }}
               >
                 <span
                   draggable
                   onDragStart={(e) => { setSleepItem(it.id); e.dataTransfer.effectAllowed = "move"; }}
                   onDragEnd={() => setSleepItem(null)}
                   title="Sleep om te ordenen"
-                  style={{ cursor: "grab", color: "#b9b4a8", fontSize: 14, lineHeight: 1, userSelect: "none" }}
+                  style={{ cursor: "grab", color: "#b9b4a8", fontSize: 14, lineHeight: 1, userSelect: "none", marginTop: 2 }}
                 >⠿</span>
-                <input type="checkbox" checked={it.gedaan} onChange={() => wisselItem(it)} style={{ width: 16, height: 16, cursor: "pointer" }} />
-                <span style={{ flex: 1, minWidth: 0, overflowWrap: "anywhere", fontSize: 13, color: it.gedaan ? GRIJS : TEKST, textDecoration: it.gedaan ? "line-through" : "none" }}>{renderTekst(it.tekst)}</span>
+                <input type="checkbox" checked={it.gedaan} onChange={() => wisselItem(it)} style={{ width: 16, height: 16, cursor: "pointer", marginTop: 1, flexShrink: 0 }} />
+                <span style={{ flex: 1, minWidth: 0, overflowWrap: "anywhere", fontSize: 13, lineHeight: 1.45, color: it.gedaan ? GRIJS : TEKST, textDecoration: it.gedaan ? "line-through" : "none" }}>{renderTekst(it.tekst)}</span>
                 <button onClick={() => verwijderItem(it)} style={{ border: "none", background: "transparent", color: GRIJS, cursor: "pointer", fontSize: 15, lineHeight: 1 }}>×</button>
               </div>
             ))}
