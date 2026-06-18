@@ -8,6 +8,7 @@
 import { useEffect, useRef, useState, CSSProperties, ReactNode } from "react";
 import { supabase } from "@/lib/supabase";
 import { GROEN, GOUD, TEKST, GRIJS, RAND } from "@/lib/theme";
+import { printKlusLabel } from "./printLabel";
 import {
   TEAM, faseTitel, veroudering, dagenSinds, revisieKlokKleur, REVISIE_DOEL_DAGEN,
   type Kaart, type Klus, type ChecklistItem, type Bericht,
@@ -215,6 +216,16 @@ export default function KaartDetail({
     await meldTags(tekst, "chat");
   }
 
+  function labelPrinten() {
+    printKlusLabel({
+      nummer: klus?.nummer || "",
+      kenmerk: klus?.voertuig || kaart.titel || "",
+      klacht: klus?.klacht || "",
+      klant: klus?.klant || "",
+      klusUrl: `${window.location.origin}/werkbonnen?klus=${kaart.klus_id}`,
+    });
+  }
+
   function kopieerLink() {
     navigator.clipboard?.writeText(window.location.href).then(() => {
       setGekopieerd(true); setTimeout(() => setGekopieerd(false), 1500);
@@ -238,6 +249,7 @@ export default function KaartDetail({
             {sig && sig.label && <span style={{ ...pil, background: "#fff", color: sig.kleur, border: `1px solid ${sig.kleur}` }}>{sig.dagen} dgn in kolom</span>}
           </div>
           <div style={{ display: "flex", gap: 8 }}>
+            {kaart.type === "klus" && kaart.klus_id && <button onClick={labelPrinten} style={knopLicht}>🏷️ Label</button>}
             <button onClick={kopieerLink} style={knopLicht}>{gekopieerd ? "Gekopieerd!" : "Kopieer link"}</button>
             <button onClick={onSluit} style={knopLicht}>Sluiten</button>
           </div>
