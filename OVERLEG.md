@@ -1,6 +1,6 @@
 # Revisio werkplaats, stand van zaken
 
-_Laatst bijgewerkt: 13 juni 2026. Livegang: 13 juni 2026 (uitgevoerd)._
+_Laatst bijgewerkt: 18 juni 2026. Livegang: 13 juni 2026 (uitgevoerd)._
 
 ## Wat al af is
 
@@ -169,6 +169,22 @@ Intern kanban-/planningsbord op `/planning`, dat onze Trello vervangt. Het bord 
 - **Klus verdween na facturatie (opgelost).** Een klus met alleen interne foto's, nooit met de klant gedeeld, viel na factureren uit beeld: niet meer "accepted" in Moneybird en niet in `werkbon_links`. Dit was de bekende fase-2-valkuil. Opgelost met **opslaan-bij-openen**: zodra een monteur een klus opent, leggen we 'm vast in `werkbon_links` (nummer/klant/voertuig + token), zodat 'ie ook na facturatie vindbaar blijft. Eén klus (2026-0549, Jan Hidding) handmatig hersteld; de foto's stonden er nog (data hangt aan `klus_id`).
 - **Interne foto-upload verbeterd.** Laadbalk (foto X van N) + goed/afkeur-resultaat, robuustere knop (ref i.p.v. label) en een "open in Chrome/Safari"-hint, omdat de WhatsApp-in-app-browser foto-uploads blokkeert.
 
+### Gedaan op 18 juni 2026 (avond) - arbeid-alarm, klant-akkoord, foto's uit galerij
+
+**Arbeid-discrepantie-alarm**
+- Doel: zien wanneer de geschreven monteur-tijd voorbij de geoffreerde arbeid loopt. Backend-uurtarief **€106 ex btw** (instelbaar in `lib/tarief.ts`); we communiceren dit tarief niet in offertes, dus de monteur ziet uren, niet het tarief-bedrag rechtstreeks.
+- **Geoffreerde arbeid** komt uit Moneybird via de **grootboekrekening "Werplaats uren" (80500.01)** — niet via tekst-match, want er kunnen meerdere arbeidsregels per klus zijn. Alleen **geaccepteerde** regels tellen: optionele/niet-gekozen regels (`is_selected === false`, bv. natstralen, spoedtoeslag) vallen weg. Ledger-id staat als constante in `lib/tarief.ts`.
+- Werkbon toont een rode waarschuwingsbalk zodra geschreven uren > geoffreerde uren. De **manager én admin** krijgen één melding (in-app) + e-mail (e-mail pas actief na de Gmail-env-vars, zoals het dagoverzicht). Idempotent via `werkbon_links.arbeid_gemeld` (kolom is gedraaid).
+- Route: `/api/alarm/arbeid` (herberekent zelf uit Moneybird + tijdregels, dus geen valse alarmen).
+
+**Klant-akkoord voor extra kosten (handtekening)**
+- Flow: admin/manager belt de klant, vult in de werkbon een akkoord-verzoek in (omschrijving + bedrag) -> de klant ziet dit op `/volg`, vult voor-/achternaam in en **tekent met de vinger/muis** (canvas-handtekening) -> Akkoord of Niet akkoord.
+- Vastgelegd met naam + handtekening + tijdstip. De **werkplaats (manager + admin)** krijgt een melding. Het **kaartenbord** toont per kaart een live label: ✍ Akkoord? / ✓ Akkoord / ✗ Niet akkoord.
+- Alleen de echte klant kan tekenen (token of ordernr + code). Tabel `klant_akkoord` (schema `klant-akkoord-schema.sql`, is gedraaid). Routes: `/api/akkoord` (vastleggen), `/api/werkbon-publiek` geeft het laatste verzoek mee. Component `app/components/Handtekening.tsx`.
+
+**Stadia-foto's uit de galerij**
+- De stadia-fotoknop forceerde de camera (`capture="environment"`). Nu biedt de telefoon **camera óf galerij** aan, en je kunt **meerdere tegelijk** kiezen (afgekapt op het maximum van 3, omdat de 3-max-check op de vertraagde React-state leunt). Knop heet nu "Foto toevoegen" met hint.
+
 ## Livegang (13 juni 2026)
 
 - Monteur-app gaat live; eerste klant gaat live op het portaal.
@@ -181,7 +197,7 @@ Intern kanban-/planningsbord op `/planning`, dat onze Trello vervangt. Het bord 
 - **Woensdag 17 juni 2026, 10:00 — showcase-foto's voor de demo uploaden.** Vijf foto's in `public/demo/`: `ontvangen.jpg`, `diagnose.jpg`, `reviseren.jpg`, `afbouwen.jpg`, `klaar.jpg` (vierkant, klein). Zolang ze ontbreken valt de demo terug op tijdelijke foto's.
 - **Vrijdag 19 juni 2026, 10:00 — Beveiligingssessie (RLS + API + rol-test).** Grootste risico nu: de database staat open via de publieke sleutel. Volledig stappenplan in `RLS-PLAN.md`. Agenda met de learnings van 17-18 juni:
   - **API-routes afschermen (het échte gat).** `/api/dashboard`, `/api/klussen`, `/api/werkplaats-stats`, `/api/planning/*` enz. zijn nu zonder login opvraagbaar -> wie de URL raadt, krijgt data. **Belangrijke learning: "elke pagina achter login" sluit dit NIET af** — pagina's zijn dicht (AuthGate / eigen login op werkbonnen), maar de API's zijn losse endpoints en hebben hun eigen sessie-/rolcheck nodig. Server-routes eerst op de service-role-sleutel, dan rolcheck (admin/manager/monteur) per route.
-  - **RLS aanzetten** op alle tabellen (hub_*, kaart*, melding, werkbon_*, klus_*, app_gebruikers, werkbon_links) met policies per rol. Volgorde: eerst server-routes op service-role, dan pas RLS aan (anders breekt de anon-key-app).
+  - **RLS aanzetten** op alle tabellen (hub_*, kaart*, melding, werkbon_*, klus_*, app_gebruikers, werkbon_links, klant_akkoord) met policies per rol. Let op de nieuwe routes `/api/alarm/arbeid` en `/api/akkoord` (deze laatste is publiek-by-design, maar valideert via token/ordernr+code). Volgorde: eerst server-routes op service-role, dan pas RLS aan (anders breekt de anon-key-app).
   - **Rol × knop × pagina testen.** Log in als elke rol (admin, manager, monteur) en klik elke knop/pagina: geen onterechte slotjes (zoals de admin-slotjes op /werkbonnen, nu gefixt: die pagina miste de GebruikerProvider) én geen toegang die niet mag. Manager = alles behalve `/dashboard` (cijfers). Let op: zo'n "deny te veel" is veilig en valt buiten een lek-audit, dus apart testen.
   - **Storage-policy** `carburateur-blueprints` terug naar alleen-lezen (nu anon-write).
   - **Anthropic API-key roteren** (was ooit in de chat zichtbaar).
