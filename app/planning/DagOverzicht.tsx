@@ -22,7 +22,13 @@ export default function DagOverzicht() {
       const code = codeVoorEmail(data.user?.email);
       if (!levend || !code) return;
       const d = await bouwDigest(code, sindsGisteren());
-      if (levend) setKaarten(d);
+      // Ruis eruit: alleen chats (incl. @tags) en afvinken; geen automatische
+      // verschuivingen, lid-/omschrijving- of systeemregels.
+      const relevant = (soort: string, tekst: string) => soort === "chat" || /vinkte af|zette terug/i.test(tekst);
+      const gefilterd = d
+        .map((k) => ({ ...k, regels: k.regels.filter((r) => relevant(r.soort, r.tekst)) }))
+        .filter((k) => k.regels.length > 0);
+      if (levend) setKaarten(gefilterd);
     })();
     return () => { levend = false; };
   }, []);
