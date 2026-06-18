@@ -169,7 +169,10 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
   const [stapNotitie, setStapNotitie] = useState("");
   const [fotoMelding, setFotoMelding] = useState("");
   const [bulkBezig, setBulkBezig] = useState(false);
-  const [bulkMelding, setBulkMelding] = useState("");
+  const [bulkProg, setBulkProg] = useState<{ done: number; totaal: number } | null>(null);
+  const [bulkResultaat, setBulkResultaat] = useState<{ gelukt: number; mislukt: number } | null>(null);
+  const [linkGekopieerd, setLinkGekopieerd] = useState(false);
+  const internInputRef = useRef<HTMLInputElement | null>(null);
   const [deelLink, setDeelLink] = useState("");
   const [gekopieerd, setGekopieerd] = useState(false);
   const [carburateur, setCarburateur] = useState(1); // welke carburateur van de offerte (technische werkbon)
@@ -591,26 +594,28 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
     if (!open || files.length === 0) return;
     const teUploaden = files;
     const internStap = `intern-${carburateur}`;
-    setBulkBezig(true); setBulkMelding("");
+    setBulkBezig(true); setBulkResultaat(null); setBulkProg({ done: 0, totaal: teUploaden.length });
     let gelukt = 0, mislukt = 0;
     for (let i = 0; i < teUploaden.length; i++) {
       const file = teUploaden[i];
-      setBulkMelding(`Bezig met uploaden, foto ${i + 1} van ${teUploaden.length}...`);
       try {
         const { blob, ext: rawExt } = await verkleinFoto(file);
         const ext = (rawExt || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
         const map = (open.nummer || open.id).replace(/[^a-zA-Z0-9_-]/g, "_");
         const pad = `${map}/intern/carb${carburateur}/${Date.now()}-${i}.${ext}`;
         const { error } = await supabase.storage.from("werkbon-fotos").upload(pad, blob, { contentType: blob.type || "image/jpeg" });
-        if (error) { mislukt++; continue; }
-        const { data } = supabase.storage.from("werkbon-fotos").getPublicUrl(pad);
-        const { error: insErr } = await supabase.from("klus_fotos").insert({ klus_id: open.id, stap: internStap, url: data.publicUrl });
-        if (insErr) { mislukt++; continue; }
-        gelukt++;
+        if (error) { mislukt++; }
+        else {
+          const { data } = supabase.storage.from("werkbon-fotos").getPublicUrl(pad);
+          const { error: insErr } = await supabase.from("klus_fotos").insert({ klus_id: open.id, stap: internStap, url: data.publicUrl });
+          if (insErr) mislukt++; else gelukt++;
+        }
       } catch { mislukt++; }
+      setBulkProg({ done: i + 1, totaal: teUploaden.length });
     }
     log(open.id, "meerdere foto's geupload", `${gelukt} gelukt${mislukt ? `, ${mislukt} mislukt` : ""}`);
-    setBulkMelding(`${gelukt} foto${gelukt === 1 ? "" : "'s"} geüpload${mislukt ? `, ${mislukt} mislukt` : ""}.`);
+    setBulkProg(null);
+    setBulkResultaat({ gelukt, mislukt });
     setBulkBezig(false);
     await laadVoortgang(open.id);
   }
@@ -1011,11 +1016,43 @@ function WerkplaatsApp({ ingelogd, isAdmin, onUitloggen }: { ingelogd: Monteur; 
           <div style={kaart}>
             <div style={kopstijl}>Interne foto&apos;s · Carburateur {carburateur}</div>
             <div style={{ fontSize: 12.5, color: GRIJS, marginBottom: 10, lineHeight: 1.5 }}>Werkplaats-documentatie, onbeperkt aantal. Deze foto&apos;s zijn <b style={{ color: ROOD }}>niet</b> zichtbaar voor de klant. Wissel bovenaan van carburateur voor de andere set. (De foto&apos;s die je per stadium maakt, zijn wél voor de klant.)</div>
-            <label style={{ display: "block", textAlign: "center", background: bulkBezig ? "#cdbe8a" : GOUD, color: "#fff", borderRadius: 12, padding: "13px", fontSize: 15, fontWeight: 700, cursor: bulkBezig ? "default" : "pointer" }}>
+            <button
+              type="button"
+              onClick={() => { if (!bulkBezig) internInputRef.current?.click(); }}
+              disabled={bulkBezig}
+              style={{ display: "block", width: "100%", textAlign: "center", background: bulkBezig ? "#cdbe8a" : GOUD, color: "#fff", border: "none", borderRadius: 12, padding: "14px", fontSize: 15, fontWeight: 700, cursor: bulkBezig ? "default" : "pointer" }}
+            >
               {bulkBezig ? "Bezig met uploaden..." : `Interne foto's uploaden${internFotos.length ? ` (${internFotos.length})` : ""}`}
-              <input type="file" accept="image/*" multiple disabled={bulkBezig} style={{ display: "none" }} onChange={(e) => { const arr = e.target.files ? Array.from(e.target.files) : []; e.currentTarget.value = ""; if (arr.length) uploadMeerdereFotos(arr); }} />
-            </label>
-            {bulkMelding && <div style={{ fontSize: 13, color: GROEN, fontWeight: 600, marginTop: 10 }}>{bulkMelding}</div>}
+            </button>
+            <input ref={internInputRef} type="file" accept="image/*" multiple style={{ display: "none" }} onChange={(e) => { const arr = e.target.files ? Array.from(e.target.files) : []; e.currentTarget.value = ""; if (arr.length) uploadMeerdereFotos(arr); }} />
+
+            {/* Laadbalk tijdens het uploaden */}
+            {bulkProg && (
+              <div style={{ marginTop: 12 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, color: GRIJS, marginBottom: 5 }}>
+                  <span>Foto {Math.min(bulkProg.done + 1, bulkProg.totaal)} van {bulkProg.totaal}</span>
+                  <span style={{ fontWeight: 700 }}>{Math.round((bulkProg.done / bulkProg.totaal) * 100)}%</span>
+                </div>
+                <div style={{ height: 9, background: "#e7e3d9", borderRadius: 999, overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${(bulkProg.done / bulkProg.totaal) * 100}%`, background: GROEN, borderRadius: 999, transition: "width .2s" }} />
+                </div>
+              </div>
+            )}
+
+            {/* Resultaat: goed / afgekeurd */}
+            {bulkResultaat && (
+              <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10, fontSize: 14.5, fontWeight: 700 }}>
+                {bulkResultaat.gelukt > 0 && <span style={{ color: GROEN }}>✓ {bulkResultaat.gelukt} foto{bulkResultaat.gelukt === 1 ? "" : "'s"} geüpload</span>}
+                {bulkResultaat.mislukt > 0 && <span style={{ color: ROOD }}>✕ {bulkResultaat.mislukt} mislukt, probeer die opnieuw</span>}
+                {bulkResultaat.mislukt === 0 && bulkResultaat.gelukt === 0 && <span style={{ color: GRIJS }}>Geen foto's gekozen.</span>}
+              </div>
+            )}
+
+            {/* Escape-hatch: in-app browsers (WhatsApp/Instagram) blokkeren uploaden vaak */}
+            <div style={{ fontSize: 12, color: GRIJS, lineHeight: 1.5, marginTop: 12, borderTop: `1px solid ${RAND}`, paddingTop: 10 }}>
+              Lukt uploaden niet (bijvoorbeeld geopend vanuit WhatsApp)? Open Revisio in <b>Chrome</b> of <b>Safari</b>.{" "}
+              <button type="button" onClick={async () => { try { await navigator.clipboard?.writeText(window.location.href); setLinkGekopieerd(true); setTimeout(() => setLinkGekopieerd(false), 1800); } catch {} }} style={{ border: "none", background: "transparent", color: GROEN, fontWeight: 700, cursor: "pointer", padding: 0, textDecoration: "underline" }}>{linkGekopieerd ? "Link gekopieerd!" : "Kopieer link"}</button>
+            </div>
 
             {internFotos.length > 0 && (
               <>
