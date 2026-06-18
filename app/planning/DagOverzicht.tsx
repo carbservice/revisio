@@ -40,7 +40,7 @@ export default function DagOverzicht() {
     <div style={kaart}>
       <button onClick={() => setOpen((o) => !o)} style={kopRij}>
         <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 16 }}>📋</span>
+          <span style={{ fontSize: 16 }}>🔔</span>
           <span style={{ fontSize: 13.5, fontWeight: 800, color: GROEN }}>Sinds gisteren op jouw kaarten</span>
           <span style={{ fontSize: 12, color: GRIJS }}>{totaal} {totaal === 1 ? "update" : "updates"} op {kaarten.length} {kaarten.length === 1 ? "kaart" : "kaarten"}</span>
         </span>

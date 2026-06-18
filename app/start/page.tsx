@@ -14,6 +14,7 @@ import MeldingBanner from "@/app/planning/MeldingBanner";
 import DagOverzicht from "@/app/planning/DagOverzicht";
 import DashboardNav from "@/app/components/DashboardNav";
 import RevisioLogo from "@/app/components/RevisioLogo";
+import MeldingBel from "@/app/planning/MeldingBel";
 import { supabase } from "@/lib/supabase";
 
 const SERIF = "'Karma', Georgia, serif";
@@ -98,6 +99,7 @@ function Start() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, margin: "14px 0 26px" }}>
           <RevisioLogo hoogte={42} />
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <MeldingBel />
             <span style={{ fontSize: 13.5, color: TEKST }}>Ingelogd als <span style={{ fontWeight: 700, color: GROEN }}>{naam || "gebruiker"}</span></span>
             <button onClick={uitloggen} style={{ border: `1px solid ${RAND}`, background: "#fff", color: GRIJS, borderRadius: 999, padding: "7px 14px", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>Uitloggen</button>
           </div>

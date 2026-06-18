@@ -8,6 +8,7 @@ import { GROEN, GRIJS, RAND, KAART_BG, KAART_SCHADUW } from "@/lib/theme";
 import Systeemstatus from "@/app/components/Systeemstatus";
 import DashboardNav from "@/app/components/DashboardNav";
 import RevisioLogo from "@/app/components/RevisioLogo";
+import MeldingBel from "@/app/planning/MeldingBel";
 import { useGebruiker } from "@/app/components/AuthGate";
 
 export default function PaginaKop({ naam, onUitloggen, titel, children }: { naam: string; onUitloggen: () => void; titel: string; children?: ReactNode }) {
@@ -24,6 +25,7 @@ export default function PaginaKop({ naam, onUitloggen, titel, children }: { naam
       <div style={ingelogd}>
         <RevisioLogo />
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <MeldingBel />
           <div style={{ fontSize: 13.5 }}>Ingelogd als <span style={{ fontWeight: 700, color: GROEN }}>{naam || "gebruiker"}</span></div>
           <button onClick={onUitloggen} style={{ border: `1px solid ${RAND}`, background: "#fff", color: GRIJS, borderRadius: 999, padding: "7px 14px", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>Uitloggen</button>
         </div>

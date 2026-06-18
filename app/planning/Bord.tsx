@@ -253,7 +253,7 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
           <RevisioLogo />
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <span style={{ fontSize: 13.5 }}>Ingelogd als <span style={{ fontWeight: 700, color: GROEN }}>{naam || "gebruiker"}</span></span>
-            <MeldingBel code={mijnCode} onOpen={open} />
+            <MeldingBel />
             <button onClick={uitloggen} style={knopLicht}>Uitloggen</button>
           </div>
         </div>

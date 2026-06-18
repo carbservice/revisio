@@ -5,13 +5,28 @@
 // opent de juiste kaart en is de melding gelezen.
 
 import { useCallback, useEffect, useState, CSSProperties } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { GROEN, TEKST, GRIJS, RAND, ROOD } from "@/lib/theme";
-import { type Melding } from "./planning-config";
+import { codeVoorEmail, type Melding } from "./planning-config";
 
-export default function MeldingBel({ code, onOpen }: { code: string | null; onOpen: (kaartId: string) => void }) {
+// Zelfstandig meldingencentrum: haalt zelf je code op en navigeert zelf naar
+// de kaart. Hierdoor is <MeldingBel /> op elke pagina te plaatsen.
+export default function MeldingBel() {
+  const router = useRouter();
+  const [code, setCode] = useState<string | null>(null);
   const [items, setItems] = useState<Melding[]>([]);
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    let levend = true;
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      const c = codeVoorEmail(data.user?.email);
+      if (levend) setCode(c);
+    })();
+    return () => { levend = false; };
+  }, []);
 
   const laad = useCallback(async () => {
     if (!code) return;
@@ -34,7 +49,7 @@ export default function MeldingBel({ code, onOpen }: { code: string | null; onOp
   async function klik(m: Melding) {
     if (!m.gelezen) await supabase.from("melding").update({ gelezen: true }).eq("id", m.id);
     setOpen(false);
-    if (m.kaart_id) onOpen(m.kaart_id);
+    if (m.kaart_id) router.push(`/planning/${m.kaart_id}`);
   }
   async function allesGelezen() {
     if (!code) return;
