@@ -113,9 +113,18 @@ function SupportChat() {
           <h1 style={{ fontSize: "clamp(25px, 7vw, 34px)", fontWeight: 800, color: GROEN, margin: 0, letterSpacing: 0.5 }}>
             <span style={{ color: CL_ORANJE }}>✦</span> Support <span style={{ color: CL_ORANJE }}>HUB</span>
           </h1>
-          <p style={{ maxWidth: 700, margin: "10px auto 0", fontSize: 15, lineHeight: 1.6, color: GRIJS }}>
-            Chat met <b>Claude AI</b> over élke carburateur. Selecteer het type, geef je voertuig, bouwjaar en de klacht op, en we gaan aan de slag. De volledige werkplaatsdocumentatie staat klaar: <b>boekjes, blueprints en specsheets</b>. Houd het bondig, want elke prompt kost iets via de zakelijke Anthropic Claude API.
-          </p>
+          <div style={{ maxWidth: 720, margin: "10px auto 0" }}>
+            <p style={{ fontSize: 15, lineHeight: 1.6, color: GRIJS, margin: 0 }}>
+              <b>Welkom bij de Support Hub.</b> We hebben een chat-agent getraind op alle originele auto- en carburateurdocumentatie: <b>blueprints, specsheets en handleidingboekjes</b>. Zo werkt het:
+            </p>
+            <ol style={{ textAlign: "left", fontSize: 14.5, lineHeight: 1.65, color: GRIJS, margin: "10px auto 0", paddingLeft: 22, maxWidth: 560 }}>
+              <li>Selecteer je type carburateur.</li>
+              <li>Geef zo duidelijk mogelijk informatie over je voertuig en carburateur (<b>merk, type, motor en bouwjaar</b>). Daarna kun je al je vragen stellen over die specifieke carburateur.</li>
+            </ol>
+            <p style={{ fontSize: 13.5, lineHeight: 1.6, color: GRIJS, margin: "10px 0 0" }}>
+              Scroll naar beneden voor de bijbehorende handleiding (PDF) en de bouwtekeningen.
+            </p>
+          </div>
         </div>
 
         {/* Premium donker Claude-chatvenster */}
