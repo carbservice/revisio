@@ -55,14 +55,14 @@ export async function POST(req) {
     });
 
     // 2) Bestaande klus-kaarten ophalen.
-    const { data: bestaand } = await supabase
+    const { data: bestaand } = await supabaseAdmin
       .from("kaart")
       .select("id, klus_id, fase, gefactureerd, archief, hand_verplaatst")
       .eq("type", "klus");
     const bekend = new Set((bestaand || []).map((k) => k.klus_id));
 
     // 3) Nieuwe klus-kaarten in Binnenkomst (achteraan).
-    const { count: aantalBinnen } = await supabase
+    const { count: aantalBinnen } = await supabaseAdmin
       .from("kaart").select("id", { count: "exact", head: true }).eq("fase", "binnenkomst");
     let positie = aantalBinnen || 0;
     const nieuweKaarten = [];

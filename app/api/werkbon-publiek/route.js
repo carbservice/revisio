@@ -33,12 +33,12 @@ export async function GET(req) {
     }
 
     // Alleen gepubliceerde voortgang en foto's.
-    const { data: voortgang } = await supabase
+    const { data: voortgang } = await supabaseAdmin
       .from("klus_voortgang")
       .select("stap, bericht, gedaan_op")
       .eq("klus_id", link.klus_id)
       .not("gepubliceerd_op", "is", null);
-    const { data: fotos } = await supabase
+    const { data: fotos } = await supabaseAdmin
       .from("klus_fotos")
       .select("*")
       .eq("klus_id", link.klus_id)
@@ -49,7 +49,7 @@ export async function GET(req) {
     // dezelfde bron als de tijd-string (tijdregels), maar geven uitsluitend de
     // naam terug; valt terug op het werkbon-logspoor als er nog geen tijd is.
     let volledigeNaam = "";
-    const { data: tr } = await supabase
+    const { data: tr } = await supabaseAdmin
       .from("tijdregels")
       .select("monteur_naam, aangemaakt_op")
       .eq("klus_id", link.klus_id)
@@ -59,7 +59,7 @@ export async function GET(req) {
     if (tr && tr[0] && tr[0].monteur_naam) {
       volledigeNaam = tr[0].monteur_naam;
     } else {
-      const { data: lg } = await supabase
+      const { data: lg } = await supabaseAdmin
         .from("werkbon_log")
         .select("monteur_naam, gedaan_op")
         .eq("klus_id", link.klus_id)
@@ -115,7 +115,7 @@ export async function GET(req) {
 
     // Laatste klant-akkoord-verzoek (extra kosten). Open => klant moet tekenen;
     // beantwoord => we tonen een bevestiging. We sturen nooit de handtekening terug.
-    const { data: akks } = await supabase
+    const { data: akks } = await supabaseAdmin
       .from("klant_akkoord")
       .select("id, omschrijving, bedrag, status, aangemaakt_op, beantwoord_op, voornaam, achternaam")
       .eq("klus_id", link.klus_id)
