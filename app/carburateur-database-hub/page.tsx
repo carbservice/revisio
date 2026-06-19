@@ -202,12 +202,17 @@ function Hub() {
           <div style={grid}>
             {lijst.map((c) => (
               <button key={c.id} onClick={() => openen(c)} title={`${[c.fabrikant, c.type].filter(Boolean).join(" ")} · ${c.vehicle}`} style={kaart}>
-                <div style={{ position: "absolute", inset: 0, background: c.drawing ? `#f3f6f4 url('${c.drawing}') center/cover no-repeat` : "#eef2f0" }} />
-                {!c.drawing && (
-                  <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: 6, textAlign: "center", fontFamily: SERIF, fontSize: 12, fontWeight: 700, color: GROEN, lineHeight: 1.2 }}>{c.type || c.fabrikant}</div>
-                )}
-                <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: "18px 7px 6px", background: "linear-gradient(transparent, rgba(8,30,18,0.82))", textAlign: "left" }}>
-                  <div style={{ fontSize: 10.5, fontWeight: 800, color: "#fff", lineHeight: 1.15, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.type || c.fabrikant}</div>
+                <div style={{ position: "relative", aspectRatio: "4 / 3", background: c.drawing ? `#f3f6f4 url('${c.drawing}') center/cover no-repeat` : "#eef2f0", borderBottom: `1px solid ${RAND}` }}>
+                  {!c.drawing && (
+                    <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: 6, textAlign: "center", fontFamily: SERIF, fontSize: 13, fontWeight: 700, color: GROEN, lineHeight: 1.2 }}>{c.type || c.fabrikant}</div>
+                  )}
+                </div>
+                <div style={{ padding: "8px 9px 9px" }}>
+                  <div style={{ fontFamily: SERIF, fontSize: 13.5, fontWeight: 700, color: GROEN, lineHeight: 1.15, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{[c.fabrikant, c.type].filter(Boolean).join(" ")}</div>
+                  <div style={{ fontSize: 11.5, color: TEKST, fontWeight: 600, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.vehicle}</div>
+                  <div style={{ fontSize: 10.5, color: GRIJS, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {c.engine}{c.bouwjaar ? ` · ${c.bouwjaar.von}${c.bouwjaar.bis ? `–${c.bouwjaar.bis}` : "→"}` : ""}
+                  </div>
                 </div>
               </button>
             ))}
@@ -401,8 +406,8 @@ function Detail({ c, li, taal, setTaal, terug, kopieer, gekopieerd }: { c: Kennb
 }
 
 const wrap: CSSProperties = { maxWidth: 920, margin: "0 auto", padding: "0 16px" };
-const grid: CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(96px, 1fr))", gap: 10, marginTop: 22 };
-const kaart: CSSProperties = { position: "relative", aspectRatio: "1 / 1", background: "#fff", border: `1px solid ${RAND}`, borderRadius: 10, padding: 0, overflow: "hidden", cursor: "pointer", font: "inherit", color: TEKST };
+const grid: CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(132px, 1fr))", gap: 12, marginTop: 22 };
+const kaart: CSSProperties = { display: "flex", flexDirection: "column", textAlign: "left", background: "#fff", border: `1px solid ${RAND}`, borderRadius: 12, padding: 0, overflow: "hidden", cursor: "pointer", font: "inherit", color: TEKST };
 const badge: CSSProperties = { fontSize: 11.5, background: "#eef0ea", border: `1px solid ${RAND}`, color: GROEN, borderRadius: 20, padding: "3px 9px" };
 const badgeGoud: CSSProperties = { ...badge, color: "#8a6320", borderColor: "#e6d49a", background: "#f7eecd", fontVariantNumeric: "tabular-nums" };
 const paneel: CSSProperties = { background: "#fff", border: `1px solid ${RAND}`, borderRadius: 14, padding: 18, marginTop: 16 };
