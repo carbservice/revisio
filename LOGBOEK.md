@@ -136,3 +136,51 @@
 ### Nog te doen
 - Fase 2: eigen klussen-tabel met opslaan-bij-openen (waterdicht).
 - RLS dichtzetten, Anthropic-key omdraaien, eigen domein, opslag-beheer.
+
+## Dag 5 · 17 juni 2026 (avond)
+**Intern planningsbord (kanban, vervanger van Trello).**
+
+### Werkplaats Planning
+- Sleepbaar kanban-bord met kolommen van Werkplaats kaartenbak tot Klaar/archief. Elke klus is een kaart (gedeelde klus_id met de werkbon-app en Moneybird).
+- Klus-kaarten en vrije planningskaarten, kaartleden (initialen-bollen), checklist met X/Y op de voorkant, kaart-detail met chat en automatisch activiteitenlog (realtime via Supabase).
+- Verouderingskleur: geel 7+, oranje 14+, rood 30+ dagen in dezelfde kolom.
+- Moneybird-inbound: een geaccepteerde offerte wordt automatisch een klus-kaart in Binnenkomst; label Gefactureerd zodra de klus niet meer geaccepteerd is.
+
+### Meldingen en dagoverzicht
+- @taggen in de kaart-chat en iemand op een kaart zetten geeft een melding. Belletje met realtime teller in de kop, banner op /start.
+- Dagoverzicht "sinds gisteren op jouw kaarten" in de app, plus een e-mail om 18:00 (GitHub Action).
+
+## Dag 6 · 18 juni 2026
+**Slimmer en klantgericht.**
+
+### Arbeid-alarm
+- Seintje (in-app en mail) naar manager en admin als de geschreven monteurstijd hoger is dan de geoffreerde arbeid (uit Moneybird-grootboek "Werplaats uren", uurtarief 106 ex btw).
+
+### Klant-akkoord en kaart-knoppen
+- Digitale handtekening voor extra kosten op /volg, met label op het bord.
+- Factuur-PDF en offerte-in-Moneybird als knoppen op de planningskaart.
+- Stadia-foto's nu ook uit de galerij (meerdere tegelijk).
+- Klus-herstel na facturatie: niets raakt kwijt.
+
+## Dag 7 · 18-19 juni 2026
+**Op slot en slim: beveiliging, back-up en AI-support.**
+
+### Beveiliging live
+- Portier op alle API-routes (login plus rolcheck) en RLS op alle tabellen, storage-policy en signed URLs. Service-role-sleutel server-only. Anthropic-sleutel omgedraaid.
+- Learning: een pagina-login sluit de API's er niet vanzelf af; die moesten apart dicht.
+
+### Foto-back-up en monitoring
+- Dagelijkse back-up van alle foto-buckets naar Backblaze B2 (de database-back-up dekte de bestanden niet).
+- B2-statuslamp toegevoegd aan de statusbalk op elke pagina.
+
+### Support Hub
+- AI-chat per carburateurtype, gegrond op de getranscribeerde en vertaalde servicehandleidingen (13 boekjes: Solex en Zenith). Klikbaar boekje (PDF) en referentietekeningen onder de chat. Maand-kostenteller en een premium Claude-look.
+
+### Carburateur Database Hub
+- /hub hernoemd naar Carburateur Database Hub. Overzicht als compacte foto-tegels (6 naast elkaar) met explosietekening, merk/type, voertuig en bouwjaar; volledig detail bij doorklikken.
+
+### Nette URL's
+- Alle pagina-URL's gelijkgetrokken met de paginatitels (/werkplaats-planning, /carburateur-database-hub, /support-hub, /cijfers, /werkplaats-dashboard). Alle interne links, deeplinks en import-aliassen meegewijzigd; geen redirects (oude URL's geven 404).
+
+### Overig
+- Breedtes gelijkgetrokken (kop op 920, werkplaats-dashboard vol-breed). Werkinstructie voor Lukas (manager) geschreven.

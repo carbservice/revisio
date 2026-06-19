@@ -1,6 +1,6 @@
 # Revisio werkplaats, stand van zaken
 
-_Laatst bijgewerkt: 18 juni 2026. Livegang: 13 juni 2026 (uitgevoerd)._
+_Laatst bijgewerkt: 19 juni 2026. Livegang: 13 juni 2026 (uitgevoerd)._
 
 ## Wat al af is
 
@@ -208,6 +208,28 @@ Intern kanban-/planningsbord op `/planning`, dat onze Trello vervangt. Het bord 
 **Learning: offerte accepteren via de Moneybird API**
 - Niet `mark_as_accepted` (404), maar **`PATCH /estimates/{id}/change_state.json`** met body `{"state":"accepted"}`. De offerte moet wél minstens **één geselecteerde (niet-optionele) regel** hebben, anders weigert Moneybird met "Select at least one line" (422).
 
+### Gedaan op 19 juni 2026 - beveiliging, back-up, Support Hub, nette URL's
+
+**Beveiliging live (de grote sluitpost)**
+- Portier op alle API-routes: elke route checkt nu zelf de login (Bearer-token via `lib/auth-server.ts`) plus de rol. Server-routes draaien op de service-role-sleutel (`lib/supabaseAdmin.ts`, lazy zodat de build niet breekt). Learning bevestigd: pagina-login sluit de API's niet af, die hebben hun eigen check nodig.
+- RLS aan op alle tabellen met een `is_staff()`-policy (checkt `auth.email()` in `app_gebruikers`). Storage-policy `carburateur-blueprints` terug naar alleen-lezen, signed URLs voor de boekjes.
+- Anthropic API-key omgedraaid. Getest: anon geblokkeerd, login als admin en monteur werkt.
+
+**Foto-back-up en monitoring**
+- Dagelijkse back-up van alle foto-buckets (`werkbon-fotos`, `carburateur-blueprints`, `support-boekjes`) naar Backblaze B2 (gekozen boven R2: opslag-gedreven, lage egress). B2-statuslamp op de statusbalk van elke pagina.
+
+**Support Hub (`/support-hub`)**
+- AI-chat (Claude Sonnet) per carburateurtype, gegrond op de getranscribeerde en vertaalde servicehandleidingen. 13 boekjes ingeladen (Solex en Zenith) in `support_kennis`. Klikbaar boekje (PDF, signed URL) en referentietekeningen onder de chat. Maand-kostenteller (`ai_kosten`), signaal bij limiet $45/mnd. Premium donkere Claude-look, lege start met "Selecteer carburateur".
+
+**Carburateur Database Hub (`/carburateur-database-hub`)**
+- `/hub` hernoemd. Overzicht als compacte foto-tegels (6 naast elkaar) met explosietekening, merk/type, voertuig en bouwjaar; volledig detail bij doorklikken.
+
+**Nette URL's gelijk aan de paginatitels**
+- `/planning` -> `/werkplaats-planning`, `/hub` -> `/carburateur-database-hub`, `/support` -> `/support-hub`, `/dashboard` -> `/cijfers`, `/dashboard/werkplaats` -> `/werkplaats-dashboard`. Alle interne links, deeplinks, import-aliassen, metadata-titels en pad-comments meegewijzigd. Geen redirects: oude URL's geven bewust 404. API-routes ongemoeid. Zie `url-schema` in de projectnotities.
+
+**Overig**
+- Breedtes gelijkgetrokken (kop op 920 zoals /start; werkplaats-dashboard vol-breed). Werkinstructie voor Lukas (manager) geschreven (`werkinstructie-lukas.md`): alerts, timers, Werkplaats Planning, en timer op STOP tijdens ultrasoon en pauze.
+
 ## Livegang (13 juni 2026)
 
 - Monteur-app gaat live; eerste klant gaat live op het portaal.
@@ -218,15 +240,15 @@ Intern kanban-/planningsbord op `/planning`, dat onze Trello vervangt. Het bord 
 
 - **Week van 22 juni 2026 — DHL-verzendtracking (kaartenbord + klantportaal).** Live verzendbalk (Aangemeld → Sorteren → Onderweg → Bezorgd) in `/volg` plus een tracking-badge op de kaartenbak, om verzend-telefoontjes/mails weg te nemen. Vervoerder is DHL eCommerce/Parcel (`my.dhlecommerce.nl`), niet Express. T&T-link = nummer (JVGL...) + ontvanger-postcode (hebben we uit Moneybird), dus alleen het JVGL-nummer invoeren op de kaart. Start met de Unified Tracking API (developer.dhl.com, één key); fase 2 = auto-match uit de DHL-verzendlijst via de Parcel NL API. Inbound onderdelen (PostNL via Roukama/carburateurwinkel.nl) krijgen alleen een klikbaar linkje, geen API. Blocker nu: API-key/credentials regelen en eerste calls werkend krijgen (was te veel uitzoekwerk op 17 juni). Volledig plan in de projectnotities (`dhl-tracking-plan`).
 - **Woensdag 17 juni 2026, 10:00 — showcase-foto's voor de demo uploaden.** Vijf foto's in `public/demo/`: `ontvangen.jpg`, `diagnose.jpg`, `reviseren.jpg`, `afbouwen.jpg`, `klaar.jpg` (vierkant, klein). Zolang ze ontbreken valt de demo terug op tijdelijke foto's.
-- **Vrijdag 19 juni 2026, 10:00 — Beveiligingssessie (RLS + API + rol-test).** Grootste risico nu: de database staat open via de publieke sleutel. Volledig stappenplan in `RLS-PLAN.md`. Agenda met de learnings van 17-18 juni:
+- **Beveiligingssessie (RLS + API + rol-test): GEDAAN op 19 juni 2026.** Zie "Gedaan op 19 juni 2026" hierboven. Resterend kleinpriegel: de **service-role-sleutel roteren** (is één keer via een IDE-selectie zichtbaar geweest) en de **rol x knop x pagina-test** helemaal aflopen (admin/manager/monteur). De oorspronkelijke agenda blijft hieronder staan ter referentie:
   - **API-routes afschermen (het échte gat).** `/api/dashboard`, `/api/klussen`, `/api/werkplaats-stats`, `/api/planning/*`, en de nieuwe `/api/factuur`, `/api/offerte`, `/api/alarm/arbeid` enz. zijn nu zonder login opvraagbaar -> wie de URL raadt, krijgt data (factuur-PDF en offerte zijn financieel gevoelig). **Belangrijke learning: "elke pagina achter login" sluit dit NIET af** — pagina's zijn dicht (AuthGate / eigen login op werkbonnen), maar de API's zijn losse endpoints en hebben hun eigen sessie-/rolcheck nodig. Server-routes eerst op de service-role-sleutel, dan rolcheck (admin/manager/monteur) per route. Uitzondering die publiek-by-design blijft: `/api/akkoord` en `/api/werkbon-publiek` (valideren via token of ordernr+code).
   - **RLS aanzetten** op alle tabellen (hub_*, kaart*, melding, werkbon_*, klus_*, app_gebruikers, werkbon_links, klant_akkoord) met policies per rol. Let op de nieuwe routes `/api/alarm/arbeid` en `/api/akkoord` (deze laatste is publiek-by-design, maar valideert via token/ordernr+code). Volgorde: eerst server-routes op service-role, dan pas RLS aan (anders breekt de anon-key-app).
   - **Rol × knop × pagina testen.** Log in als elke rol (admin, manager, monteur) en klik elke knop/pagina: geen onterechte slotjes (zoals de admin-slotjes op /werkbonnen, nu gefixt: die pagina miste de GebruikerProvider) én geen toegang die niet mag. Manager = alles behalve `/dashboard` (cijfers). Let op: zo'n "deny te veel" is veilig en valt buiten een lek-audit, dus apart testen.
   - **Storage-policy** `carburateur-blueprints` terug naar alleen-lezen (nu anon-write).
   - **Anthropic API-key roteren** (was ooit in de chat zichtbaar).
   - **Foto-back-up (storage)** opzetten (vereist dezelfde service-role-sleutel).
-- **Foto-back-up (storage) — combineren met vrijdag 19 juni.** De dagelijkse back-up dekt alleen de database, NIET de foto-bestanden in Supabase Storage. Vallen die om, dan zijn de foto's weg. Vereist dezelfde service-role-sleutel als RLS, dus samen oppakken. Eenvoudige start: een GitHub Action die de bucket downloadt als artifact (werkt zolang het klein is). Schaalbaar bij veel foto's: sync naar goedkope externe opslag (Backblaze B2 of Cloudflare R2, gratis tiers).
-- Anthropic API-key omdraaien: de sleutel is tijdens het werk in de chat zichtbaar geweest. Nieuwe key maken, oude intrekken, bijwerken in `.env.local` en in Vercel.
+- **Foto-back-up (storage): GEDAAN op 19 juni.** Dagelijkse sync van alle buckets naar Backblaze B2.
+- **Anthropic API-key omdraaien: GEDAAN op 19 juni.** Nieuwe key actief in `.env.local` en Vercel.
 - Eigen domein instellen: `app.carbservice.nl` via Vercel (Domains) plus een CNAME in de Strikingly DNS Manager. Daarna in Supabase de Site URL en Redirect URLs naar dat domein zetten. De root `carbservice.nl` blijft de Strikingly-site, dus een subdomein gebruiken.
 - Bon waterdicht maken (fase 2): fase 1 is gedaan (gefactureerde klussen blijven vindbaar via `werkbon_links`). Voor de echte sluitpost een eigen `klussen`-tabel met opslaan-bij-openen, zodat ook nooit-gepubliceerde klussen bewaard blijven.
 - Opslag-beheer: opslag-meter in het dashboard en/of een opschoonscript voor oude, afgeronde klussen. Bij veel interne foto's richting Supabase Pro.
