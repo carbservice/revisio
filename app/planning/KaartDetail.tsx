@@ -7,6 +7,7 @@
 
 import { useEffect, useRef, useState, CSSProperties, ReactNode } from "react";
 import { supabase } from "@/lib/supabase";
+import { apiFetch } from "@/lib/api";
 import { GROEN, GOUD, TEKST, GRIJS, RAND } from "@/lib/theme";
 import { printKlusLabel } from "./printLabel";
 import {
@@ -23,6 +24,30 @@ export default function KaartDetail({
 }: {
   kaart: Kaart; klus?: Klus; gebruiker: string; mijnCode: string | null; klantOnuitgegeven?: boolean; binnenOp?: string | null; arbeidOver?: boolean; klusIndex?: KlusRef[]; onSluit: () => void; onWijzig: () => void;
 }) {
+  // Opent een beveiligde route (factuur/offerte) met het inlogbewijs erbij. We
+  // openen direct een leeg tabblad (mag binnen de klik) en zetten daarna de
+  // inhoud erin, zodat de popup-blocker niet ingrijpt.
+  async function openBeveiligd(pad: string, alsPdf: boolean) {
+    const w = window.open("", "_blank");
+    try {
+      const res = await apiFetch(pad);
+      if (!res.ok) {
+        if (w) w.location.href = "data:text/html;charset=utf-8," + encodeURIComponent("<p style='font-family:sans-serif;padding:40px'>Geen toegang of niets gevonden.</p>");
+        return;
+      }
+      if (alsPdf) {
+        const blob = await res.blob();
+        if (w) w.location.href = URL.createObjectURL(blob);
+      } else {
+        const j = await res.json();
+        if (j?.url) { if (w) w.location.href = j.url; else window.open(j.url, "_blank"); }
+        else if (w) w.close();
+      }
+    } catch {
+      if (w) w.close();
+    }
+  }
+
   const [titel, setTitel] = useState(kaart.titel);
   const [omschrijving, setOmschrijving] = useState(kaart.omschrijving);
   const [leden, setLeden] = useState<string[]>([]);
@@ -275,9 +300,9 @@ export default function KaartDetail({
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 8, alignItems: "center" }}>
               <a href={`/werkbonnen?klus=${kaart.klus_id}`} style={{ fontSize: 12.5, fontWeight: 700, color: GROEN }}>Open in de werkbon-app →</a>
               {kaart.gefactureerd && (
-                <a href={`/api/factuur?klus_id=${kaart.klus_id}`} target="_blank" rel="noreferrer" style={{ fontSize: 12.5, fontWeight: 700, color: "#6b5410" }}>📄 Factuur (PDF) →</a>
+                <button onClick={() => openBeveiligd(`/api/factuur?klus_id=${kaart.klus_id}`, true)} style={{ border: "none", background: "transparent", fontSize: 12.5, fontWeight: 700, color: "#6b5410", cursor: "pointer", padding: 0, fontFamily: "inherit" }}>📄 Factuur (PDF) →</button>
               )}
-              <a href={`/api/offerte?klus_id=${kaart.klus_id}`} target="_blank" rel="noreferrer" style={{ fontSize: 12.5, fontWeight: 700, color: "#6b5410" }}>🧾 Offerte in Moneybird →</a>
+              <button onClick={() => openBeveiligd(`/api/offerte?klus_id=${kaart.klus_id}`, false)} style={{ border: "none", background: "transparent", fontSize: 12.5, fontWeight: 700, color: "#6b5410", cursor: "pointer", padding: 0, fontFamily: "inherit" }}>🧾 Offerte in Moneybird →</button>
             </div>
           </div>
         )}

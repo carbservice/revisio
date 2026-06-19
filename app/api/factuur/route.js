@@ -4,6 +4,8 @@
 // hetzelfde contact + dezelfde referentie (voertuig). Opent inline als PDF, dus
 // we kunnen 'm vanaf de kaart koppelen met een simpele link.
 
+import { vereisBeheer } from "@/lib/auth-server";
+
 const ADMIN = process.env.MONEYBIRD_ADMIN;
 const TOKEN = process.env.MONEYBIRD_TOKEN;
 
@@ -15,6 +17,8 @@ function bericht(tekst) {
 }
 
 export async function GET(req) {
+  const poort = await vereisBeheer(req);
+  if (!poort.ok) return poort.response;
   try {
     const klusId = new URL(req.url).searchParams.get("klus_id");
     if (!klusId) return bericht("Geen klus opgegeven.");
