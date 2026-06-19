@@ -14,12 +14,12 @@ import { useGebruiker } from "@/app/components/AuthGate";
 // (admin of manager) of "admin" (alleen admin). Eén bron voor elke pagina.
 const items = [
   { href: "/start", label: "🏠 Start", rol: "iedereen" },
-  { href: "/planning", label: "🗂️ Werkplaats Planning", rol: "iedereen" },
+  { href: "/werkplaats-planning", label: "🗂️ Werkplaats Planning", rol: "iedereen" },
   { href: "/werkbonnen", label: "🧾 Werkbonnen", rol: "iedereen" },
-  { href: "/hub", label: "⚙️ Carburateur Database Hub", rol: "iedereen" },
-  { href: "/support", label: "💬 Support Hub", rol: "iedereen" },
-  { href: "/dashboard/werkplaats", label: "🔧 Werkplaats Dashboard", rol: "beheer" },
-  { href: "/dashboard", label: "📊 Cijfers", rol: "admin" },
+  { href: "/carburateur-database-hub", label: "⚙️ Carburateur Database Hub", rol: "iedereen" },
+  { href: "/support-hub", label: "💬 Support Hub", rol: "iedereen" },
+  { href: "/werkplaats-dashboard", label: "🔧 Werkplaats Dashboard", rol: "beheer" },
+  { href: "/cijfers", label: "📊 Cijfers", rol: "admin" },
 ] as const;
 
 export default function DashboardNav({ isAdmin: isAdminProp }: { isAdmin?: boolean }) {
@@ -39,8 +39,8 @@ export default function DashboardNav({ isAdmin: isAdminProp }: { isAdmin?: boole
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
       {items.map((it) => {
-        // /planning/[kaart_id] hoort ook bij Werkplaats Planning.
-        const actief = pad === it.href || (it.href === "/planning" && pad.startsWith("/planning/"));
+        // /werkplaats-planning/[kaart_id] hoort ook bij Werkplaats Planning.
+        const actief = pad === it.href || (it.href === "/werkplaats-planning" && pad.startsWith("/werkplaats-planning/"));
         const opSlot = !mag(it.rol); // wel zichtbaar, maar geen toegang
 
         if (opSlot) {

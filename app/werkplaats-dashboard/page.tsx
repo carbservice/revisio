@@ -1,6 +1,6 @@
 "use client";
 
-// Werkplaats-managementoverzicht. app/dashboard/werkplaats/page.tsx
+// Werkplaats-managementoverzicht. app/werkplaats-dashboard/page.tsx
 
 import { useEffect, useState, CSSProperties } from "react";
 import { GROEN, GOUD, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG } from "@/lib/theme";
@@ -116,7 +116,7 @@ function WerkplaatsDashboard() {
     <main style={wrap}>
       <div style={binnen}>
       <ScrollNaarBoven />
-      <PaginaKop naam={naam} onUitloggen={uitloggen} titel="Werkplaats">
+      <PaginaKop naam={naam} onUitloggen={uitloggen} titel="Werkplaats Dashboard">
         <div style={{ fontSize: 13.5, color: GRIJS, margin: "-6px 0 14px" }}>Live uit de werkplaats-app · {maandLabel(data.maand)} vergeleken met {maandLabel(data.vorige_maand)}</div>
         <input
           value={zoek}

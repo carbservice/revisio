@@ -5,7 +5,7 @@
 // werkplaats (manager + admin) een melding.
 
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { codeVoorEmail } from "@/app/planning/planning-config";
+import { codeVoorEmail } from "@/app/werkplaats-planning/planning-config";
 
 export async function POST(request) {
   try {

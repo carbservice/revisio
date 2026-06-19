@@ -182,7 +182,7 @@ function WerkbonBekijk() {
 
   function terug() {
     if (window.history.length > 1) window.history.back();
-    else window.location.href = "/dashboard/werkplaats";
+    else window.location.href = "/werkplaats-dashboard";
   }
 
   if (klusId === null) return <main style={wrap}><p style={{ color: GRIJS }}>Laden...</p></main>;

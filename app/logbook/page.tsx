@@ -4,5 +4,5 @@ import { redirect } from "next/navigation";
 // publiek opvraagbaar). Vervangen door een redirect naar het echte dashboard,
 // dat achter de admin-login zit.
 export default function Logbook() {
-  redirect("/dashboard");
+  redirect("/cijfers");
 }

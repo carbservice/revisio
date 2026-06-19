@@ -8,7 +8,7 @@ import { GROEN, GRIJS, RAND, KAART_BG, KAART_SCHADUW } from "@/lib/theme";
 import Systeemstatus from "@/app/components/Systeemstatus";
 import DashboardNav from "@/app/components/DashboardNav";
 import RevisioLogo from "@/app/components/RevisioLogo";
-import MeldingBel from "@/app/planning/MeldingBel";
+import MeldingBel from "@/app/werkplaats-planning/MeldingBel";
 import { useGebruiker } from "@/app/components/AuthGate";
 
 export default function PaginaKop({ naam, onUitloggen, titel, children }: { naam: string; onUitloggen: () => void; titel: string; children?: ReactNode }) {

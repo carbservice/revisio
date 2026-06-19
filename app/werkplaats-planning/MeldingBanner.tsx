@@ -54,7 +54,7 @@ export default function MeldingBanner() {
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {items.map((m) => (
-          <Link key={m.id} href={m.kaart_id ? `/planning/${m.kaart_id}` : "/planning"} onClick={() => gelezen(m.id)} style={rij}>
+          <Link key={m.id} href={m.kaart_id ? `/werkplaats-planning/${m.kaart_id}` : "/werkplaats-planning"} onClick={() => gelezen(m.id)} style={rij}>
             <span style={{ width: 7, height: 7, borderRadius: "50%", background: ROOD, flexShrink: 0 }} />
             <span style={{ flex: 1, fontSize: 13, color: TEKST }}>{m.tekst}</span>
             <span style={{ fontSize: 11.5, color: GROEN, fontWeight: 700, flexShrink: 0 }}>Openen →</span>

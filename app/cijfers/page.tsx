@@ -1,6 +1,6 @@
 "use client";
 
-// Revisio CEO dashboard. app/dashboard/page.tsx
+// Revisio CEO dashboard. app/cijfers/page.tsx
 
 import { useEffect, useState, CSSProperties, SVGProps } from "react";
 import { GROEN, GROEN_BG, GOUD, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG } from "@/lib/theme";
@@ -375,7 +375,7 @@ function Dashboard() {
         {/* Werkplaats */}
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: 8, margin: "26px 0 12px" }}>
           <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Werkplaats</h2>
-          <a href="/dashboard/werkplaats" style={{ fontSize: 12.5, color: GROEN, fontWeight: 700, textDecoration: "none" }}>Bekijk werkplaats →</a>
+          <a href="/werkplaats-dashboard" style={{ fontSize: 12.5, color: GROEN, fontWeight: 700, textDecoration: "none" }}>Bekijk werkplaats →</a>
         </div>
         {wp && !wp.fout ? (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 14 }}>

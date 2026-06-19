@@ -55,7 +55,7 @@ export default function DagOverzicht() {
           const zichtbaar = open ? k.regels : tags;
           return (
             <div key={k.kaart_id}>
-              <Link href={`/planning/${k.kaart_id}`} style={{ fontSize: 13, fontWeight: 800, color: GROEN, textDecoration: "none" }}>
+              <Link href={`/werkplaats-planning/${k.kaart_id}`} style={{ fontSize: 13, fontWeight: 800, color: GROEN, textDecoration: "none" }}>
                 {k.titel}{!open && <span style={{ color: GRIJS, fontWeight: 600 }}> · {k.regels.length} {k.regels.length === 1 ? "update" : "updates"}</span>} <span style={{ color: GRIJS, fontWeight: 600 }}>openen →</span>
               </Link>
               {zichtbaar.length > 0 && (

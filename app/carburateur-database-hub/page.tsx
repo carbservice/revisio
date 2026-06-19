@@ -1,6 +1,6 @@
 "use client";
 
-// Carburateur Hub. app/hub/page.tsx
+// Carburateur Database Hub. app/carburateur-database-hub/page.tsx
 // Interne kruisverwijzing-database van Pierburg-kennbladen. Achter admin-login.
 // Data komt uit Supabase (hub_* tabellen). De vaste vertaal-labels blijven in data.ts.
 
@@ -10,7 +10,7 @@ import AuthGate, { useGebruiker } from "@/app/components/AuthGate";
 import DashboardNav from "@/app/components/DashboardNav";
 import Systeemstatus from "@/app/components/Systeemstatus";
 import RevisioLogo from "@/app/components/RevisioLogo";
-import MeldingBel from "@/app/planning/MeldingBel";
+import MeldingBel from "@/app/werkplaats-planning/MeldingBel";
 import { supabase } from "@/lib/supabase";
 import { LABELS, ORDER, Kennblad } from "./data";
 

@@ -170,7 +170,7 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
   // Deep-link: kaart-URL bijhouden zonder de pagina te herladen.
   useEffect(() => {
     function uitPad() {
-      const m = window.location.pathname.match(/^\/planning\/([^/]+)/);
+      const m = window.location.pathname.match(/^\/werkplaats-planning\/([^/]+)/);
       setOpenId(m ? decodeURIComponent(m[1]) : null);
     }
     window.addEventListener("popstate", uitPad);
@@ -184,7 +184,7 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
       const id = (e as CustomEvent).detail as string;
       if (!id) return;
       setOpenId(id);
-      window.history.pushState({}, "", `/planning/${id}`);
+      window.history.pushState({}, "", `/werkplaats-planning/${id}`);
     }
     window.addEventListener("revisio:open-kaart", opOpen as EventListener);
     return () => window.removeEventListener("revisio:open-kaart", opOpen as EventListener);
@@ -192,11 +192,11 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
 
   function open(id: string) {
     setOpenId(id);
-    window.history.pushState({}, "", `/planning/${id}`);
+    window.history.pushState({}, "", `/werkplaats-planning/${id}`);
   }
   function sluit() {
     setOpenId(null);
-    window.history.pushState({}, "", "/planning");
+    window.history.pushState({}, "", "/werkplaats-planning");
   }
 
   // --- Slepen --------------------------------------------------------------

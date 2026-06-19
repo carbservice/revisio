@@ -10,11 +10,11 @@ import { useEffect, useState, CSSProperties } from "react";
 import { GROEN, GOUD, TEKST, GRIJS, RAND, BG, KAART_SCHADUW } from "@/lib/theme";
 import AuthGate, { useGebruiker } from "@/app/components/AuthGate";
 import Systeemstatus from "@/app/components/Systeemstatus";
-import MeldingBanner from "@/app/planning/MeldingBanner";
-import DagOverzicht from "@/app/planning/DagOverzicht";
+import MeldingBanner from "@/app/werkplaats-planning/MeldingBanner";
+import DagOverzicht from "@/app/werkplaats-planning/DagOverzicht";
 import DashboardNav from "@/app/components/DashboardNav";
 import RevisioLogo from "@/app/components/RevisioLogo";
-import MeldingBel from "@/app/planning/MeldingBel";
+import MeldingBel from "@/app/werkplaats-planning/MeldingBel";
 import { supabase } from "@/lib/supabase";
 
 const SERIF = "'Karma', Georgia, serif";
@@ -27,12 +27,12 @@ function groet(): string {
 }
 
 const MODULES = [
-  { href: "/planning", icon: "🗂️", titel: "Werkplaats Planning", sub: "Het werkbord: van binnenkomst tot factureren", rol: "iedereen" },
+  { href: "/werkplaats-planning", icon: "🗂️", titel: "Werkplaats Planning", sub: "Het werkbord: van binnenkomst tot factureren", rol: "iedereen" },
   { href: "/werkbonnen", icon: "🧾", titel: "Werkbonnen", sub: "Geaccepteerde klussen klaar voor revisie", rol: "iedereen" },
-  { href: "/hub", icon: "⚙️", titel: "Carburateur Database Hub", sub: "Interne database voor alle blueprints", rol: "iedereen" },
-  { href: "/support", icon: "💬", titel: "Support Hub", sub: "AI-chat per carburateurtype, uit de servicehandleidingen", rol: "iedereen" },
-  { href: "/dashboard/werkplaats", icon: "🔧", titel: "Werkplaats", sub: "Dit is het interne werkplaatsdashboard", rol: "beheer" },
-  { href: "/dashboard", icon: "📊", titel: "Cijfers", sub: "Omzet, marges, KPI's", rol: "admin" },
+  { href: "/carburateur-database-hub", icon: "⚙️", titel: "Carburateur Database Hub", sub: "Interne database voor alle blueprints", rol: "iedereen" },
+  { href: "/support-hub", icon: "💬", titel: "Support Hub", sub: "AI-chat per carburateurtype, uit de servicehandleidingen", rol: "iedereen" },
+  { href: "/werkplaats-dashboard", icon: "🔧", titel: "Werkplaats Dashboard", sub: "Dit is het interne werkplaatsdashboard", rol: "beheer" },
+  { href: "/cijfers", icon: "📊", titel: "Cijfers", sub: "Omzet, marges, KPI's", rol: "admin" },
 ] as const;
 const OPSLAG = "revisio-start-volgorde";
 

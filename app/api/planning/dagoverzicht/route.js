@@ -7,8 +7,8 @@
 // Mailen vereist de env-variabelen GMAIL_USER, GMAIL_APP_PASS (en CRON_SECRET).
 
 import nodemailer from "nodemailer";
-import { TEAM } from "@/app/planning/planning-config";
-import { bouwDigest } from "@/app/planning/dagoverzicht-lib";
+import { TEAM } from "@/app/werkplaats-planning/planning-config";
+import { bouwDigest } from "@/app/werkplaats-planning/dagoverzicht-lib";
 
 const SITE = "https://revisio-umber.vercel.app";
 

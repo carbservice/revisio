@@ -6,7 +6,7 @@
 
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { vereisIngelogd } from "@/lib/auth-server";
-import { STANDAARD_LEDEN, gewensteFase } from "@/app/planning/planning-config";
+import { STANDAARD_LEDEN, gewensteFase } from "@/app/werkplaats-planning/planning-config";
 
 const ADMIN = process.env.MONEYBIRD_ADMIN;
 const TOKEN = process.env.MONEYBIRD_TOKEN;

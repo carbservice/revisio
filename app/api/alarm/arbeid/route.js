@@ -7,7 +7,7 @@ import nodemailer from "nodemailer";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { vereisIngelogd } from "@/lib/auth-server";
 import { geoffreerdeArbeidUit, geoffreerdeUren, UURTARIEF_EX_BTW } from "@/lib/tarief";
-import { codeVoorEmail } from "@/app/planning/planning-config";
+import { codeVoorEmail } from "@/app/werkplaats-planning/planning-config";
 
 const ADMIN = process.env.MONEYBIRD_ADMIN;
 const TOKEN = process.env.MONEYBIRD_TOKEN;

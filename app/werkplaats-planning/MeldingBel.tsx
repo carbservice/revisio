@@ -51,10 +51,10 @@ export default function MeldingBel() {
     setOpen(false);
     if (!m.kaart_id) return;
     // Al op het bord? Dan in-place openen (geen volledige herlaad), anders navigeren.
-    if (typeof window !== "undefined" && window.location.pathname.startsWith("/planning")) {
+    if (typeof window !== "undefined" && window.location.pathname.startsWith("/werkplaats-planning")) {
       window.dispatchEvent(new CustomEvent("revisio:open-kaart", { detail: m.kaart_id }));
     } else {
-      router.push(`/planning/${m.kaart_id}`);
+      router.push(`/werkplaats-planning/${m.kaart_id}`);
     }
   }
   async function allesGelezen() {

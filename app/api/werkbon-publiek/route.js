@@ -4,7 +4,7 @@
 // zelf wanneer een update (en welke foto's) zichtbaar worden voor de klant.
 
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { REVISIE_DOEL_DAGEN } from "@/app/planning/planning-config";
+import { REVISIE_DOEL_DAGEN } from "@/app/werkplaats-planning/planning-config";
 
 const STADIA = [
   { stap: "ontvangen", label: "Ontvangen op de werkbank", pct: 20 },
