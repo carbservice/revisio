@@ -176,7 +176,7 @@ function Hub() {
         <div style={wrap}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
             <div>
-              <div style={{ fontFamily: SERIF, fontSize: 27, fontWeight: 700, letterSpacing: 0.2 }}>Carburateur Hub</div>
+              <div style={{ fontFamily: SERIF, fontSize: 27, fontWeight: 700, letterSpacing: 0.2 }}>Carburateur Database Hub</div>
               <div style={{ fontSize: 12.5, color: "#bcd6c8", marginTop: 2 }}>Solex · Pierburg · Zenith kennbladen · interne kruisverwijzing</div>
             </div>
           </div>

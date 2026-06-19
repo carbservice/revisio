@@ -42,6 +42,11 @@ export async function GET() {
       const res = await metTimeout("https://api.github.com");
       return res.ok;
     }),
+    check("Backblaze B2 (foto-backup)", async () => {
+      // Elke respons (ook 401 zonder auth) betekent dat B2 bereikbaar is.
+      const res = await metTimeout("https://api.backblazeb2.com/b2api/v3/b2_authorize_account");
+      return res.status > 0;
+    }),
   ]);
 
   // Diagnose: is de server-only service-role-sleutel runtime beschikbaar?

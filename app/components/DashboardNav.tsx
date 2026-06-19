@@ -16,7 +16,7 @@ const items = [
   { href: "/start", label: "🏠 Start", rol: "iedereen" },
   { href: "/planning", label: "🗂️ Werkplaats Planning", rol: "iedereen" },
   { href: "/werkbonnen", label: "🧾 Werkbonnen", rol: "iedereen" },
-  { href: "/hub", label: "⚙️ Carburateur Hub", rol: "iedereen" },
+  { href: "/hub", label: "⚙️ Carburateur Database Hub", rol: "iedereen" },
   { href: "/support", label: "💬 Support Hub", rol: "iedereen" },
   { href: "/dashboard/werkplaats", label: "🔧 Werkplaats Dashboard", rol: "beheer" },
   { href: "/dashboard", label: "📊 Cijfers", rol: "admin" },

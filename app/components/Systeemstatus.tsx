@@ -42,6 +42,7 @@ export default function Systeemstatus() {
     { kort: "Moneybird", ok: !!vind("Moneybird")?.ok, ms: vind("Moneybird")?.ms ?? null },
     { kort: "Supabase", ok: !!vind("Supabase")?.ok, ms: vind("Supabase")?.ms ?? null },
     { kort: "GitHub", ok: !!vind("GitHub")?.ok, ms: vind("GitHub")?.ms ?? null },
+    { kort: "B2 Backup", ok: !!vind("Backblaze")?.ok, ms: vind("Backblaze")?.ms ?? null },
   ];
 
   const kaart: CSSProperties = { background: KAART_BG, border: `1px solid ${RAND}`, borderRadius: 14, padding: "12px 16px", marginBottom: 20, boxShadow: KAART_SCHADUW };

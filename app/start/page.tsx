@@ -29,7 +29,7 @@ function groet(): string {
 const MODULES = [
   { href: "/planning", icon: "🗂️", titel: "Werkplaats Planning", sub: "Het werkbord: van binnenkomst tot factureren", rol: "iedereen" },
   { href: "/werkbonnen", icon: "🧾", titel: "Werkbonnen", sub: "Geaccepteerde klussen klaar voor revisie", rol: "iedereen" },
-  { href: "/hub", icon: "⚙️", titel: "Carburateur Hub", sub: "Interne database voor alle blueprints", rol: "iedereen" },
+  { href: "/hub", icon: "⚙️", titel: "Carburateur Database Hub", sub: "Interne database voor alle blueprints", rol: "iedereen" },
   { href: "/support", icon: "💬", titel: "Support Hub", sub: "AI-chat per carburateurtype, uit de servicehandleidingen", rol: "iedereen" },
   { href: "/dashboard/werkplaats", icon: "🔧", titel: "Werkplaats", sub: "Dit is het interne werkplaatsdashboard", rol: "beheer" },
   { href: "/dashboard", icon: "📊", titel: "Cijfers", sub: "Omzet, marges, KPI's", rol: "admin" },
