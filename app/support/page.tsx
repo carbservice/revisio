@@ -21,17 +21,39 @@ function SupportChat() {
   const [berichten, setBerichten] = useState<Bericht[]>([]);
   const [vraag, setVraag] = useState("");
   const [bezig, setBezig] = useState(false);
-  const [sessieUsd, setSessieUsd] = useState(0);
+  const [maandUsd, setMaandUsd] = useState(0);
+  const [bronVan, setBronVan] = useState<Record<string, string>>({});
+  const [boekjeUrl, setBoekjeUrl] = useState("");
   const eindRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("support_kennis").select("type").eq("taal", "nl");
-      const uniek = [...new Set((data || []).map((r: { type: string }) => r.type))].sort();
-      setTypes(uniek);
+      const { data } = await supabase.from("support_kennis").select("type, bron").eq("taal", "nl");
+      const rows = (data || []) as { type: string; bron: string }[];
+      const uniek = [...new Set(rows.map((r) => r.type))].sort();
+      const brn: Record<string, string> = {};
+      rows.forEach((r) => { if (!brn[r.type]) brn[r.type] = r.bron; });
+      setTypes(uniek); setBronVan(brn);
       setType((t) => t || uniek[0] || "");
+      const start = new Date(); start.setUTCDate(1); start.setUTCHours(0, 0, 0, 0);
+      const { data: k } = await supabase.from("ai_kosten").select("kosten_usd").gte("aangemaakt_op", start.toISOString());
+      setMaandUsd((k || []).reduce((s: number, r: { kosten_usd: number }) => s + Number(r.kosten_usd || 0), 0));
     })();
   }, []);
+
+  // Beveiligde (tijdelijke) link naar het boekje van het gekozen type.
+  useEffect(() => {
+    setBoekjeUrl("");
+    const bron = bronVan[type];
+    if (!type || !bron) return;
+    (async () => {
+      try {
+        const r = await apiFetch(`/api/boekje?bron=${encodeURIComponent(bron)}`);
+        const j = await r.json();
+        if (j.url) setBoekjeUrl(j.url);
+      } catch { /* geen viewer beschikbaar */ }
+    })();
+  }, [type, bronVan]);
 
   useEffect(() => { eindRef.current?.scrollIntoView({ behavior: "smooth" }); }, [berichten, bezig]);
 
@@ -48,7 +70,7 @@ function SupportChat() {
         body: JSON.stringify({ type, taal, vraag: v, history: berichten }),
       });
       const j = await r.json();
-      if (typeof j.kostenUsd === "number") setSessieUsd((s) => s + j.kostenUsd);
+      if (typeof j.maandUsd === "number") setMaandUsd(j.maandUsd);
       setBerichten([...nieuw, { role: "assistant", content: j.antwoord || `⚠ ${j.fout || "Geen antwoord."}` }]);
     } catch {
       setBerichten([...nieuw, { role: "assistant", content: "⚠ Er ging iets mis. Probeer het opnieuw." }]);
@@ -83,8 +105,8 @@ function SupportChat() {
               <button onClick={() => setTaal("en")} style={taalKnop("en", "EN")}>EN</button>
             </div>
           </div>
-          <div style={{ marginLeft: "auto", textAlign: "right", fontSize: 11.5, color: GRIJS, lineHeight: 1.45 }} title="Geschatte API-kosten van deze chatsessie">
-            <div style={{ fontWeight: 800, color: GROEN }}>{`Sessie: $${sessieUsd.toFixed(4)}`}</div>
+          <div style={{ marginLeft: "auto", textAlign: "right", fontSize: 11.5, color: GRIJS, lineHeight: 1.45 }} title="Geschatte AI-kosten deze maand (alle gebruikers samen)">
+            <div style={{ fontWeight: 800, color: GROEN }}>{`Deze maand: $${maandUsd.toFixed(3)}`}</div>
             <div>limiet $45/mnd</div>
           </div>
         </div>
@@ -133,6 +155,17 @@ function SupportChat() {
             cursor: bezig || !vraag.trim() ? "default" : "pointer", opacity: bezig || !vraag.trim() || !type ? 0.6 : 1, fontFamily: "inherit",
           }}>Stuur</button>
         </div>
+
+        {/* Servicehandleiding (klikbaar boekje) */}
+        {boekjeUrl && (
+          <div style={{ background: KAART_BG, border: `1px solid ${RAND}`, borderRadius: 14, padding: 12, marginTop: 16, boxShadow: KAART_SCHADUW }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, flexWrap: "wrap", gap: 8 }}>
+              <div style={{ fontSize: 14, fontWeight: 800, color: GROEN }}>📖 Servicehandleiding · {type}</div>
+              <a href={boekjeUrl} target="_blank" rel="noreferrer" style={{ fontSize: 12.5, fontWeight: 700, color: GOUD }}>Open in nieuw tabblad ↗</a>
+            </div>
+            <iframe src={boekjeUrl} title={`handleiding ${type}`} style={{ width: "100%", height: 560, border: `1px solid ${RAND}`, borderRadius: 8, background: "#fff" }} />
+          </div>
+        )}
       </div>
     </main>
   );

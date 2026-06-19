@@ -65,7 +65,17 @@ export async function POST(req) {
     const inT = u.input_tokens || 0;
     const outT = u.output_tokens || 0;
     const kostenUsd = (inT / 1e6) * 3 + (outT / 1e6) * 15;
-    return Response.json({ antwoord, kostenUsd, tokens: { in: inT, uit: outT } });
+
+    // Kosten loggen + maand-totaal (overleeft verversen).
+    let maandUsd = kostenUsd;
+    try {
+      await supabaseAdmin.from("ai_kosten").insert({ route: "support", kosten_usd: kostenUsd, tokens_in: inT, tokens_uit: outT });
+      const start = new Date(); start.setUTCDate(1); start.setUTCHours(0, 0, 0, 0);
+      const { data: rows } = await supabaseAdmin.from("ai_kosten").select("kosten_usd").gte("aangemaakt_op", start.toISOString());
+      maandUsd = (rows || []).reduce((s, r) => s + Number(r.kosten_usd || 0), 0);
+    } catch { /* tellen is niet kritiek */ }
+
+    return Response.json({ antwoord, kostenUsd, maandUsd, tokens: { in: inT, uit: outT } });
   } catch (e) {
     return Response.json({ fout: e.message }, { status: 200 });
   }

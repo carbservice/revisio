@@ -13,7 +13,7 @@ import urllib.request
 
 URL = os.environ["SUPABASE_URL"].rstrip("/")
 KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
-BUCKETS = ["werkbon-fotos", "carburateur-blueprints"]
+BUCKETS = ["werkbon-fotos", "carburateur-blueprints", "support-boekjes"]
 OUT = pathlib.Path("foto-backup")
 
 
