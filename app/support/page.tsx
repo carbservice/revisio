@@ -35,7 +35,7 @@ function SupportChat() {
   const [tekeningen, setTekeningen] = useState<{ naam: string; url: string }[]>([]);
   const [groot, setGroot] = useState("");
   const [kiezerOpen, setKiezerOpen] = useState(false);
-  const eindRef = useRef<HTMLDivElement | null>(null);
+  const lijstRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -70,7 +70,8 @@ function SupportChat() {
     })();
   }, [type, bronVan]);
 
-  useEffect(() => { eindRef.current?.scrollIntoView({ behavior: "smooth" }); }, [berichten, bezig]);
+  // Alleen het chatvakje zelf naar beneden scrollen, nooit de hele pagina.
+  useEffect(() => { const el = lijstRef.current; if (el) el.scrollTop = el.scrollHeight; }, [berichten, bezig]);
 
   function kiesType(t: string) { setType(t); setBerichten([]); setKiezerOpen(false); }
 
@@ -109,7 +110,7 @@ function SupportChat() {
 
         {/* Titel + uitnodigende intro */}
         <div style={{ textAlign: "center", margin: "4px 0 18px" }}>
-          <h1 style={{ fontSize: 34, fontWeight: 800, color: GROEN, margin: 0, letterSpacing: 0.5 }}>
+          <h1 style={{ fontSize: "clamp(25px, 7vw, 34px)", fontWeight: 800, color: GROEN, margin: 0, letterSpacing: 0.5 }}>
             <span style={{ color: CL_ORANJE }}>✦</span> Support <span style={{ color: CL_ORANJE }}>HUB</span>
           </h1>
           <p style={{ maxWidth: 700, margin: "10px auto 0", fontSize: 15, lineHeight: 1.6, color: GRIJS }}>
@@ -155,7 +156,7 @@ function SupportChat() {
           </div>
 
           {/* Berichten / lege start */}
-          <div style={{ minHeight: 320, maxHeight: 540, overflowY: "auto", paddingRight: 4 }}>
+          <div ref={lijstRef} style={{ minHeight: 320, maxHeight: 540, overflowY: "auto", paddingRight: 4 }}>
             {!type ? (
               <div style={{ textAlign: "center", padding: "44px 16px", color: CL_GRIJS }}>
                 <div style={{ fontSize: 40, marginBottom: 8 }}>✦</div>
@@ -191,7 +192,6 @@ function SupportChat() {
                 {bezig && <div style={{ color: CL_ORANJE, fontSize: 13.5, fontStyle: "italic", padding: "4px 4px" }}>Claude leest de handleiding…</div>}
               </>
             )}
-            <div ref={eindRef} />
           </div>
 
           {/* Invoer */}
@@ -221,7 +221,7 @@ function SupportChat() {
               <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
                 <a href={boekjeUrl} target="_blank" rel="noreferrer" style={{ fontSize: 12.5, fontWeight: 700, color: GOUD }}>Open in nieuw tabblad ↗</a>
               </div>
-              <iframe src={boekjeUrl} title={`handleiding ${type}`} style={{ width: "100%", height: 600, border: `1px solid ${RAND}`, borderRadius: 8, background: "#fff" }} />
+              <iframe src={boekjeUrl} title={`handleiding ${type}`} style={{ width: "100%", height: "min(70vh, 600px)", border: `1px solid ${RAND}`, borderRadius: 8, background: "#fff" }} />
             </div>
           </section>
         )}
