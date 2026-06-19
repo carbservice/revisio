@@ -1,7 +1,8 @@
 // app/api/werkplaats-stats/route.js
 // Werkplaats-cijfers voor management, rechtstreeks uit Supabase.
 
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { vereisBeheer } from "@/lib/auth-server";
 
 export const dynamic = "force-dynamic";
 
@@ -50,19 +51,21 @@ function dagenGeleden(s) {
   return Math.floor((Date.now() - t) / 86400000);
 }
 
-export async function GET() {
+export async function GET(req) {
+  const poort = await vereisBeheer(req);
+  if (!poort.ok) return poort.response;
   try {
     const now = new Date();
     const dezeM = ym(now);
     const vorigeM = ym(new Date(now.getFullYear(), now.getMonth() - 1, 1));
 
-    const { data: tijd } = await supabase.from("tijdregels").select("klus_id, klus_label, monteur_naam, minuten, start_tijd, aangemaakt_op");
-    const { data: voortgang } = await supabase.from("klus_voortgang").select("klus_id, stap, gedaan_op");
-    const { data: retouren } = await supabase.from("werkbon_retour").select("klus_id, is_retour, reden, gemarkeerd_op");
-    const { data: artikelenAll } = await supabase.from("werkbon_artikelen").select("klus_id, aangemaakt_op");
-    const { data: opmerkingAll } = await supabase.from("werkbon_opmerking").select("klus_id, bijgewerkt_op");
-    const { data: fotosAll } = await supabase.from("klus_fotos").select("klus_id, geupload_op");
-    const { data: linksAll } = await supabase.from("werkbon_links").select("klus_id, nummer, klant, voertuig");
+    const { data: tijd } = await supabaseAdmin.from("tijdregels").select("klus_id, klus_label, monteur_naam, minuten, start_tijd, aangemaakt_op");
+    const { data: voortgang } = await supabaseAdmin.from("klus_voortgang").select("klus_id, stap, gedaan_op");
+    const { data: retouren } = await supabaseAdmin.from("werkbon_retour").select("klus_id, is_retour, reden, gemarkeerd_op");
+    const { data: artikelenAll } = await supabaseAdmin.from("werkbon_artikelen").select("klus_id, aangemaakt_op");
+    const { data: opmerkingAll } = await supabaseAdmin.from("werkbon_opmerking").select("klus_id, bijgewerkt_op");
+    const { data: fotosAll } = await supabaseAdmin.from("klus_fotos").select("klus_id, geupload_op");
+    const { data: linksAll } = await supabaseAdmin.from("werkbon_links").select("klus_id, nummer, klant, voertuig");
     const mb = await moneybirdMap();
 
     const ontvangen = {}, klaar = {};

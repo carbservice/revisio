@@ -1,6 +1,8 @@
 // Revisio dashboard, datalaag.
 // app/api/dashboard/route.js
 
+import { vereisAdmin } from "@/lib/auth-server";
+
 const ADMIN = process.env.MONEYBIRD_ADMIN;
 const TOKEN = process.env.MONEYBIRD_TOKEN;
 const BASE = `https://moneybird.com/api/v2/${ADMIN}`;
@@ -134,7 +136,10 @@ const MAANDEN = ["januari","februari","maart","april","mei","juni","juli","augus
 const p2 = (n) => String(n).padStart(2, "0");
 const kort = (i) => MAANDEN[i].charAt(0).toUpperCase() + MAANDEN[i].slice(1, 3);
 
-export async function GET() {
+export async function GET(req) {
+  // Portier: alleen ingelogde admins mogen de cijfers ophalen.
+  const poort = await vereisAdmin(req);
+  if (!poort.ok) return poort.response;
   try {
     if (cache.data && Date.now() - cache.tijd < CACHE_MS) {
       return Response.json(cache.data);

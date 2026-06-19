@@ -6,7 +6,8 @@
 //     zijn. Zo blijft bv. Lude vindbaar en bewerkbaar na facturatie, ZONDER de
 //     hele Moneybird-factuurhistorie binnen te trekken.
 
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { vereisIngelogd } from "@/lib/auth-server";
 import { geoffreerdeArbeidUit } from "@/lib/tarief";
 
 const ADMIN = process.env.MONEYBIRD_ADMIN;
@@ -43,7 +44,9 @@ function schoon(ref) {
   return ref.replace(/\s*,\s*,+/g, ", ").replace(/\s{2,}/g, " ").trim();
 }
 
-export async function GET() {
+export async function GET(req) {
+  const poort = await vereisIngelogd(req);
+  if (!poort.ok) return poort.response;
   try {
     let page = 1;
     let alles = [];
@@ -72,7 +75,7 @@ export async function GET() {
     // hebben), dus geen losse Moneybird-facturen.
     const acceptedIds = new Set(klussen.map((k) => k.id));
     try {
-      const { data: links } = await supabase
+      const { data: links } = await supabaseAdmin
         .from("werkbon_links")
         .select("klus_id, nummer, klant, voertuig, klacht");
       const gezien = new Set();

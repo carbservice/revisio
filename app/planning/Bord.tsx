@@ -7,6 +7,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, CSSProperties } from "react";
 import { supabase } from "@/lib/supabase";
+import { apiFetch } from "@/lib/api";
 import { GROEN, GOUD, TEKST, GRIJS, RAND, BG, KAART_SCHADUW } from "@/lib/theme";
 import { useGebruiker } from "@/app/components/AuthGate";
 import Systeemstatus from "@/app/components/Systeemstatus";
@@ -116,7 +117,7 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
 
   const laadKlussen = useCallback(async () => {
     try {
-      const res = await fetch("/api/klussen", { cache: "no-store" });
+      const res = await apiFetch("/api/klussen", { cache: "no-store" });
       const j = await res.json();
       const map: Record<string, Klus> = {};
       (j.klussen || []).forEach((kl: Klus) => { map[String(kl.id)] = kl; });
@@ -126,7 +127,7 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
 
   const synchroniseer = useCallback(async () => {
     setSynct(true);
-    try { await fetch("/api/planning/sync", { method: "POST" }); } catch { /* niet kritiek */ }
+    try { await apiFetch("/api/planning/sync", { method: "POST" }); } catch { /* niet kritiek */ }
     await herlaad();
     setSynct(false);
   }, [herlaad]);

@@ -3,6 +3,8 @@
 // module-state), zodat terugkeren naar een dashboard direct laadt.
 // Patroon: toon de gebufferde data meteen, ververs op de achtergrond.
 
+import { apiFetch } from "./api";
+
 const store = new Map<string, unknown>();
 
 export function uitCache(url: string): any {
@@ -10,7 +12,9 @@ export function uitCache(url: string): any {
 }
 
 export async function haalEnCache(url: string, opts?: RequestInit): Promise<any> {
-  const res = await fetch(url, opts);
+  // apiFetch stuurt automatisch het inlogbewijs mee, zodat de portier in de
+  // route weet wie er belt (nodig voor de beveiligde dashboard-routes).
+  const res = await apiFetch(url, opts);
   const data = await res.json();
   store.set(url, data);
   return data;

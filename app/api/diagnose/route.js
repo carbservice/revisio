@@ -1,6 +1,10 @@
 // app/api/diagnose/route.js
 
+import { vereisIngelogd } from "@/lib/auth-server";
+
 export async function POST(req) {
+  const poort = await vereisIngelogd(req);
+  if (!poort.ok) return poort.response;
   try {
     const { klacht, voertuig } = await req.json();
     if (!klacht || !klacht.trim()) {

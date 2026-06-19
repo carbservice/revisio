@@ -4,7 +4,7 @@
 // zodat alleen de juiste klant kan tekenen. Bij akkoord/afwijzing krijgt de
 // werkplaats (manager + admin) een melding.
 
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { codeVoorEmail } from "@/app/planning/planning-config";
 
 export async function POST(request) {
@@ -23,7 +23,7 @@ export async function POST(request) {
     if (akkoord && (!voornaam || !achternaam || !handtekening)) return Response.json({ fout: "Vul je naam in en zet je handtekening." }, { status: 400 });
 
     // Klant authenticeren via werkbon_links (token of nummer + code).
-    let q = supabase.from("werkbon_links").select("klus_id, toegangscode, klant");
+    let q = supabaseAdmin.from("werkbon_links").select("klus_id, toegangscode, klant");
     if (token) q = q.eq("token", token);
     else if (nr && code) q = q.eq("nummer", nr).ilike("toegangscode", code);
     else return Response.json({ fout: "Geen geldige toegang." }, { status: 400 });
@@ -33,21 +33,21 @@ export async function POST(request) {
     const klusId = link.klus_id;
 
     // Het verzoek moet bij deze klus horen en nog open staan.
-    const { data: akk } = await supabase.from("klant_akkoord").select("id, klus_id, status, bedrag, omschrijving").eq("id", akkoordId).maybeSingle();
+    const { data: akk } = await supabaseAdmin.from("klant_akkoord").select("id, klus_id, status, bedrag, omschrijving").eq("id", akkoordId).maybeSingle();
     if (!akk || akk.klus_id !== klusId) return Response.json({ fout: "Verzoek niet gevonden." }, { status: 404 });
     if (akk.status !== "open") return Response.json({ alBeantwoord: true, status: akk.status });
 
     const nu = new Date().toISOString();
     const nieuweStatus = akkoord ? "akkoord" : "afgewezen";
-    await supabase.from("klant_akkoord").update({
+    await supabaseAdmin.from("klant_akkoord").update({
       status: nieuweStatus, voornaam, achternaam,
       handtekening: akkoord ? handtekening : null, beantwoord_op: nu,
     }).eq("id", akkoordId);
 
     // Werkplaats (manager + admin) op de hoogte stellen.
-    const { data: team } = await supabase.from("app_gebruikers").select("email").in("rol", ["manager", "admin"]).eq("actief", true);
+    const { data: team } = await supabaseAdmin.from("app_gebruikers").select("email").in("rol", ["manager", "admin"]).eq("actief", true);
     const codes = [...new Set((team || []).map((t) => codeVoorEmail(t.email)).filter(Boolean))];
-    const { data: ka } = await supabase.from("kaart").select("id").eq("type", "klus").eq("klus_id", klusId).limit(1);
+    const { data: ka } = await supabaseAdmin.from("kaart").select("id").eq("type", "klus").eq("klus_id", klusId).limit(1);
     const kaartId = ka && ka[0] ? ka[0].id : null;
     const naam = `${voornaam} ${achternaam}`.trim() || link.klant || "De klant";
     const bedragTxt = akk.bedrag ? ` (EUR ${akk.bedrag})` : "";
@@ -55,7 +55,7 @@ export async function POST(request) {
       ? `Klant ${naam} is AKKOORD met de extra kosten${bedragTxt}: ${akk.omschrijving}`
       : `Klant ${naam} is NIET akkoord met de extra kosten: ${akk.omschrijving}`;
     if (codes.length && kaartId) {
-      await supabase.from("melding").insert(codes.map((c) => ({ ontvanger: c, kaart_id: kaartId, van: "Klant-akkoord", soort: "activiteit", tekst })));
+      await supabaseAdmin.from("melding").insert(codes.map((c) => ({ ontvanger: c, kaart_id: kaartId, van: "Klant-akkoord", soort: "activiteit", tekst })));
     }
 
     return Response.json({ ok: true, status: nieuweStatus });

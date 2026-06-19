@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { GROEN, GROEN_BG, GOUD, GOUD_BG, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG, KAART_BG, VELD_BG, VELD_TEKST, VELD_RAND, KAART_SCHADUW } from "@/lib/theme";
 import { duur, mmss, dagenGeleden } from "@/lib/format";
+import { apiFetch } from "@/lib/api";
 import { UURTARIEF_EX_BTW, geoffreerdeUren } from "@/lib/tarief";
 import type { Klus, Monteur, Regel, Veld, Check, Artikel } from "@/lib/types";
 import ScrollNaarBoven from "@/app/components/ScrollNaarBoven";
@@ -224,7 +225,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, isManager, onUitloggen }: { ingelogd
   useEffect(() => {
     (async () => {
       try {
-        const r = await fetch("/api/klussen").then((x) => x.json());
+        const r = await apiFetch("/api/klussen").then((x) => x.json());
         if (r.fout) setFout(r.fout);
         setKlussen(r.klussen || []);
         await laadTotalen();
@@ -467,7 +468,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, isManager, onUitloggen }: { ingelogd
     if (!open) return;
     setDiagBezig(true); setDiagFout(""); setDiagnoseLijst([]); setDiagTekst("");
     try {
-      const r = await fetch("/api/diagnose", {
+      const r = await apiFetch("/api/diagnose", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ klacht: open.klacht, voertuig: open.voertuig }),
@@ -751,7 +752,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, isManager, onUitloggen }: { ingelogd
   useEffect(() => {
     if (!open || !arbeidOver || arbeidGepost.current === open.id) return;
     arbeidGepost.current = open.id;
-    fetch("/api/alarm/arbeid", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ klus_id: open.id }) }).catch(() => {});
+    apiFetch("/api/alarm/arbeid", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ klus_id: open.id }) }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, arbeidOver]);
 

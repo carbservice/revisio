@@ -3,7 +3,7 @@
 // (?nr=&code=). Toont alleen de GEPUBLICEERDE stand: de werkplaats bepaalt
 // zelf wanneer een update (en welke foto's) zichtbaar worden voor de klant.
 
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { REVISIE_DOEL_DAGEN } from "@/app/planning/planning-config";
 
 const STADIA = [
@@ -21,7 +21,7 @@ export async function GET(req) {
     const nr = (searchParams.get("nr") || "").trim();
     const code = (searchParams.get("code") || "").trim();
 
-    let q = supabase.from("werkbon_links").select("klus_id, nummer, klant, voertuig, klacht, toegangscode");
+    let q = supabaseAdmin.from("werkbon_links").select("klus_id, nummer, klant, voertuig, klacht, toegangscode");
     if (token) q = q.eq("token", token);
     else if (nr && code) q = q.eq("nummer", nr).ilike("toegangscode", code);
     else return Response.json({ fout: "Vul je ordernummer en code in." }, { status: 400 });

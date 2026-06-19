@@ -4,7 +4,8 @@
 // "Gefactureerd" zodra een klus niet meer geaccepteerd is (dus gefactureerd).
 // De klus is de bron: klus_id (Moneybird estimate id) is de gedeelde sleutel.
 
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { vereisIngelogd } from "@/lib/auth-server";
 import { STANDAARD_LEDEN, gewensteFase } from "@/app/planning/planning-config";
 
 const ADMIN = process.env.MONEYBIRD_ADMIN;
@@ -34,7 +35,9 @@ function schoon(ref) {
   return ref.replace(/\s*,\s*,+/g, ", ").replace(/\s{2,}/g, " ").trim();
 }
 
-export async function POST() {
+export async function POST(req) {
+  const poort = await vereisIngelogd(req);
+  if (!poort.ok) return poort.response;
   try {
     if (!ADMIN || !TOKEN) return Response.json({ fout: "Moneybird niet geconfigureerd", nieuw: 0, gefactureerd: 0 });
 
@@ -72,7 +75,7 @@ export async function POST() {
     });
     let nieuw = 0;
     if (nieuweKaarten.length) {
-      const { data: ingevoegd } = await supabase.from("kaart").insert(nieuweKaarten).select("id");
+      const { data: ingevoegd } = await supabaseAdmin.from("kaart").insert(nieuweKaarten).select("id");
       nieuw = (ingevoegd || []).length;
       const leden = [];
       const logs = [];
@@ -80,8 +83,8 @@ export async function POST() {
         STANDAARD_LEDEN.forEach((g) => leden.push({ kaart_id: k.id, gebruiker: g }));
         logs.push({ kaart_id: k.id, auteur: "Moneybird", soort: "log", tekst: "binnengekomen: geaccepteerde offerte automatisch op het bord gezet" });
       });
-      if (leden.length) await supabase.from("kaart_lid").insert(leden);
-      if (logs.length) await supabase.from("kaart_bericht").insert(logs);
+      if (leden.length) await supabaseAdmin.from("kaart_lid").insert(leden);
+      if (logs.length) await supabaseAdmin.from("kaart_bericht").insert(logs);
     }
 
     // 4) Gefactureerd-label: klus-kaart niet meer geaccepteerd = gefactureerd.
@@ -89,13 +92,13 @@ export async function POST() {
     const wordtGefactureerd = (bestaand || []).filter((k) => k.klus_id && !accepted.has(k.klus_id) && !k.archief && !k.gefactureerd);
     if (wordtGefactureerd.length) {
       const ids = wordtGefactureerd.map((k) => k.id);
-      await supabase.from("kaart").update({ gefactureerd: true }).in("id", ids);
-      await supabase.from("kaart_bericht").insert(ids.map((id) => ({ kaart_id: id, auteur: "Moneybird", soort: "log", tekst: "klus is gefactureerd in Moneybird" })));
+      await supabaseAdmin.from("kaart").update({ gefactureerd: true }).in("id", ids);
+      await supabaseAdmin.from("kaart_bericht").insert(ids.map((id) => ({ kaart_id: id, auteur: "Moneybird", soort: "log", tekst: "klus is gefactureerd in Moneybird" })));
       gefactureerd = wordtGefactureerd.length;
     }
     // Heropende klus: label weer weg.
     const weerOpen = (bestaand || []).filter((k) => k.klus_id && accepted.has(k.klus_id) && k.gefactureerd);
-    if (weerOpen.length) await supabase.from("kaart").update({ gefactureerd: false }).in("id", weerOpen.map((k) => k.id));
+    if (weerOpen.length) await supabaseAdmin.from("kaart").update({ gefactureerd: false }).in("id", weerOpen.map((k) => k.id));
 
     // 5) Reconcile met de monteurs-app: stadia/retour bepalen de kolom.
     // Alleen kaarten die NIET handmatig zijn versleept (dan respecteren we de
@@ -105,8 +108,8 @@ export async function POST() {
     if (teReconcilen.length) {
       const klusIds = [...new Set(teReconcilen.map((k) => k.klus_id))];
       const [vRes, rRes] = await Promise.all([
-        supabase.from("klus_voortgang").select("klus_id, stap").in("klus_id", klusIds),
-        supabase.from("werkbon_retour").select("klus_id, is_retour, reden"),
+        supabaseAdmin.from("klus_voortgang").select("klus_id, stap").in("klus_id", klusIds),
+        supabaseAdmin.from("werkbon_retour").select("klus_id, is_retour, reden"),
       ]);
       const stappenPer = new Map();
       (vRes.data || []).forEach((v) => {
@@ -125,16 +128,16 @@ export async function POST() {
         const isRetour = retourReden.has(k.klus_id);
         const doel = gewensteFase(stappenPer.get(k.klus_id) || [], isRetour);
         if (!doel || doel === k.fase) continue;
-        await supabase.from("kaart").update({ fase: doel, entered_stage_at: new Date().toISOString() }).eq("id", k.id);
-        await supabase.from("kaart_bericht").insert({
+        await supabaseAdmin.from("kaart").update({ fase: doel, entered_stage_at: new Date().toISOString() }).eq("id", k.id);
+        await supabaseAdmin.from("kaart_bericht").insert({
           kaart_id: k.id, auteur: "Werkplaats", soort: "log",
           tekst: isRetour ? `gemarkeerd als retour, automatisch naar Retouren${retourReden.get(k.klus_id) ? ` (${retourReden.get(k.klus_id)})` : ""}` : `automatisch verschoven op basis van de monteur-status`,
         });
         // Retour: leden een melding sturen.
         if (isRetour) {
-          const { data: ld } = await supabase.from("kaart_lid").select("gebruiker").eq("kaart_id", k.id);
+          const { data: ld } = await supabaseAdmin.from("kaart_lid").select("gebruiker").eq("kaart_id", k.id);
           if (ld && ld.length) {
-            await supabase.from("melding").insert(ld.map((m) => ({
+            await supabaseAdmin.from("melding").insert(ld.map((m) => ({
               ontvanger: m.gebruiker, kaart_id: k.id, van: "Werkplaats", soort: "activiteit",
               tekst: `Retour binnen${retourReden.get(k.klus_id) ? `: ${retourReden.get(k.klus_id)}` : ""}`,
             })));
