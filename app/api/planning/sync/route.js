@@ -104,7 +104,10 @@ export async function POST(req) {
     // Alleen kaarten die NIET handmatig zijn versleept (dan respecteren we de
     // mens), niet gearchiveerd, en met een klus_id.
     let verplaatst = 0;
-    const teReconcilen = (bestaand || []).filter((k) => k.klus_id && !k.archief && !k.hand_verplaatst);
+    // Kandidaten: alle klus-kaarten (niet gearchiveerd). Handmatig verplaatste
+    // kaarten laten we met rust, BEHALVE retouren: die zijn te belangrijk en
+    // moeten altijd in Retouren komen. Die override doen we per kaart hieronder.
+    const teReconcilen = (bestaand || []).filter((k) => k.klus_id && !k.archief);
     if (teReconcilen.length) {
       const klusIds = [...new Set(teReconcilen.map((k) => k.klus_id))];
       const [vRes, rRes] = await Promise.all([
@@ -126,6 +129,9 @@ export async function POST(req) {
 
       for (const k of teReconcilen) {
         const isRetour = retourReden.has(k.klus_id);
+        // Handmatige plaatsing respecteren, behalve bij een retour (die forceren
+        // we naar Retouren).
+        if (k.hand_verplaatst && !isRetour) continue;
         const doel = gewensteFase(stappenPer.get(k.klus_id) || [], isRetour);
         if (!doel || doel === k.fase) continue;
         await supabaseAdmin.from("kaart").update({ fase: doel, entered_stage_at: new Date().toISOString() }).eq("id", k.id);
