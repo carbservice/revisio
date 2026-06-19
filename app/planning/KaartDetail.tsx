@@ -20,9 +20,9 @@ const SERIF = "'Karma', Georgia, serif";
 type KlusRef = { nummer: string; klus_id: string; klant: string; kaart_id: string | null };
 
 export default function KaartDetail({
-  kaart, klus, gebruiker, mijnCode, klantOnuitgegeven, binnenOp, arbeidOver, klusIndex, onSluit, onWijzig,
+  kaart, klus, gebruiker, mijnCode, klantOnuitgegeven, binnenOp, arbeidOver, retour, klusIndex, onSluit, onWijzig,
 }: {
-  kaart: Kaart; klus?: Klus; gebruiker: string; mijnCode: string | null; klantOnuitgegeven?: boolean; binnenOp?: string | null; arbeidOver?: boolean; klusIndex?: KlusRef[]; onSluit: () => void; onWijzig: () => void;
+  kaart: Kaart; klus?: Klus; gebruiker: string; mijnCode: string | null; klantOnuitgegeven?: boolean; binnenOp?: string | null; arbeidOver?: boolean; retour?: boolean; klusIndex?: KlusRef[]; onSluit: () => void; onWijzig: () => void;
 }) {
   // Opent een beveiligde route (factuur/offerte) met het inlogbewijs erbij. We
   // openen direct een leeg tabblad (mag binnen de klik) en zetten daarna de
@@ -332,6 +332,13 @@ export default function KaartDetail({
             <span style={{ fontSize: 12.5, color: "#8a2a1c", fontWeight: 700 }}>Let op: de laatste klant-update is nog niet gepusht.</span>
             <span style={{ fontSize: 12, color: "#8a2a1c" }}> Doe dat vóór je factureert, anders kan het daarna niet meer. </span>
             <a href={`/werkbonnen?klus=${kaart.klus_id}`} style={{ fontSize: 12.5, fontWeight: 700, color: "#8a2a1c", textDecoration: "underline" }}>Naar de werkbon →</a>
+          </div>
+        )}
+
+        {retour && (
+          <div style={{ background: "#c0392b", borderRadius: 10, padding: "9px 12px", marginTop: 8 }}>
+            <span style={{ fontSize: 13, color: "#fff", fontWeight: 800 }}>↩ RETOUR. </span>
+            <span style={{ fontSize: 12.5, color: "#fff" }}>Deze klus is door de monteur als retour gemarkeerd.</span>
           </div>
         )}
 

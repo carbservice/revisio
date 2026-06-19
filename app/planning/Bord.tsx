@@ -388,6 +388,7 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
           klantOnuitgegeven={openKaart.klus_id ? !!klusStatus[openKaart.klus_id]?.onuitgegeven : false}
           binnenOp={openKaart.klus_id ? klusStatus[openKaart.klus_id]?.binnenOp ?? null : null}
           arbeidOver={openKaart.klus_id ? !!klusStatus[openKaart.klus_id]?.arbeidOver : false}
+          retour={openKaart.klus_id ? !!klusStatus[openKaart.klus_id]?.retour : false}
           klusIndex={klusIndex}
           onSluit={sluit}
           onWijzig={herlaad}
@@ -427,6 +428,7 @@ function Tegel({
         <div style={{ fontSize: 13.5, fontWeight: 700, color: TEKST, lineHeight: 1.3 }}>{titel}</div>
         <div style={{ display: "flex", gap: 5, flexShrink: 0, alignItems: "center" }}>
           {meldingen > 0 && <span title={`${meldingen} nieuwe melding(en) voor jou`} style={belBadge}>🔔 {meldingen}</span>}
+          {status?.retour && <span title="Dit is een retour" style={labelRetour}>↩ Retour</span>}
           {status?.arbeidOver && <span title="Geschreven tijd is voorbij de geoffreerde arbeid" style={labelArbeid}>⚠ Arbeid</span>}
           {status?.akkoord === "open" && <span title="Wacht op klant-akkoord voor extra kosten" style={labelAkkoordWacht}>✍ Akkoord?</span>}
           {status?.akkoord === "akkoord" && <span title="Klant akkoord met extra kosten" style={labelAkkoordOk}>✓ Akkoord</span>}
@@ -514,6 +516,10 @@ const labelGefactureerd: CSSProperties = {
 const labelArbeid: CSSProperties = {
   flexShrink: 0, fontSize: 10, fontWeight: 800, color: "#9c2b1b", background: "#fbdcd5",
   border: "1px solid #e08a78", borderRadius: 999, padding: "1px 7px", whiteSpace: "nowrap",
+};
+const labelRetour: CSSProperties = {
+  flexShrink: 0, fontSize: 10, fontWeight: 800, color: "#fff", background: "#c0392b",
+  border: "1px solid #a93226", borderRadius: 999, padding: "1px 7px", whiteSpace: "nowrap",
 };
 const labelAkkoordWacht: CSSProperties = {
   flexShrink: 0, fontSize: 10, fontWeight: 800, color: "#8a5a00", background: "#ffe7b8",
