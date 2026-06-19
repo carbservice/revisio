@@ -13,16 +13,24 @@ export async function GET(req) {
   if (!poort.ok) return poort.response;
   try {
     const type = new URL(req.url).searchParams.get("type") || "";
-    const woorden = type.trim().split(/\s+/);
-    const sleutel = (woorden[woorden.length - 1] || "").toLowerCase(); // bv. "inat"
-    if (!sleutel) return Response.json({ tekeningen: [] });
+    // Modelcode-tokens uit het type (merk eruit), bv. ZENITH 35/40 INAT -> [35,40,inat].
+    const tokens = type.toLowerCase().split(/[\s/&]+/)
+      .map((t) => t.replace(/[^a-z0-9]/g, ""))
+      .filter((t) => t.length >= 2 && t !== "solex" && t !== "zenith");
+    if (!tokens.length) return Response.json({ tekeningen: [] });
 
     const { data, error } = await supabaseAdmin.storage
       .from("carburateur-blueprints")
       .list("tekeningen", { limit: 1000, sortBy: { column: "name", order: "asc" } });
     if (error) return Response.json({ tekeningen: [] });
 
-    const match = (data || []).filter((f) => f.name && f.name.toLowerCase().includes(sleutel));
+    // Van achter naar voren: gebruik het eerste (meest specifieke) token met treffers.
+    const alle = data || [];
+    let match = [];
+    for (const tok of tokens.slice().reverse()) {
+      match = alle.filter((f) => f.name && f.name.toLowerCase().includes(tok));
+      if (match.length) break;
+    }
     const tekeningen = match.map((f) => ({
       naam: f.name.replace(/\.[a-z0-9]+$/i, "").replace(/-/g, " "),
       url: `${SBURL}/storage/v1/object/public/carburateur-blueprints/tekeningen/${encodeURIComponent(f.name)}`,
