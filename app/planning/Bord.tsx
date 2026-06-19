@@ -302,7 +302,7 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
         </div>
         <DashboardNav isAdmin={isAdmin} />
         <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 8 }}>
-          <h1 style={{ fontFamily: SERIF, fontSize: 23, fontWeight: 700, color: GROEN, margin: 0 }}>Werkplaats kaartenbord</h1>
+          <h1 style={{ fontFamily: SERIF, fontSize: 23, fontWeight: 700, color: GROEN, margin: 0 }}>Werkplaats Planning</h1>
           <button onClick={synchroniseer} disabled={synct} style={knopLicht}>{synct ? "Synct..." : "Synchroniseer Moneybird"}</button>
         </div>
         <p style={{ fontSize: 13, color: GRIJS, margin: "0 0 12px" }}>
