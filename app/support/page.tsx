@@ -21,6 +21,7 @@ function SupportChat() {
   const [berichten, setBerichten] = useState<Bericht[]>([]);
   const [vraag, setVraag] = useState("");
   const [bezig, setBezig] = useState(false);
+  const [sessieUsd, setSessieUsd] = useState(0);
   const eindRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -47,6 +48,7 @@ function SupportChat() {
         body: JSON.stringify({ type, taal, vraag: v, history: berichten }),
       });
       const j = await r.json();
+      if (typeof j.kostenUsd === "number") setSessieUsd((s) => s + j.kostenUsd);
       setBerichten([...nieuw, { role: "assistant", content: j.antwoord || `⚠ ${j.fout || "Geen antwoord."}` }]);
     } catch {
       setBerichten([...nieuw, { role: "assistant", content: "⚠ Er ging iets mis. Probeer het opnieuw." }]);
@@ -62,10 +64,9 @@ function SupportChat() {
   });
 
   return (
-    <main style={{ minHeight: "100vh", background: BG, paddingBottom: 30 }}>
-      <PaginaKop naam={naam} onUitloggen={uitloggen} titel="Support Hub" />
-
-      <div style={{ maxWidth: 820, margin: "0 auto", padding: "0 16px" }}>
+    <main style={{ minHeight: "100vh", background: BG, fontFamily: "'Karma', Georgia, serif", paddingBottom: 30 }}>
+      <div style={{ maxWidth: 1000, margin: "0 auto", padding: "14px 16px 0" }}>
+        <PaginaKop naam={naam} onUitloggen={uitloggen} titel="Support Hub" />
         {/* Keuzebalk */}
         <div style={{ background: KAART_BG, border: `1px solid ${RAND}`, borderRadius: 14, padding: 14, boxShadow: KAART_SCHADUW, display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
           <div style={{ flex: 1, minWidth: 220 }}>
@@ -81,6 +82,10 @@ function SupportChat() {
               <button onClick={() => setTaal("nl")} style={taalKnop("nl", "NL")}>NL</button>
               <button onClick={() => setTaal("en")} style={taalKnop("en", "EN")}>EN</button>
             </div>
+          </div>
+          <div style={{ marginLeft: "auto", textAlign: "right", fontSize: 11.5, color: GRIJS, lineHeight: 1.45 }} title="Geschatte API-kosten van deze chatsessie">
+            <div style={{ fontWeight: 800, color: GROEN }}>{`Sessie: $${sessieUsd.toFixed(4)}`}</div>
+            <div>limiet $45/mnd</div>
           </div>
         </div>
 

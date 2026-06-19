@@ -35,6 +35,9 @@ export async function POST(req) {
       `informatie uit de handleiding; staat iets er niet in, zeg dat dan eerlijk en verzin ` +
       `NOOIT getallen, sproeiermaten, maten of specs. Wees praktisch en bondig, je praat ` +
       `met een ervaren monteur. Verwijs waar nuttig naar het onderdeel/de fase uit de tekst. ` +
+      `Als het antwoord afhangt van de uitvoering, het bouwjaar, de motor of enkel-/dubbelvergasser, ` +
+      `stel dan EERST een korte, gerichte tegenvraag (bv. "welk bouwjaar?", "welke uitvoering?", ` +
+      `"enkel- of dubbelvergasser?") om de monteur te sturen, voordat je een definitief antwoord geeft. ` +
       `Gebruik GEEN lange streep (—) in je antwoord; gebruik een dubbele punt, komma of haakjes.` +
       `\n\n=== SERVICEHANDLEIDING ${type} (bron: ${kennis.bron}) ===\n${kennis.inhoud}`;
 
@@ -57,7 +60,12 @@ export async function POST(req) {
     }
     const j = await r.json();
     const antwoord = (j.content && j.content[0] && j.content[0].text) || "Geen antwoord ontvangen.";
-    return Response.json({ antwoord });
+    // Kostenraming uit de token-usage (Sonnet: $3/M in, $15/M uit).
+    const u = j.usage || {};
+    const inT = u.input_tokens || 0;
+    const outT = u.output_tokens || 0;
+    const kostenUsd = (inT / 1e6) * 3 + (outT / 1e6) * 15;
+    return Response.json({ antwoord, kostenUsd, tokens: { in: inT, uit: outT } });
   } catch (e) {
     return Response.json({ fout: e.message }, { status: 200 });
   }
