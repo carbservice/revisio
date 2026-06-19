@@ -44,5 +44,9 @@ export async function GET() {
     }),
   ]);
 
-  return Response.json({ checkedAt: new Date().toISOString(), services });
+  // Diagnose: is de server-only service-role-sleutel runtime beschikbaar?
+  // (alleen ja/nee, nooit de sleutel zelf). Nodig om te checken vóór RLS.
+  const serviceRoleActief = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+  return Response.json({ checkedAt: new Date().toISOString(), services, serviceRoleActief });
 }
