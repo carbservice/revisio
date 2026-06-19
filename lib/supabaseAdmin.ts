@@ -13,9 +13,18 @@ const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 let _client: SupabaseClient | null = null;
 
 function maakClient(): SupabaseClient {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+  const service = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+  // Val terug op de anon-sleutel als de service-sleutel (nog) niet beschikbaar
+  // is. Zolang RLS uit staat geeft anon dezelfde toegang, dus de app blijft
+  // werken en de inlog-portier blijft functioneren. VOOR we RLS aanzetten moet
+  // de service-sleutel echt actief zijn (anders blokkeert RLS deze routes).
+  const key = service || anon;
   if (!url || !key) {
-    throw new Error("Server niet geconfigureerd: SUPABASE_SERVICE_ROLE_KEY ontbreekt.");
+    throw new Error("Supabase niet geconfigureerd: geen URL of sleutel.");
+  }
+  if (!service) {
+    console.warn("[supabaseAdmin] SUPABASE_SERVICE_ROLE_KEY ontbreekt; val terug op anon. Zet de service-sleutel vóór RLS aangaat.");
   }
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
