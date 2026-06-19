@@ -24,6 +24,8 @@ function SupportChat() {
   const [maandUsd, setMaandUsd] = useState(0);
   const [bronVan, setBronVan] = useState<Record<string, string>>({});
   const [boekjeUrl, setBoekjeUrl] = useState("");
+  const [tekeningen, setTekeningen] = useState<{ naam: string; url: string }[]>([]);
+  const [groot, setGroot] = useState("");
   const eindRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -41,17 +43,22 @@ function SupportChat() {
     })();
   }, []);
 
-  // Beveiligde (tijdelijke) link naar het boekje van het gekozen type.
+  // Boekje (signed URL) + referentietekeningen van het gekozen type ophalen.
   useEffect(() => {
-    setBoekjeUrl("");
+    setBoekjeUrl(""); setTekeningen([]);
+    if (!type) return;
     const bron = bronVan[type];
-    if (!type || !bron) return;
     (async () => {
       try {
-        const r = await apiFetch(`/api/boekje?bron=${encodeURIComponent(bron)}`);
-        const j = await r.json();
-        if (j.url) setBoekjeUrl(j.url);
-      } catch { /* geen viewer beschikbaar */ }
+        if (bron) {
+          const r = await apiFetch(`/api/boekje?bron=${encodeURIComponent(bron)}`);
+          const j = await r.json();
+          if (j.url) setBoekjeUrl(j.url);
+        }
+        const tr = await apiFetch(`/api/tekeningen?type=${encodeURIComponent(type)}`);
+        const tj = await tr.json();
+        setTekeningen(tj.tekeningen || []);
+      } catch { /* geen viewer/tekeningen */ }
     })();
   }, [type, bronVan]);
 
@@ -166,7 +173,28 @@ function SupportChat() {
             <iframe src={boekjeUrl} title={`handleiding ${type}`} style={{ width: "100%", height: 560, border: `1px solid ${RAND}`, borderRadius: 8, background: "#fff" }} />
           </div>
         )}
+
+        {/* Referentietekeningen als tegels */}
+        {tekeningen.length > 0 && (
+          <div style={{ background: KAART_BG, border: `1px solid ${RAND}`, borderRadius: 14, padding: 14, marginTop: 12, boxShadow: KAART_SCHADUW }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: GROEN, marginBottom: 10 }}>{`📐 Referentietekeningen · ${type} (${tekeningen.length})`}</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(118px, 1fr))", gap: 10 }}>
+              {tekeningen.map((t) => (
+                <button key={t.url} onClick={() => setGroot(t.url)} title={t.naam} style={{ border: `1px solid ${RAND}`, borderRadius: 10, background: "#fff", padding: 6, cursor: "zoom-in", textAlign: "center" }}>
+                  <img src={t.url} alt={t.naam} loading="lazy" style={{ width: "100%", height: 90, objectFit: "contain", background: "#fff", borderRadius: 6 }} />
+                  <div style={{ fontSize: 10, color: GRIJS, marginTop: 4, lineHeight: 1.25, height: 26, overflow: "hidden" }}>{t.naam}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
+
+      {groot && (
+        <div onClick={() => setGroot("")} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.82)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, cursor: "zoom-out" }}>
+          <img src={groot} alt="" style={{ maxWidth: "96%", maxHeight: "96%", objectFit: "contain", borderRadius: 8, background: "#fff" }} />
+        </div>
+      )}
     </main>
   );
 }
