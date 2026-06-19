@@ -159,7 +159,7 @@ function Hub() {
     <main style={{ minHeight: "100vh", background: BG, color: TEKST, fontFamily: "'Karma', Georgia, serif" }}>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karma:wght@400;500;600;700&display=swap" />
 
-      <div style={{ maxWidth: 1000, margin: "0 auto", padding: "14px 16px 0" }}>
+      <div style={{ maxWidth: 920, margin: "0 auto", padding: "14px 16px 0" }}>
         <Systeemstatus />
         <div style={{ background: "#fff", border: `1px solid ${RAND}`, borderRadius: 14, padding: "10px 16px", marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
           <RevisioLogo />
@@ -406,7 +406,7 @@ function Detail({ c, li, taal, setTaal, terug, kopieer, gekopieerd }: { c: Kennb
   );
 }
 
-const wrap: CSSProperties = { maxWidth: 1000, margin: "0 auto", padding: "0 16px" };
+const wrap: CSSProperties = { maxWidth: 920, margin: "0 auto", padding: "0 16px" };
 const grid: CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))", gap: 16, marginTop: 22 };
 const kaart: CSSProperties = { textAlign: "left", background: "#fff", border: `1px solid ${RAND}`, borderRadius: 14, padding: 0, overflow: "hidden", cursor: "pointer", font: "inherit", color: TEKST };
 const badge: CSSProperties = { fontSize: 11.5, background: "#eef0ea", border: `1px solid ${RAND}`, color: GROEN, borderRadius: 20, padding: "3px 9px" };

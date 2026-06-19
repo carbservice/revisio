@@ -290,7 +290,7 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karma:wght@400;500;600;700&display=swap" />
 
       {/* Kop: statusbalk, ingelogd-als (vaste plek), daaronder titel + sync */}
-      <div style={{ maxWidth: 1600, margin: "0 auto", padding: "14px 16px 0" }}>
+      <div style={{ maxWidth: 920, margin: "0 auto", padding: "14px 16px 0" }}>
         <Systeemstatus />
         <div style={ingelogdBalk}>
           <RevisioLogo />

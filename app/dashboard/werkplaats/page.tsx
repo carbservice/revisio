@@ -83,7 +83,8 @@ function WerkplaatsDashboard() {
     return () => { levend = false; clearInterval(refetch); clearInterval(tik); };
   }, []);
 
-  const wrap: CSSProperties = { minHeight: "100vh", background: BG, color: TEKST, fontFamily: "'Karma', Georgia, serif", padding: "28px 18px", maxWidth: 1000, margin: "0 auto" };
+  const wrap: CSSProperties = { minHeight: "100vh", background: BG, color: TEKST, fontFamily: "'Karma', Georgia, serif", padding: "26px max(24px, 4vw)" };
+  const binnen: CSSProperties = { maxWidth: 1500, margin: "0 auto" };
   const kaart: CSSProperties = { background: "#fff", border: `1px solid ${RAND}`, borderRadius: 16, padding: 18, marginBottom: 14 };
   const kopstijl: CSSProperties = { fontSize: 12.5, color: GRIJS, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 12 };
   const klikRij: CSSProperties = { display: "flex", justifyContent: "space-between", gap: 12, padding: "8px 0", borderTop: `1px solid ${RAND}`, textDecoration: "none", color: TEKST, cursor: "pointer" };
@@ -113,6 +114,7 @@ function WerkplaatsDashboard() {
 
   return (
     <main style={wrap}>
+      <div style={binnen}>
       <ScrollNaarBoven />
       <PaginaKop naam={naam} onUitloggen={uitloggen} titel="Werkplaats">
         <div style={{ fontSize: 13.5, color: GRIJS, margin: "-6px 0 14px" }}>Live uit de werkplaats-app · {maandLabel(data.maand)} vergeleken met {maandLabel(data.vorige_maand)}</div>
@@ -239,6 +241,7 @@ function WerkplaatsDashboard() {
             </a>
           );
         })}
+      </div>
       </div>
     </main>
   );
