@@ -103,11 +103,15 @@ export async function GET(req) {
 
   const totaalSpend = spend.google_ads + spend.facebook + spend.marktplaats;
   const totaalOmzet = perBron.reduce((s, x) => s + x.omzet, 0);
+  // ROAS alleen over BETAALDE kanalen: organische omzet is gratis en hoort niet
+  // in de noemer van advertentierendement (anders krijg je een misleidend hoge ROAS).
+  const omzetBetaald = perBron.filter((s) => kanaalVanBron(s.bron)).reduce((sum, s) => sum + s.omzet, 0);
   const totaal = {
     leads: lijst.length,
     klanten: lijst.filter((L) => Number(L.omzet_excl) > 0).length,
     omzet: Math.round(totaalOmzet * 100) / 100, spend: totaalSpend,
-    roas: totaalSpend > 0 ? totaalOmzet / totaalSpend : null,
+    omzetBetaald: Math.round(omzetBetaald * 100) / 100,
+    roas: totaalSpend > 0 ? omzetBetaald / totaalSpend : null,
   };
 
   // LTV per kanaal (HELE historie, niet periode-afhankelijk): per klant z'n

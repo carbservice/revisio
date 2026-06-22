@@ -19,7 +19,7 @@ type Actie = { id: string; soort: string; tekst: string; door: string; datum: st
 type Lead = { id: string; datum: string; naam: string; email: string; telefoon: string; bedrijf: string; carburateur: string; bericht: string; bron: string; status: string; eigenaar: string | null; sales_notitie: string | null; opvolgen_op: string | null; omzet_excl: number; offerte_id: string | null; offerte_nummer: string | null; offerte_state: string | null; offerte_bedrag: number | null; offerte_url: string | null; acties: Actie[] };
 type PerBron = { bron: string; leads: number; klanten: number; omzet: number; spend: number; roas: number | null; conversie: number };
 type Ltv = { bron: string; klanten: number; omzet: number; gem: number; aandeel: number; aandeelKlanten: number };
-type Data = { perBron: PerBron[]; totaal: { leads: number; klanten: number; omzet: number; spend: number; roas: number | null }; leads: Lead[]; spend: { google_ads: number; facebook: number; marktplaats: number }; ltv: Ltv[]; ltvTotaal: { klanten: number; omzet: number; gem: number } };
+type Data = { perBron: PerBron[]; totaal: { leads: number; klanten: number; omzet: number; spend: number; omzetBetaald: number; roas: number | null }; leads: Lead[]; spend: { google_ads: number; facebook: number; marktplaats: number }; ltv: Ltv[]; ltvTotaal: { klanten: number; omzet: number; gem: number } };
 
 const STATUS = ["nieuw", "gebeld", "uitstellen", "geaccepteerd", "afgewezen"];
 const STATUS_KLEUR: Record<string, string> = { nieuw: "#6b7280", gebeld: "#2f6f8f", uitstellen: "#b07d12", geaccepteerd: GROEN, afgewezen: ROOD };
@@ -73,6 +73,7 @@ function Dashboard() {
   const [mijn, setMijn] = useState(false);
   const [toonAlle, setToonAlle] = useState(false);
   const [zoek, setZoek] = useState("");
+  const [roasAlle, setRoasAlle] = useState(false); // ROAS o.b.v. alle omzet ipv alleen betaalde
   const [flash, setFlash] = useState<Record<string, boolean>>({});      // groene "verzonden"-flash
   const [teVaak, setTeVaak] = useState<Record<string, boolean>>({});     // dedup-melding
   const laatstRef = useRef<Record<string, { tekst: string; tijd: number }>>({});
@@ -160,6 +161,9 @@ function Dashboard() {
 
   const modeKnop = (m: string): CSSProperties => ({ border: `1.5px solid ${GROEN}`, background: mode === m ? GROEN : "#fff", color: mode === m ? "#fff" : GROEN, borderRadius: 10, padding: "8px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" });
 
+  // ROAS-weergave: standaard alleen betaalde omzet (eerlijk), of alle omzet (blended).
+  const roasW = data && data.totaal.spend > 0 ? (roasAlle ? data.totaal.omzet : data.totaal.omzetBetaald) / data.totaal.spend : null;
+
   const zoekTerm = zoek.trim().toLowerCase();
   const pijplijn = (data?.leads || []).filter((L) => {
     const inPijp = toonAlle || VERSTUURD.includes(L.offerte_state || "");
@@ -196,7 +200,7 @@ function Dashboard() {
                 <li>Een <b>lead</b> is een formulieraanvraag. Alles hieronder is voor de gekozen periode, op de <b>aanvraagdatum</b> van de lead.</li>
                 <li><b>Deal gewonnen</b> = een lead die omzet opleverde. <b>Conversie %</b> = deals ÷ leads.</li>
                 <li><b>Omzet</b> is <b>per-deal</b>: elke betaalde factuur telt mee bij de lead die juist díé deal opleverde, in díé maand en op dát kanaal (niet alles op de eerste lead).</li>
-                <li><b>ROAS</b> = omzet ÷ spend: hoeveel euro omzet je terugkrijgt per €1 advertentie. Boven <b>1×</b> = de advertentie verdient zichzelf terug.</li>
+                <li><b>ROAS</b> = omzet ÷ spend: hoeveel euro je terugkrijgt per €1 advertentie. Boven <b>1×</b> = de advertentie verdient zichzelf terug. <b>Belangrijk:</b> de totaal-ROAS rekent <b>alleen met omzet uit betaalde kanalen</b> — organische omzet is gratis en telt niet mee (anders krijg je een veel te hoge, misleidende ROAS).</li>
                 <li><b>Aandeel</b> = welk deel van de totale omzet van die periode dit kanaal levert.</li>
                 <li>Let op: een <b>recente maand groeit nog aan</b> — deals closen vaak pas weken later (de doorlooptijd).</li>
               </ul>
@@ -207,7 +211,13 @@ function Dashboard() {
               {kpi("Deals gewonnen", String(data.totaal.klanten), GROEN, data.totaal.leads ? pct(data.totaal.klanten / data.totaal.leads) + " conversie" : "nog geen leads")}
               {kpi("Omzet", euro(data.totaal.omzet), GROEN, "van deze leads · per-deal · excl. btw")}
               {kpi("Spend", euro(data.totaal.spend), data.totaal.spend ? TEKST : GRIJS, "advertentiekosten (Moneybird)")}
-              {kpi("ROAS", data.totaal.roas != null ? data.totaal.roas.toFixed(1) + "x" : "—", data.totaal.roas != null ? (data.totaal.roas >= 1 ? GROEN : ROOD) : GRIJS, data.totaal.roas != null ? `€1 spend → ${euro(data.totaal.roas)} omzet` : "geen spend")}
+              {kpi("ROAS", roasW != null ? roasW.toFixed(1) + "x" : "—", roasW != null ? (roasW >= 1 ? GROEN : ROOD) : GRIJS, roasW != null ? `€1 spend → ${euro(roasW)} ${roasAlle ? "omzet (alle)" : "betaalde omzet"}` : "geen spend")}
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", margin: "-4px 2px 16px", fontSize: 12.5, color: GRIJS }}>
+              <span>ROAS rekent met:</span>
+              <button onClick={() => setRoasAlle(false)} style={toggle(!roasAlle)}>Betaalde omzet (eerlijk)</button>
+              <button onClick={() => setRoasAlle(true)} style={toggle(roasAlle)}>Alle omzet (incl. organisch)</button>
             </div>
 
             <div style={kaart}>
@@ -239,7 +249,7 @@ function Dashboard() {
                         <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>{euro(data.totaal.omzet)}</td>
                         <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>{data.totaal.omzet ? "100%" : "—"}</td>
                         <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>{data.totaal.spend ? euro(data.totaal.spend) : "—"}</td>
-                        <td style={{ ...td, fontWeight: 800, borderBottom: "none", color: data.totaal.roas == null ? GRIJS : data.totaal.roas >= 1 ? GROEN : ROOD }}>{data.totaal.roas != null ? data.totaal.roas.toFixed(1) + "x" : "—"}</td>
+                        <td style={{ ...td, fontWeight: 800, borderBottom: "none", color: roasW == null ? GRIJS : roasW >= 1 ? GROEN : ROOD }}>{roasW != null ? roasW.toFixed(1) + "x" : "—"}</td>
                       </tr>
                     )}
                   </tbody>
