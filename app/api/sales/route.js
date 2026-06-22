@@ -64,16 +64,17 @@ async function haalSpend(van, tot) {
 }
 
 // Som van de 'Marktplaats Pro (Admarkt)'-regels op het Marktplaats-grootboek in de
-// periode. Inkoopfacturen ondersteunen geen period-filter, dus we filteren op datum.
+// periode. Inkoopfacturen filteren op een datum-range (period:YYYYMMDD..YYYYMMDD),
+// scheelt het ophalen van alle facturen: meestal 1 call.
 async function marktplaatsPro(van, tot, ledgerId) {
-  const vanD = van.slice(0, 10), totD = tot.slice(0, 10);
+  const vanYMD = van.slice(0, 10).replace(/-/g, "");
+  const eind = new Date(tot); eind.setUTCDate(eind.getUTCDate() - 1);
+  const totYMD = eind.toISOString().slice(0, 10).replace(/-/g, "");
   let som = 0;
-  for (let page = 1; page <= 8; page++) {
-    const inv = await mb(`documents/purchase_invoices.json?per_page=100&page=${page}`);
+  for (let page = 1; page <= 4; page++) {
+    const inv = await mb(`documents/purchase_invoices.json?filter=period:${vanYMD}..${totYMD}&per_page=100&page=${page}`);
     if (!Array.isArray(inv) || !inv.length) break;
     for (const doc of inv) {
-      const d = (doc.date || doc.invoice_date || "").slice(0, 10);
-      if (!d || d < vanD || d >= totD) continue;
       for (const det of (doc.details || [])) {
         if (String(det.ledger_account_id) !== ledgerId) continue;
         const om = (det.description || "").toLowerCase();
@@ -95,9 +96,24 @@ export async function GET(req) {
   const tot = url.searchParams.get("tot");
   if (!van || !tot) return Response.json({ fout: "Periode ontbreekt." }, { status: 400 });
 
-  const { data: leads } = await supabaseAdmin
-    .from("leads").select("*").gte("datum", van).lt("datum", tot).order("datum", { ascending: false });
-  const lijst = leads || [];
+  // Parallel: periode-leads + spend (Moneybird) + alle leads (voor LTV). Scheelt
+  // veel tijd t.o.v. sequentieel.
+  const haalAlle = async () => {
+    let out = [];
+    for (let off = 0; ; off += 1000) {
+      const { data } = await supabaseAdmin.from("leads").select("email,bron,omzet_excl,datum").order("datum", { ascending: true }).range(off, off + 999);
+      if (!data || !data.length) break;
+      out = out.concat(data);
+      if (data.length < 1000) break;
+    }
+    return out;
+  };
+  const [periodeRes, spend, alle] = await Promise.all([
+    supabaseAdmin.from("leads").select("*").gte("datum", van).lt("datum", tot).order("datum", { ascending: false }),
+    haalSpend(van, tot),
+    haalAlle(),
+  ]);
+  const lijst = periodeRes.data || [];
 
   const ids = lijst.map((L) => L.id);
   let acties = [];
@@ -108,9 +124,6 @@ export async function GET(req) {
   const actiePer = new Map();
   acties.forEach((a) => { if (!actiePer.has(a.lead_id)) actiePer.set(a.lead_id, []); actiePer.get(a.lead_id).push(a); });
   const verrijkt = lijst.map((L) => ({ ...L, offerte_url: offerteUrl(L.offerte_id), acties: actiePer.get(L.id) || [] }));
-
-  // Spend automatisch uit Moneybird.
-  const spend = await haalSpend(van, tot);
 
   // Aggregatie per bron + ROAS.
   const map = new Map();
@@ -142,13 +155,7 @@ export async function GET(req) {
 
   // LTV per kanaal (HELE historie, niet periode-afhankelijk): per klant z'n
   // lifetime omzet, gegroepeerd op het kanaal van z'n EERSTE lead (acquisitie).
-  let alle = [];
-  for (let off = 0; ; off += 1000) {
-    const { data } = await supabaseAdmin.from("leads").select("email,bron,omzet_excl,datum").order("datum", { ascending: true }).range(off, off + 999);
-    if (!data || !data.length) break;
-    alle = alle.concat(data);
-    if (data.length < 1000) break;
-  }
+  // `alle` komt uit de parallelle fetch bovenaan.
   const perKlant = new Map();
   for (const L of alle) {
     const e = (L.email || "").toLowerCase(); if (!e) continue;

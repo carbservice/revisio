@@ -182,7 +182,12 @@ function Dashboard() {
     <main style={wrap}>
       <div style={binnen}>
         <PaginaKop naam={naam} onUitloggen={uitloggen} titel="Sales & Marketing" streep />
-        <style>{`@keyframes verzondenFade { 0%,60% { opacity: 1; } 100% { opacity: 0.15; } }`}</style>
+        <style>{`@keyframes verzondenFade { 0%,60% { opacity: 1; } 100% { opacity: 0.15; } } @keyframes laadbalk { 0% { left: -35%; } 100% { left: 100%; } }`}</style>
+        {laden && (
+          <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: 3, background: "rgba(0,0,0,0.07)", zIndex: 60, overflow: "hidden" }}>
+            <div style={{ position: "absolute", top: 0, height: "100%", width: "35%", background: GROEN, animation: "laadbalk 1s ease-in-out infinite" }} />
+          </div>
+        )}
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", marginBottom: 16 }}>
           <div style={{ display: "flex", gap: 6 }}>
@@ -232,10 +237,14 @@ function Dashboard() {
               ].map((o) => {
                 const r = roasInfo(o.key);
                 return (
-                  <div key={o.key} style={{ flex: "1 1 160px", minWidth: 150, background: KAART_BG, border: `1px solid ${RAND}`, borderRadius: 12, padding: "9px 13px" }}>
+                  <div key={o.key} style={{ flex: "1 1 175px", minWidth: 165, background: KAART_BG, border: `1px solid ${RAND}`, borderRadius: 12, padding: "10px 13px" }}>
                     <div style={{ fontSize: 11.5, color: GRIJS, fontWeight: 600 }}>{o.label}</div>
-                    <div style={{ fontSize: 20, fontWeight: 800, lineHeight: 1.15, color: r.roas == null ? GRIJS : r.roas >= 1 ? GROEN : ROOD }}>{r.roas != null ? r.roas.toFixed(1) + "x" : "—"}</div>
-                    <div style={{ fontSize: 10.5, color: GRIJS, marginTop: 1 }}>{euro(r.omzet)} omzet ÷ {euro(r.spend)} spend</div>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 7 }}>
+                      <span style={{ fontSize: 21, fontWeight: 800, lineHeight: 1.15, color: r.roas == null ? GRIJS : r.roas >= 1 ? GROEN : ROOD }}>{r.roas != null ? r.roas.toFixed(1) + "x" : "—"}</span>
+                      {r.roas != null && <span style={{ fontSize: 13, fontWeight: 700, color: r.roas >= 1 ? GROEN : ROOD }}>{Math.round(r.roas * 100)}%</span>}
+                    </div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: GROEN, marginTop: 3 }}>{euro(r.omzet)} <span style={{ color: GRIJS, fontWeight: 400 }}>omzet</span></div>
+                    <div style={{ fontSize: 11.5, color: GRIJS }}>uit {euro(r.spend)} advertentie</div>
                   </div>
                 );
               })}
