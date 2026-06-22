@@ -226,7 +226,7 @@ function Dashboard() {
             <div style={{ margin: "0 2px 10px" }}>
               <div style={kop}>Rendement van je advertenties <span style={{ fontWeight: 600, textTransform: "none", letterSpacing: 0, color: GRIJS }}>(dit heet ROAS)</span></div>
               <div style={{ fontSize: 12.5, color: GRIJS, marginTop: 4, lineHeight: 1.5, maxWidth: 760 }}>
-                Hoeveel omzet je terugkrijgt per <b>€ 1</b> die je aan advertenties uitgeeft. <b>1× = je geld precies terug</b>, <b>3× = drie keer zoveel</b> als je uitgaf. Hoe hoger, hoe beter. Onder de 1× (rood) verlies je geld op die advertentie.
+                Hoeveel <b>omzet</b> je terugkrijgt per <b>€ 1</b> die je aan advertenties uitgeeft. <b>1× = je geld precies terug</b>, <b>3× = drie keer zoveel</b> als je uitgaf. Hoe hoger, hoe beter. Onder de 1× (rood) verdient de advertentie zichzelf niet terug. <b>Let op:</b> dit zet de omzet alleen tegenover de <b>advertentiekosten</b>. Je werk, onderdelen en vaste lasten zitten er niet in, dus het is geen nettowinst.
               </div>
             </div>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18 }}>
@@ -238,7 +238,7 @@ function Dashboard() {
                 const kleur = r.roas == null ? GRIJS : r.roas >= 1 ? GROEN : ROOD;
                 const zin = r.roas == null
                   ? "nog geen advertentiekosten deze periode"
-                  : `Elke € 1 advertentie → ${euro(r.roas)} omzet${r.roas >= 1 ? " · winstgevend" : " · kost geld"}`;
+                  : `Elke € 1 advertentie → ${euro(r.roas)} omzet${r.roas >= 1 ? " · verdient zichzelf terug" : " · verdient zichzelf niet terug"}`;
                 return (
                   <div key={o.key} style={{ flex: "1 1 190px", minWidth: 178, background: "linear-gradient(160deg, #ffffff 0%, #e7f0ea 100%)", border: `1px solid ${RAND}`, borderLeft: `4px solid ${kleur}`, borderRadius: 14, padding: "12px 14px", boxShadow: "0 1px 3px rgba(26,60,46,0.06)" }}>
                     <div style={{ fontSize: 11.5, color: GRIJS, fontWeight: 700 }}>{o.label}</div>
@@ -337,7 +337,7 @@ function Dashboard() {
                 <li><b>Omzet</b> = wat de klussen opbrachten (excl. btw). We rekenen <b>per klus</b>: elke betaalde factuur telt bij de aanvraag die 'm opleverde, in díé maand.</li>
                 <li><b>Omzet zonder advertenties (organisch)</b> = klanten die je <b>gratis</b> vond, via Google-zoeken of mond-tot-mond, zonder ervoor te betalen.</li>
                 <li><b>Omzet uit advertenties</b> = klanten die binnenkwamen via een <b>betaalde</b> advertentie (Google / Facebook / Marktplaats).</li>
-                <li><b>Rendement (ROAS)</b> = hoeveel omzet je terugkrijgt per € 1 advertentie. 3× = drie keer je geld terug. Onder 1× verlies je geld.</li>
+                <li><b>Rendement (ROAS)</b> = hoeveel omzet je terugkrijgt per € 1 advertentie. 3× = drie keer je geld terug. Dit gaat <b>alleen</b> over de advertentiekosten, niet over je werk, onderdelen en vaste lasten, dus het is géén nettowinst.</li>
                 <li><b>Advertentiekosten (spend)</b> = wat je aan advertenties uitgaf; komt automatisch uit Moneybird.</li>
                 <li><b>Gemiddelde klantwaarde</b> = wat een klant je over alle jaren gemiddeld oplevert (sommigen komen vaker terug).</li>
                 <li>Let op: een <b>recente maand of kwartaal groeit nog aan</b> — klussen worden vaak pas weken later betaald.</li>
