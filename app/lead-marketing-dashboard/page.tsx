@@ -6,14 +6,14 @@
 // status, eigenaar, bel-actie met datum-log, opvolgdatum, en terugschrijven naar
 // Moneybird (accepteren/afwijzen). "Mijn opvolging" filtert op je eigen leads.
 
-import { useEffect, useState, useCallback, CSSProperties } from "react";
+import { useEffect, useState, useCallback, useRef, CSSProperties } from "react";
 import AuthGate, { useGebruiker } from "@/app/components/AuthGate";
 import PaginaKop from "@/app/components/PaginaKop";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/api";
 import { euro } from "@/lib/format";
 import { magSales, codeVoorEmail } from "@/app/werkplaats-planning/planning-config";
-import { GROEN, GOUD, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG, KAART_BG } from "@/lib/theme";
+import { GROEN, GROEN_BG, GOUD, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG, KAART_BG } from "@/lib/theme";
 
 type Actie = { id: string; soort: string; tekst: string; door: string; datum: string };
 type Lead = { id: string; datum: string; naam: string; email: string; telefoon: string; bedrijf: string; carburateur: string; bericht: string; bron: string; status: string; eigenaar: string | null; sales_notitie: string | null; opvolgen_op: string | null; omzet_excl: number; offerte_id: string | null; offerte_nummer: string | null; offerte_state: string | null; offerte_bedrag: number | null; offerte_url: string | null; acties: Actie[] };
@@ -67,6 +67,9 @@ function Dashboard() {
   const [laden, setLaden] = useState(true);
   const [mijn, setMijn] = useState(false);
   const [toonAlle, setToonAlle] = useState(false);
+  const [flash, setFlash] = useState<Record<string, boolean>>({});      // groene "verzonden"-flash
+  const [teVaak, setTeVaak] = useState<Record<string, boolean>>({});     // dedup-melding
+  const laatstRef = useRef<Record<string, { tekst: string; tijd: number }>>({});
 
   useEffect(() => { supabase.auth.getUser().then(({ data }) => setMijnCode(codeVoorEmail(data.user?.email))); }, []);
   const { van, tot, label } = range(mode, anker);
@@ -111,11 +114,21 @@ function Dashboard() {
   async function notitieNaarMB(L: Lead) {
     const t = (L.sales_notitie || "").trim();
     if (!t) return;
+    const prev = laatstRef.current[L.id];
+    if (prev && prev.tekst === t && Date.now() - prev.tijd < 120000) {
+      setTeVaak((s) => ({ ...s, [L.id]: true }));
+      setTimeout(() => setTeVaak((s) => ({ ...s, [L.id]: false })), 2500);
+      return;
+    }
     const ok = await logActie(L, "notitie", t);
-    if (ok) { // veld leegmaken = zichtbaar signaal dat 'ie verstuurd is
+    if (!ok) return;
+    laatstRef.current[L.id] = { tekst: t, tijd: Date.now() };
+    setFlash((s) => ({ ...s, [L.id]: true })); // groene flash
+    setTimeout(() => {
       patchLokaal(L.id, { sales_notitie: "" });
       apiFetch("/api/sales/lead", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: L.id, sales_notitie: "" }) });
-    }
+      setFlash((s) => ({ ...s, [L.id]: false }));
+    }, 1700);
   }
   // De status-dropdown is de enige knop: bij een beslissing met gekoppelde
   // offerte schrijft 'ie (na bevestiging) terug naar Moneybird. Idempotent.
@@ -151,6 +164,7 @@ function Dashboard() {
     <main style={wrap}>
       <div style={binnen}>
         <PaginaKop naam={naam} onUitloggen={uitloggen} titel="Lead + Marketing Dashboard" streep />
+        <style>{`@keyframes verzondenFade { 0%,60% { opacity: 1; } 100% { opacity: 0.15; } }`}</style>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", marginBottom: 16 }}>
           <div style={{ display: "flex", gap: 6 }}>
@@ -238,10 +252,14 @@ function Dashboard() {
                         {L.offerte_id && L.offerte_url && <a href={L.offerte_url} target="_blank" rel="noreferrer" style={{ ...knopje, color: GRIJS, textDecoration: "none" }}>Klant laten tekenen ↗</a>}
                       </div>
 
-                      <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-                        <input value={L.sales_notitie || ""} onChange={(e) => wijzigLead(L.id, "sales_notitie", e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") notitieNaarMB(L); }} placeholder="notitie…  (Enter of de knop = ook naar de offerte in Moneybird)" style={{ flex: 1, boxSizing: "border-box", border: `1px solid ${RAND}`, borderRadius: 8, padding: "6px 10px", fontSize: 13, background: "#fff" }} />
-                        <button onClick={() => notitieNaarMB(L)} title="Notitie naar de Moneybird-offerte sturen" style={{ border: "none", background: GROEN, color: "#fff", borderRadius: 8, padding: "6px 14px", fontSize: 12.5, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>Notitie naar Moneybird</button>
-                      </div>
+                      {flash[L.id] ? (
+                        <div style={{ marginTop: 8, background: GROEN_BG, color: GROEN, borderRadius: 8, padding: "9px 12px", fontSize: 13, fontWeight: 800, textAlign: "center", animation: "verzondenFade 1.7s ease forwards" }}>✓ Verzonden naar Moneybird</div>
+                      ) : (
+                        <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+                          <input value={L.sales_notitie || ""} onChange={(e) => wijzigLead(L.id, "sales_notitie", e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") notitieNaarMB(L); }} placeholder="notitie…  (Enter of de knop = ook naar de offerte in Moneybird)" style={{ flex: 1, boxSizing: "border-box", border: `1px solid ${RAND}`, borderRadius: 8, padding: "6px 10px", fontSize: 13, background: "#fff" }} />
+                          <button onClick={() => notitieNaarMB(L)} title="Notitie naar de Moneybird-offerte sturen" style={{ border: "none", background: teVaak[L.id] ? GRIJS : GROEN, color: "#fff", borderRadius: 8, padding: "6px 14px", fontSize: 12.5, fontWeight: 700, cursor: teVaak[L.id] ? "default" : "pointer", whiteSpace: "nowrap" }}>{teVaak[L.id] ? "Te vaak verzonden" : "Notitie naar Moneybird"}</button>
+                        </div>
+                      )}
 
                       {(L.acties || []).length > 0 && (
                         <div style={{ marginTop: 8, borderTop: `1px solid ${RAND}`, paddingTop: 6 }}>
