@@ -18,9 +18,8 @@ import { GROEN, GOUD, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG, KAART_BG } from "@/
 type Actie = { id: string; soort: string; tekst: string; door: string; datum: string };
 type Lead = { id: string; datum: string; naam: string; email: string; telefoon: string; bedrijf: string; carburateur: string; bericht: string; bron: string; status: string; eigenaar: string | null; sales_notitie: string | null; opvolgen_op: string | null; omzet_excl: number; offerte_id: string | null; offerte_nummer: string | null; offerte_state: string | null; offerte_bedrag: number | null; offerte_url: string | null; acties: Actie[] };
 type PerBron = { bron: string; leads: number; klanten: number; omzet: number; spend: number; roas: number | null; conversie: number };
-type Data = { perBron: PerBron[]; totaal: { leads: number; klanten: number; omzet: number; spend: number; roas: number | null }; leads: Lead[]; spend: { kanaal: string; bedrag: number }[] };
+type Data = { perBron: PerBron[]; totaal: { leads: number; klanten: number; omzet: number; spend: number; roas: number | null }; leads: Lead[]; spend: { google_ads: number; facebook: number; marktplaats: number } };
 
-const KANALEN = [{ key: "google_ads", label: "Google Ads" }, { key: "facebook", label: "Facebook" }, { key: "overig", label: "Overig" }];
 const STATUS = ["nieuw", "gebeld", "uitstellen", "geaccepteerd", "afgewezen"];
 const STATUS_KLEUR: Record<string, string> = { nieuw: "#6b7280", gebeld: "#2f6f8f", uitstellen: "#b07d12", geaccepteerd: GROEN, afgewezen: ROOD };
 const EIGENAREN = ["", "CG", "LE", "JM", "LV"];
@@ -66,7 +65,6 @@ function Dashboard() {
   const [anker, setAnker] = useState(() => new Date());
   const [data, setData] = useState<Data | null>(null);
   const [laden, setLaden] = useState(true);
-  const [spendVeld, setSpendVeld] = useState<Record<string, string>>({});
   const [mijn, setMijn] = useState(false);
   const [toonAlle, setToonAlle] = useState(false);
 
@@ -79,9 +77,6 @@ function Dashboard() {
       const r = await apiFetch(`/api/sales?van=${encodeURIComponent(van.toISOString())}&tot=${encodeURIComponent(tot.toISOString())}`);
       const j = await r.json();
       setData(j);
-      const sv: Record<string, string> = {};
-      KANALEN.forEach((k) => { const row = (j.spend || []).find((s: any) => s.kanaal === k.key); sv[k.key] = row ? String(row.bedrag) : ""; });
-      setSpendVeld(sv);
     } catch { setData(null); } finally { setLaden(false); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, anker]);
@@ -89,18 +84,16 @@ function Dashboard() {
 
   function schuif(r: number) { const d = new Date(anker); if (mode === "maand") d.setMonth(d.getMonth() + r); else if (mode === "kwartaal") d.setMonth(d.getMonth() + r * 3); else d.setFullYear(d.getFullYear() + r); setAnker(d); }
 
-  async function bewaarSpend() {
-    const maandISO = `${van.getFullYear()}-${String(van.getMonth() + 1).padStart(2, "0")}-01`;
-    for (const k of KANALEN) { const v = spendVeld[k.key]; if (v === undefined || v === "") continue; await apiFetch("/api/sales/spend", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ maand: maandISO, kanaal: k.key, bedrag: Number(v) || 0 }) }); }
-    laad();
-  }
-
   function patchLokaal(id: string, velden: Partial<Lead>) {
     setData((d) => d ? { ...d, leads: d.leads.map((L) => L.id === id ? { ...L, ...velden } : L) } : d);
   }
   async function wijzigLead(id: string, veld: string, waarde: string) {
     patchLokaal(id, { [veld]: waarde } as Partial<Lead>);
-    await apiFetch("/api/sales/lead", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, [veld]: waarde }) });
+    try {
+      const r = await apiFetch("/api/sales/lead", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, [veld]: waarde }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || j.fout) window.alert("Opslaan mislukt: " + (j.fout || r.status));
+    } catch { window.alert("Opslaan mislukt (geen verbinding)."); }
   }
   async function belActie(L: Lead) {
     const r = await apiFetch("/api/sales/actie", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lead_id: L.id, soort: "gebeld", tekst: "" }) });
@@ -176,20 +169,9 @@ function Dashboard() {
               </div>
             </div>
 
-            {mode === "maand" && (
-              <div style={kaart}>
-                <div style={kop}>Advertentie-spend deze maand (excl btw)</div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "flex-end" }}>
-                  {KANALEN.map((k) => (
-                    <div key={k.key}>
-                      <div style={{ fontSize: 12, color: GRIJS, fontWeight: 700, marginBottom: 4 }}>{k.label}</div>
-                      <input type="number" value={spendVeld[k.key] ?? ""} onChange={(e) => setSpendVeld((s) => ({ ...s, [k.key]: e.target.value }))} placeholder="0" style={{ width: 120, boxSizing: "border-box", border: `1.5px solid ${RAND}`, borderRadius: 8, padding: "8px 10px", fontSize: 14, background: "#fff" }} />
-                    </div>
-                  ))}
-                  <button onClick={bewaarSpend} style={{ background: GROEN, color: "#fff", border: "none", borderRadius: 10, padding: "10px 18px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Opslaan</button>
-                </div>
-              </div>
-            )}
+            <div style={{ fontSize: 12, color: GRIJS, margin: "-6px 2px 14px" }}>
+              Spend komt automatisch uit Moneybird (grootboeken Google Ads / Facebook Ads / Marktplaats). Let op: maand-ROAS hangt af van wanneer de advertentiefactuur in Moneybird geboekt is.
+            </div>
 
             {/* Pijplijn */}
             <div style={kaart}>
