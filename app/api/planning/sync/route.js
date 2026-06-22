@@ -153,8 +153,54 @@ export async function POST(req) {
       }
     }
 
-    return Response.json({ nieuw, gefactureerd, verplaatst });
+    // 6) Betaald -> Klaar/archief. Een gefactureerde klus die in Moneybird
+    // volledig betaald is, schuift automatisch naar de kolom "Klaar / archief".
+    // We matchen de factuur aan de klus op hetzelfde contact + dezelfde
+    // referentie (voertuig), net als /api/factuur.
+    let betaald = 0;
+    try {
+      let pInv = 1, facturen = [];
+      while (true) {
+        const batch = await haal(`${BASE}/sales_invoices.json?filter=${encodeURIComponent("period:this_year,state:paid")}&per_page=100&page=${pInv}`);
+        facturen = facturen.concat(batch);
+        if (batch.length < 100) break;
+        pInv++;
+      }
+      // Per contact de set betaalde referenties (voertuig).
+      const betaaldPer = new Map();
+      facturen.forEach((f) => {
+        const cid = String(f.contact_id || (f.contact && f.contact.id) || "");
+        if (!cid) return;
+        if (!betaaldPer.has(cid)) betaaldPer.set(cid, new Set());
+        betaaldPer.get(cid).add((f.reference || "").trim().toLowerCase());
+      });
+
+      // Kandidaten: gefactureerde klus-kaarten (niet meer geaccepteerd), nog niet
+      // in Klaar/archief en niet gearchiveerd.
+      const kandidaten = (bestaand || []).filter((k) => k.klus_id && !k.archief && k.fase !== "klaar" && !accepted.has(k.klus_id));
+      const naarKlaar = [];
+      for (const k of kandidaten) {
+        let est = null;
+        try { est = await haal(`${BASE}/estimates/${k.klus_id}.json`); } catch { est = null; }
+        if (!est) continue;
+        const cid = String(est.contact_id || (est.contact && est.contact.id) || "");
+        const ref = (est.reference || "").trim().toLowerCase();
+        const refs = betaaldPer.get(cid);
+        if (ref && refs && refs.has(ref)) naarKlaar.push(k.id);
+      }
+      if (naarKlaar.length) {
+        const { count } = await supabaseAdmin.from("kaart").select("id", { count: "exact", head: true }).eq("fase", "klaar");
+        let pos = count || 0;
+        for (const id of naarKlaar) {
+          await supabaseAdmin.from("kaart").update({ fase: "klaar", positie: pos++, entered_stage_at: new Date().toISOString(), hand_verplaatst: true }).eq("id", id);
+          await supabaseAdmin.from("kaart_bericht").insert({ kaart_id: id, auteur: "Moneybird", soort: "log", tekst: "betaald in Moneybird, automatisch naar Klaar / archief" });
+        }
+        betaald = naarKlaar.length;
+      }
+    } catch { /* betaald-check is niet kritiek voor de rest van de sync */ }
+
+    return Response.json({ nieuw, gefactureerd, verplaatst, betaald });
   } catch (err) {
-    return Response.json({ fout: err.message, nieuw: 0, gefactureerd: 0, verplaatst: 0 }, { status: 200 });
+    return Response.json({ fout: err.message, nieuw: 0, gefactureerd: 0, verplaatst: 0, betaald: 0 }, { status: 200 });
   }
 }
