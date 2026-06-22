@@ -39,17 +39,14 @@ function verwachtDatum(iso: string): string {
   return Number.isFinite(d.getTime()) ? d.toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" }) : "";
 }
 
-// Waar moet de carburateur staan? Bij een actief stadium: daar. Anders zakt hij
-// naar het eerstvolgende nog-niet-gedane stadium, zodat hij bij bijvoorbeeld 20%
-// onderaan het ontvangst-vak komt en niet bovenin blijft hangen. Is alles
-// gedaan, dan staat hij bij het laatste stadium.
-function focusStadium(actiefStap: string | null, stappen: { stap: string }[]): number {
-  if (actiefStap) {
-    const i = STADIA.findIndex((s) => s.stap === actiefStap);
-    if (i >= 0) return i;
-  }
-  const niet = STADIA.findIndex((s) => !stappen.find((x) => x.stap === s.stap));
-  return niet === -1 ? STADIA.length - 1 : niet;
+// Waar moet de carburateur staan? Altijd bij het LAATST afgevinkte (gepubliceerde)
+// stadium, zodat hij doorloopt tot waar de monteur is en niet halverwege blijft
+// hangen, ook niet als een eerder stadium niet apart is gepubliceerd (geen gat).
+function focusStadium(stappen: { stap: string }[]): number {
+  if (!stappen.length) return 0;
+  const laatste = stappen[stappen.length - 1].stap;
+  const i = STADIA.findIndex((s) => s.stap === laatste);
+  return i >= 0 ? i : STADIA.length - 1;
 }
 
 function Inner() {
@@ -104,7 +101,7 @@ function Inner() {
     let raf = 0;
     let start: number | null = null;
     if (!data.stappen.length) return; // niets gepubliceerd: geen carburateur
-    const huidige = focusStadium(data.actiefStap, data.stappen);
+    const huidige = focusStadium(data.stappen);
     meet();      // verse meting bij de start van de rit
     setVul(0);   // icoon terug naar boven, daarna rijdt hij weer naar beneden
     const tick = (ts: number) => {
@@ -226,7 +223,7 @@ function Inner() {
   const pct = Math.max(0, Math.min(100, data.pct || 0));
   const klaar = pct >= 100;
   const stapData = (st: string) => data.stappen.find((s) => s.stap === st);
-  const huidigeIndex = data.stappen.length ? focusStadium(data.actiefStap, data.stappen) : -1;
+  const huidigeIndex = data.stappen.length ? focusStadium(data.stappen) : -1;
   // % dat met het icoon meeloopt en optelt naar het huidige stadium.
   const doelCenter = huidigeIndex >= 0 ? (centers[huidigeIndex] || 0) : 0;
   const toonPct = doelCenter > 0 ? Math.round(pct * Math.min(1, vul / doelCenter)) : 0;
