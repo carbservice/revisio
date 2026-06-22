@@ -95,16 +95,28 @@ function Dashboard() {
       if (!r.ok || j.fout) window.alert("Opslaan mislukt: " + (j.fout || r.status));
     } catch { window.alert("Opslaan mislukt (geen verbinding)."); }
   }
-  async function logActie(L: Lead, soort: string, tekst: string) {
-    const r = await apiFetch("/api/sales/actie", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lead_id: L.id, soort, tekst }) });
-    const j = await r.json().catch(() => ({}));
-    const nieuw: Actie = { id: Math.random().toString(36), soort, tekst, door: j.door || mijnCode || "", datum: new Date().toISOString() };
-    const wordtGebeld = soort === "gebeld" && L.status === "nieuw";
-    patchLokaal(L.id, { acties: [nieuw, ...(L.acties || [])], status: wordtGebeld ? "gebeld" : L.status });
-    if (wordtGebeld) apiFetch("/api/sales/lead", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: L.id, status: "gebeld" }) });
+  async function logActie(L: Lead, soort: string, tekst: string): Promise<boolean> {
+    try {
+      const r = await apiFetch("/api/sales/actie", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lead_id: L.id, soort, tekst }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || j.fout) { window.alert("Niet opgeslagen: " + (j.fout || r.status)); return false; }
+      const nieuw: Actie = { id: Math.random().toString(36), soort, tekst, door: j.door || mijnCode || "", datum: new Date().toISOString() };
+      const wordtGebeld = soort === "gebeld" && L.status === "nieuw";
+      patchLokaal(L.id, { acties: [nieuw, ...(L.acties || [])], status: wordtGebeld ? "gebeld" : L.status });
+      if (wordtGebeld) apiFetch("/api/sales/lead", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: L.id, status: "gebeld" }) });
+      return true;
+    } catch { window.alert("Niet opgeslagen (geen verbinding)."); return false; }
   }
   function belActie(L: Lead) { logActie(L, "gebeld", ""); }
-  function notitieNaarMB(L: Lead) { const t = (L.sales_notitie || "").trim(); if (t) logActie(L, "notitie", t); }
+  async function notitieNaarMB(L: Lead) {
+    const t = (L.sales_notitie || "").trim();
+    if (!t) return;
+    const ok = await logActie(L, "notitie", t);
+    if (ok) { // veld leegmaken = zichtbaar signaal dat 'ie verstuurd is
+      patchLokaal(L.id, { sales_notitie: "" });
+      apiFetch("/api/sales/lead", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: L.id, sales_notitie: "" }) });
+    }
+  }
   // De status-dropdown is de enige knop: bij een beslissing met gekoppelde
   // offerte schrijft 'ie (na bevestiging) terug naar Moneybird. Idempotent.
   async function wijzigStatus(L: Lead, nieuw: string) {
@@ -228,7 +240,7 @@ function Dashboard() {
 
                       <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
                         <input value={L.sales_notitie || ""} onChange={(e) => wijzigLead(L.id, "sales_notitie", e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") notitieNaarMB(L); }} placeholder="notitie…  (Enter of de knop = ook naar de offerte in Moneybird)" style={{ flex: 1, boxSizing: "border-box", border: `1px solid ${RAND}`, borderRadius: 8, padding: "6px 10px", fontSize: 13, background: "#fff" }} />
-                        <button onClick={() => notitieNaarMB(L)} title="Notitie naar de Moneybird-offerte sturen" style={{ border: "none", background: GROEN, color: "#fff", borderRadius: 8, padding: "6px 12px", fontSize: 12.5, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>→ Moneybird</button>
+                        <button onClick={() => notitieNaarMB(L)} title="Notitie naar de Moneybird-offerte sturen" style={{ border: "none", background: GROEN, color: "#fff", borderRadius: 8, padding: "6px 14px", fontSize: 12.5, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>Notitie naar Moneybird</button>
                       </div>
 
                       {(L.acties || []).length > 0 && (
