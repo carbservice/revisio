@@ -125,10 +125,18 @@ export default function KaartDetail({
   }
 
   // --- Archiveren ----------------------------------------------------------
-  // Zet de kaart op archief: weg van het bord, blijft bewaard in de database.
+  // "Archiveren" = de kaart naar de kolom "Klaar / archief" schuiven (achteraan).
+  // Hij blijft zichtbaar en kan later teruggesleept worden. hand_verplaatst zet
+  // hem vast, zodat de Moneybird-sync hem niet terugtrekt.
   async function archiveer() {
-    await supabase.from("kaart").update({ archief: true }).eq("id", kaart.id);
-    await log("archiveerde de kaart");
+    if (kaart.fase !== "klaar") {
+      const { count } = await supabase.from("kaart").select("id", { count: "exact", head: true }).eq("fase", "klaar");
+      await supabase.from("kaart").update({
+        fase: "klaar", positie: count || 0, entered_stage_at: new Date().toISOString(),
+        hand_verplaatst: true, archief: false,
+      }).eq("id", kaart.id);
+      await log(`verplaatste de kaart naar "Klaar / archief"`);
+    }
     setVraagArchief(false);
     onWijzig();
     onSluit();
@@ -513,11 +521,11 @@ export default function KaartDetail({
         {vraagArchief && (
           <div onClick={(e) => { e.stopPropagation(); setVraagArchief(false); }} style={bevestigOverlay}>
             <div onClick={(e) => e.stopPropagation()} style={bevestigBox}>
-              <div style={{ fontFamily: SERIF, fontSize: 17, fontWeight: 700, color: TEKST, marginBottom: 6 }}>Archiveren?</div>
-              <div style={{ fontSize: 13.5, color: GRIJS, lineHeight: 1.5, marginBottom: 18 }}>Weet je zeker dat je deze kaart wilt archiveren? Hij verdwijnt van het bord, maar blijft bewaard in de database.</div>
+              <div style={{ fontFamily: SERIF, fontSize: 17, fontWeight: 700, color: TEKST, marginBottom: 6 }}>Naar Klaar / archief?</div>
+              <div style={{ fontSize: 13.5, color: GRIJS, lineHeight: 1.5, marginBottom: 18 }}>Weet je zeker dat je deze kaart naar de kolom &ldquo;Klaar / archief&rdquo; wilt verplaatsen? Je kunt &lsquo;m daar later gewoon terugslepen.</div>
               <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
                 <button onClick={() => setVraagArchief(false)} style={knopLicht}>Annuleren</button>
-                <button onClick={archiveer} style={knopRood}>Ja, archiveren</button>
+                <button onClick={archiveer} style={knopRood}>Ja, verplaatsen</button>
               </div>
             </div>
           </div>

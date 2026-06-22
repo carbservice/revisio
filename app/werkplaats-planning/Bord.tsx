@@ -83,9 +83,7 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
       supabase.from("kaart_lid").select("kaart_id, gebruiker"),
       supabase.from("kaart_checklist_item").select("kaart_id, gedaan"),
     ]);
-    // Gearchiveerde kaarten verdwijnen van het bord (blijven wel in de database).
-    const actief = ((k.data || []) as Kaart[]).filter((c) => !c.archief);
-    setKaarten(actief);
+    if (k.data) setKaarten(k.data as Kaart[]);
     const ld: Record<string, string[]> = {};
     (l.data || []).forEach((r: { kaart_id: string; gebruiker: string }) => {
       (ld[r.kaart_id] = ld[r.kaart_id] || []).push(r.gebruiker);
@@ -100,7 +98,7 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
     setChecklist(cl);
     setLaden(false);
     // Monteur-status (voortgang %, retour, niet-gepubliceerde klant-update).
-    await laadKlusStatus(actief.map((x) => x.klus_id).filter(Boolean) as string[]);
+    await laadKlusStatus(((k.data || []) as Kaart[]).map((x) => x.klus_id).filter(Boolean) as string[]);
   }, [laadKlusStatus]);
 
   const herlaadStraks = useCallback(() => {
