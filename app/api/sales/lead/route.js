@@ -1,5 +1,5 @@
 // app/api/sales/lead/route.js
-// Werkt een lead bij in de sales-pijplijn (status, eigenaar, notitie).
+// Werkt een lead bij in de pijplijn (status, eigenaar, notitie, opvolgdatum).
 
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { vereisIngelogd } from "@/lib/auth-server";
@@ -11,13 +11,14 @@ export async function PATCH(req) {
   if (!magSales(poort.personeel.email)) return Response.json({ fout: "Geen sales-toegang." }, { status: 403 });
 
   const body = await req.json().catch(() => ({}));
-  const { id, status, eigenaar, sales_notitie } = body;
+  const { id, status, eigenaar, sales_notitie, opvolgen_op } = body;
   if (!id) return Response.json({ fout: "Geen id." }, { status: 400 });
 
   const patch = {};
   if (status !== undefined) patch.status = status;
   if (eigenaar !== undefined) patch.eigenaar = eigenaar || null;
   if (sales_notitie !== undefined) patch.sales_notitie = sales_notitie;
+  if (opvolgen_op !== undefined) patch.opvolgen_op = opvolgen_op || null;
   if (!Object.keys(patch).length) return Response.json({ ok: true });
 
   const { error } = await supabaseAdmin.from("leads").update(patch).eq("id", id);
