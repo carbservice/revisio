@@ -73,7 +73,7 @@ function Dashboard() {
   const [mijn, setMijn] = useState(false);
   const [toonAlle, setToonAlle] = useState(false);
   const [zoek, setZoek] = useState("");
-  const [roasAlle, setRoasAlle] = useState(false); // ROAS o.b.v. alle omzet ipv alleen betaalde
+  const [roasKanaal, setRoasKanaal] = useState("totaal"); // welk kanaal de ROAS-KPI toont
   const [flash, setFlash] = useState<Record<string, boolean>>({});      // groene "verzonden"-flash
   const [teVaak, setTeVaak] = useState<Record<string, boolean>>({});     // dedup-melding
   const laatstRef = useRef<Record<string, { tekst: string; tijd: number }>>({});
@@ -161,8 +161,24 @@ function Dashboard() {
 
   const modeKnop = (m: string): CSSProperties => ({ border: `1.5px solid ${GROEN}`, background: mode === m ? GROEN : "#fff", color: mode === m ? "#fff" : GROEN, borderRadius: 10, padding: "8px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" });
 
-  // ROAS-weergave: standaard alleen betaalde omzet (eerlijk), of alle omzet (blended).
-  const roasW = data && data.totaal.spend > 0 ? (roasAlle ? data.totaal.omzet : data.totaal.omzetBetaald) / data.totaal.spend : null;
+  // ROAS per kanaal: elk betaald kanaal z'n eigen omzet ÷ eigen spend. Plus
+  // "Totaal" (alle betaalde omzet ÷ alle spend) en "Alle" (incl. organisch).
+  const roasVoor = (key: string): number | null => {
+    if (!data) return null;
+    const spend = (key === "totaal" || key === "alle") ? data.totaal.spend : (data.spend[key as keyof typeof data.spend] || 0);
+    if (spend <= 0) return null;
+    const omzet = key === "alle" ? data.totaal.omzet : key === "totaal" ? data.totaal.omzetBetaald : (data.perBron.find((s) => s.bron === key)?.omzet || 0);
+    return omzet / spend;
+  };
+  const roasOpties = data ? [
+    { key: "totaal", label: "Totaal (betaald)" },
+    ...(["google_ads", "facebook", "marktplaats"] as const).filter((c) => (data.spend[c] || 0) > 0).map((c) => ({ key: c as string, label: bronLabel(c) })),
+    { key: "alle", label: "Alle (incl. organisch)" },
+  ] : [];
+  const roasW = roasVoor(roasKanaal);
+  const roasTotaalRij = roasVoor(roasKanaal === "alle" ? "alle" : "totaal");
+  const roasSel = roasOpties.find((o) => o.key === roasKanaal);
+  const roasSub = roasW != null ? `${roasSel?.label || ""} · €1 → ${euro(roasW)}` : "geen spend dit kanaal";
 
   const zoekTerm = zoek.trim().toLowerCase();
   const pijplijn = (data?.leads || []).filter((L) => {
@@ -211,13 +227,12 @@ function Dashboard() {
               {kpi("Deals gewonnen", String(data.totaal.klanten), GROEN, data.totaal.leads ? pct(data.totaal.klanten / data.totaal.leads) + " conversie" : "nog geen leads")}
               {kpi("Omzet", euro(data.totaal.omzet), GROEN, "van deze leads · per-deal · excl. btw")}
               {kpi("Spend", euro(data.totaal.spend), data.totaal.spend ? TEKST : GRIJS, "advertentiekosten (Moneybird)")}
-              {kpi("ROAS", roasW != null ? roasW.toFixed(1) + "x" : "—", roasW != null ? (roasW >= 1 ? GROEN : ROOD) : GRIJS, roasW != null ? `€1 spend → ${euro(roasW)} ${roasAlle ? "omzet (alle)" : "betaalde omzet"}` : "geen spend")}
+              {kpi("ROAS", roasW != null ? roasW.toFixed(1) + "x" : "—", roasW != null ? (roasW >= 1 ? GROEN : ROOD) : GRIJS, roasSub)}
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", margin: "-4px 2px 16px", fontSize: 12.5, color: GRIJS }}>
-              <span>ROAS rekent met:</span>
-              <button onClick={() => setRoasAlle(false)} style={toggle(!roasAlle)}>Betaalde omzet (eerlijk)</button>
-              <button onClick={() => setRoasAlle(true)} style={toggle(roasAlle)}>Alle omzet (incl. organisch)</button>
+              <span>ROAS van:</span>
+              {roasOpties.map((o) => <button key={o.key} onClick={() => setRoasKanaal(o.key)} style={toggle(roasKanaal === o.key)}>{o.label}</button>)}
             </div>
 
             <div style={kaart}>
@@ -249,7 +264,7 @@ function Dashboard() {
                         <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>{euro(data.totaal.omzet)}</td>
                         <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>{data.totaal.omzet ? "100%" : "—"}</td>
                         <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>{data.totaal.spend ? euro(data.totaal.spend) : "—"}</td>
-                        <td style={{ ...td, fontWeight: 800, borderBottom: "none", color: roasW == null ? GRIJS : roasW >= 1 ? GROEN : ROOD }}>{roasW != null ? roasW.toFixed(1) + "x" : "—"}</td>
+                        <td style={{ ...td, fontWeight: 800, borderBottom: "none", color: roasTotaalRij == null ? GRIJS : roasTotaalRij >= 1 ? GROEN : ROOD }}>{roasTotaalRij != null ? roasTotaalRij.toFixed(1) + "x" : "—"}</td>
                       </tr>
                     )}
                   </tbody>
