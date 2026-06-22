@@ -242,8 +242,8 @@ function Dashboard() {
                 return (
                   <div key={o.key} style={{ flex: "1 1 240px", minWidth: 215, background: "linear-gradient(160deg, #ffffff 0%, #e7f0ea 100%)", border: `1px solid ${RAND}`, borderLeft: `5px solid ${kleur}`, borderRadius: 14, padding: "14px 16px", boxShadow: "0 1px 3px rgba(26,60,46,0.06)" }}>
                     <div style={{ fontSize: 13, color: TEKST, fontWeight: 800 }}>{o.label}</div>
-                    <div style={{ fontSize: 10.5, color: GRIJS, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.4, marginTop: 6 }}>Rendement (ROAS)</div>
-                    <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 7, marginTop: 7 }}>
+                      <span style={{ fontSize: 12.5, fontWeight: 700, color: GRIJS, letterSpacing: 0.3 }}>ROAS</span>
                       <span style={{ fontSize: 31, fontWeight: 800, lineHeight: 1.05, color: kleur }}>{r.roas != null ? r.roas.toFixed(1) + "×" : "—"}</span>
                       {r.roas != null && <span style={{ fontSize: 15, fontWeight: 700, color: kleur }}>= {Math.round(r.roas * 100)}%</span>}
                     </div>
