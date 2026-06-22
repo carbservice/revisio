@@ -61,6 +61,13 @@ export function codeVoorEmail(email: string | null | undefined): string | null {
   return TEAM.find((l) => l.email.toLowerCase() === e)?.code || null;
 }
 
+// Wie het sales-dashboard mag zien: Cyriel, Lukas, Jarno, Luuk.
+export const SALES_CODES = ["CG", "LE", "JM", "LV"];
+export function magSales(email: string | null | undefined): boolean {
+  const code = codeVoorEmail(email);
+  return !!code && SALES_CODES.includes(code);
+}
+
 // --- Koppeling met de monteurs-app (stadia/voortgang) ---------------------
 // Dezelfde stadia als de werkbon-app (klus_voortgang.stap), met hun percentage.
 export const STADIA_PCT: { id: string; pct: number }[] = [
