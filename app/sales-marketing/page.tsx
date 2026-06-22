@@ -67,6 +67,7 @@ function Dashboard() {
   const [laden, setLaden] = useState(true);
   const [mijn, setMijn] = useState(false);
   const [toonAlle, setToonAlle] = useState(false);
+  const [zoek, setZoek] = useState("");
   const [flash, setFlash] = useState<Record<string, boolean>>({});      // groene "verzonden"-flash
   const [teVaak, setTeVaak] = useState<Record<string, boolean>>({});     // dedup-melding
   const laatstRef = useRef<Record<string, { tekst: string; tijd: number }>>({});
@@ -154,10 +155,12 @@ function Dashboard() {
 
   const modeKnop = (m: string): CSSProperties => ({ border: `1.5px solid ${GROEN}`, background: mode === m ? GROEN : "#fff", color: mode === m ? "#fff" : GROEN, borderRadius: 10, padding: "8px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" });
 
+  const zoekTerm = zoek.trim().toLowerCase();
   const pijplijn = (data?.leads || []).filter((L) => {
     const inPijp = toonAlle || VERSTUURD.includes(L.offerte_state || "");
     const vanMij = !mijn || L.eigenaar === mijnCode;
-    return inPijp && vanMij;
+    const raakt = !zoekTerm || [L.naam, L.email, L.bedrijf, L.telefoon, L.carburateur, L.offerte_nummer].some((v) => (v || "").toLowerCase().includes(zoekTerm));
+    return inPijp && vanMij && raakt;
   });
 
   return (
@@ -223,6 +226,15 @@ function Dashboard() {
                   <button onClick={() => setMijn((v) => !v)} style={toggle(mijn)}>Mijn opvolging</button>
                   <button onClick={() => setToonAlle((v) => !v)} style={toggle(toonAlle)}>{toonAlle ? "Alle leads" : "Alleen verstuurde offertes"}</button>
                 </div>
+              </div>
+              <div style={{ position: "relative", marginBottom: 12 }}>
+                <input
+                  value={zoek}
+                  onChange={(e) => setZoek(e.target.value)}
+                  placeholder="Zoek op klant, e-mail, bedrijf, telefoon, voertuig of offertenummer..."
+                  style={{ width: "100%", boxSizing: "border-box", border: `1.5px solid ${RAND}`, borderRadius: 10, padding: "10px 36px 10px 14px", fontSize: 14, background: "#fff", color: TEKST }}
+                />
+                {zoek && <button onClick={() => setZoek("")} title="Wissen" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", border: "none", background: "transparent", color: GRIJS, fontSize: 18, lineHeight: 1, cursor: "pointer" }}>×</button>}
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {pijplijn.map((L) => {
