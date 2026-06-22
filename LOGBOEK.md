@@ -184,3 +184,29 @@
 
 ### Overig
 - Breedtes gelijkgetrokken (kop op 920, werkplaats-dashboard vol-breed). Werkinstructie voor Lukas (manager) geschreven.
+
+## Dag 8 · 22-23 juni 2026
+**Sales & Marketing-dashboard van nul opgebouwd, een nieuwe conversie-landingspagina ontworpen, en de start van een eigen aanvraag-backend (Zapier + HubSpot eruit).**
+
+### Sales & Marketing-dashboard (/sales-marketing, voor CG/LE/JM/LV)
+- Leads herbouwd uit de volledige Gmail-extractie van label "website aanvraag": 1959 aanvragen terug tot okt 2023, bronnen genormaliseerd (organisch/google_ads/facebook/marktplaats).
+- Per-deal attributie: elke betaalde Moneybird-factuur via de offerte gekoppeld aan de lead die 'm opleverde (script `leads-rematch.py`). Omzet telt in de maand/het kanaal van die lead.
+- Groene banner met omzet-splitsing: totaal / zonder advertenties (organisch, gratis) / uit advertenties, met %.
+- ROAS per kanaal, eerlijk: alleen betaalde-kanaal-omzet gedeeld door advertentiekosten (organisch telt niet mee). Per kaart de rekensom + uitleg, in gewone taal.
+- Marktplaats-spend = alleen de Pro/Admarkt-facturen (de rest van dat grootboek = motoren-advertenties, andere tak).
+- LTV-blok: gemiddelde klantwaarde per kanaal over de hele historie (organisch ~€537, Google ~€480).
+- Bugfixes/perf: tijdzone-bug (maandgrenzen op UTC), spend/LTV/leads parallel, Marktplaats via datumfilter (1 call), laadbalk-overlay.
+- "Groene cockpit"-redesign: gradient-hero, accent-tegels, detailtabellen ingeklapt (lichtgroene kop + zebra-rijen). Alle koppen/kolommen in gewone taal + begrippenlijst, zodat de jongens de termen leren.
+- Pijplijn-notities schieten naar de gekoppelde Moneybird-offerte (met "Verzonden"-flash + dedup).
+
+### Mail naar Google Ads-specialist (Stephan)
+- Onderbouwd antwoord op basis van de data: lead→sale 18% (Google), ROAS 2026 4,6x, trend per kwartaal (Q1 4,3x, Q2 5,5x).
+
+### Nieuwe Automotive-landingspagina (interne mockup: `automotive-nieuw.html`, nog niet live)
+- Conversie via probleemherkenning: interactieve "Herken je dit?"-klachtenchecker (15 klachten, 3 brandgevaarlijk = rood/urgent), "uitstellen kost je motor"-blok (benzine koelt mee), werkwijze, USP's, merken, prijs.
+- Aanvraagformulier met openingsvraag zelf/installatiepartner + particulier/zakelijk (bedrijfsvelden klappen uit); klachten vullen live vanuit de checker. Wordt de basis voor een volledig eigen carbservice.nl.
+
+### Aanvraag-backend, start (branch `lead-intake-backend`, NIET live)
+- Doel: Zapier (~€30/mnd) + HubSpot (€25/mnd) vervangen door een eigen pijplijn = ~€55/mnd besparing.
+- Gebouwd: publiek `/api/aanvraag` + Revisio-formulier `/aanvraag`. Kenteken normaliseren + RDW-voertuigdata (gratis, geen sleutel), Moneybird contact (idempotent op e-mail) + CONCEPT-offerte, lead direct in het dashboard met bron, mailtje naar Cyriel. Alles faalt "zacht" (aanvraag nooit kwijt).
+- Open: Resend-mailsleutel, Moneybird-template bevestigen, Google Contacts-OAuth, live zetten. Zie de takenlijst voor Cyriel.

@@ -1,6 +1,6 @@
 # Revisio werkplaats, stand van zaken
 
-_Laatst bijgewerkt: 19 juni 2026. Livegang: 13 juni 2026 (uitgevoerd)._
+_Laatst bijgewerkt: 23 juni 2026. Livegang: 13 juni 2026 (uitgevoerd)._
 
 ## Wat al af is
 
@@ -229,6 +229,23 @@ Intern kanban-/planningsbord op `/planning`, dat onze Trello vervangt. Het bord 
 
 **Overig**
 - Breedtes gelijkgetrokken (kop op 920 zoals /start; werkplaats-dashboard vol-breed). Werkinstructie voor Lukas (manager) geschreven (`werkinstructie-lukas.md`): alerts, timers, Werkplaats Planning, en timer op STOP tijdens ultrasoon en pauze.
+
+### Gedaan op 22-23 juni 2026 - Sales & Marketing-dashboard, landingspagina, aanvraag-backend
+
+**Sales & Marketing-dashboard (`/sales-marketing`, alleen CG/LE/JM/LV)**
+- Leads herbouwd uit de volledige Gmail-extractie (1959, terug tot okt 2023), bron genormaliseerd. Per-deal attributie (factuur -> offerte -> lead) via `scripts/leads-rematch.py`. LTV per kanaal. Omzet-splitsing organisch/advertenties. ROAS per kanaal alleen over betaalde omzet (organisch telt niet mee). Marktplaats-spend = alleen Pro/Admarkt. Tijdzone-fix op maandgrenzen. "Groene cockpit"-look, gewone taal + begrippenlijst.
+- Belangrijk: spend en periode zijn LIVE uit Moneybird; omzet/offertes en leads zijn nog een momentopname (laatste match). Dagelijks auto-bijwerken = nog te bouwen.
+
+**Beslissingen voor de aanvraag-backend (Zapier + HubSpot vervangen)**
+- Formulier wordt een Revisio-pagina (`/aanvraag`) die direct naar de backend post; later embedden in Strikingly / carbservice.
+- Moneybird-offerte als CONCEPT klaarzetten (Cyriel vult prijs in en verstuurt zelf).
+- Melding bij nieuwe aanvraag: e-mail naar Cyriel. Aanvragen stromen direct het dashboard in, met bron uit de URL (gclid/utm).
+- HubSpot (€25/mnd) en Zapier (~€30/mnd) gaan eruit; Google Tasks vervalt. E-mailmarketing-alternatief (Brevo/MailerLite) = later.
+
+**Gebouwd (branch `lead-intake-backend`, NIET live)**
+- `/api/aanvraag` + `/aanvraag` + `lib/rdw.js`. RDW-kenteken (gratis), Moneybird contact (idempotent op e-mail) + concept-offerte (workflow `EstimateWorkflow Standaard`, stijl `Carburateur Service`), lead-in-dashboard met bron, mail via Resend (sleutel nog instellen). Alles faalt "zacht".
+
+**Nieuwe Automotive-landingspagina** (interne mockup `automotive-nieuw.html`, nog niet live): probleemherkenning-checker, brandgevaar-urgentie, motorschade-blok (benzine koelt mee), formulier met zelf/partner + particulier/zakelijk.
 
 ## Livegang (13 juni 2026)
 
