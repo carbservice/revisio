@@ -903,7 +903,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, isManager, onUitloggen }: { ingelogd
         </div>
       )}
 
-      <PaginaKop naam={ingelogd.naam} onUitloggen={onUitloggen} titel="Werkplaats Werkbonnen">
+      <PaginaKop naam={ingelogd.naam} onUitloggen={onUitloggen} titel="Werkplaats Werkbonnen" streep>
         {!open && (
           <div style={kaart}>
             <input value={zoek} onChange={(e) => setZoek(e.target.value)} placeholder="Zoek op offertenummer, klant of voertuig" style={{ ...inp, fontSize: 15 }} />
