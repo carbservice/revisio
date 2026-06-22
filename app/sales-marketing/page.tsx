@@ -208,14 +208,15 @@ function Dashboard() {
             <div style={hero}>
               <div style={heroGlow} />
               <div style={{ position: "relative", display: "flex", flexWrap: "wrap", gap: 22, alignItems: "flex-end" }}>
-                {heroKpi("Omzet", euro(data.totaal.omzet), "alle kanalen · per-deal · excl. btw")}
-                {heroKpi("Leads", String(data.totaal.leads), "aanvragen deze periode")}
-                {heroKpi("ROAS · alle ads", roasTotaal != null ? roasTotaal.toFixed(1) + "x" : "—", roasTotaal != null ? `${Math.round(roasTotaal * 100)}% rendement` : "nog geen spend", roasTotaal != null ? (roasTotaal >= 1 ? "#86e0b0" : "#ecab9b") : "#fff")}
+                {heroKpi("Omzet totaal", euro(data.totaal.omzet), "alle kanalen · per-deal")}
+                {heroKpi("Organisch (gratis)", euro(data.totaal.omzet - data.totaal.omzetBetaald), data.totaal.omzet ? `${pct((data.totaal.omzet - data.totaal.omzetBetaald) / data.totaal.omzet)} van de omzet` : "", "#86e0b0")}
+                {heroKpi("Uit advertenties", euro(data.totaal.omzetBetaald), data.totaal.omzet ? `${pct(data.totaal.omzetBetaald / data.totaal.omzet)} van de omzet` : "", "#e9cd8a")}
               </div>
             </div>
 
             {/* Secundaire stats */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 16 }}>
+              {statChip("Leads", String(data.totaal.leads), GROEN)}
               {statChip("Deals gewonnen", String(data.totaal.klanten), GROEN)}
               {statChip("Conversie", data.totaal.leads ? pct(data.totaal.klanten / data.totaal.leads) : "—", GROEN)}
               {statChip("Advertentiekosten", euro(data.totaal.spend), data.totaal.spend ? TEKST : GRIJS)}
@@ -245,10 +246,6 @@ function Dashboard() {
                   </div>
                 );
               })}
-            </div>
-
-            <div style={{ fontSize: 12.5, color: GRIJS, margin: "-8px 2px 18px", lineHeight: 1.5 }}>
-              Van je <b>{euro(data.totaal.omzet)}</b> omzet kwam <b>{euro(data.totaal.omzetBetaald)}</b> via betaalde advertenties{data.totaal.omzet ? ` (${pct(data.totaal.omzetBetaald / data.totaal.omzet)})` : ""}; de rest is <b>organisch</b> (gratis). De kaarten hierboven rekenen alleen met dat advertentie-deel.
             </div>
 
             {/* Detailsecties: standaard ingeklapt = rust */}
