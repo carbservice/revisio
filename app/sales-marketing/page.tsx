@@ -238,7 +238,7 @@ function Dashboard() {
                 const kleur = r.roas == null ? GRIJS : r.roas >= 1 ? GROEN : ROOD;
                 const zin = r.roas == null
                   ? "nog geen advertentiekosten deze periode"
-                  : `Elke € 1 advertentie → ${euro(r.roas)} omzet${r.roas >= 1 ? " · verdient zichzelf terug" : " · verdient zichzelf niet terug"}`;
+                  : `Elke 1 euro advertenties → brengt ${r.roas.toFixed(2).replace(".", ",")} euro omzet, dat is ${r.roas >= 1 ? "nog geen winst maar een positief resultaat" : "minder dan je uitgaf"}`;
                 return (
                   <div key={o.key} style={{ flex: "1 1 190px", minWidth: 178, background: "linear-gradient(160deg, #ffffff 0%, #e7f0ea 100%)", border: `1px solid ${RAND}`, borderLeft: `4px solid ${kleur}`, borderRadius: 14, padding: "12px 14px", boxShadow: "0 1px 3px rgba(26,60,46,0.06)" }}>
                     <div style={{ fontSize: 11.5, color: GRIJS, fontWeight: 700 }}>{o.label}</div>
