@@ -142,6 +142,8 @@ function WerkplaatsApp({ ingelogd, isAdmin, isManager, onUitloggen }: { ingelogd
   const [ontvangst, setOntvangst] = useState<Record<string, string>>({});
   const [zoek, setZoek] = useState("");
   const [open, setOpen] = useState<Klus | null>(null);
+  const [fotoPopup, setFotoPopup] = useState(false); // herinnering "maak mooie foto's"
+  const FOTO_HERINNERING_MIN = 8; // na hoeveel minuten de foto-herinnering verschijnt (1x per klus)
   const [popup, setPopup] = useState(false);
   const [timerPopup, setTimerPopup] = useState(false);
   const [regels, setRegels] = useState<Regel[]>([]);
@@ -372,8 +374,26 @@ function WerkplaatsApp({ ingelogd, isAdmin, isManager, onUitloggen }: { ingelogd
     if (autoTimer.current) { clearTimeout(autoTimer.current); autoTimer.current = null; }
     if (vuil.current) bewaarWerkbon(true); // flush eventuele niet-opgeslagen wijzigingen
     setOpen(null);
+    setFotoPopup(false);
     if (typeof window !== "undefined") window.history.replaceState(null, "", window.location.pathname);
   }
+
+  // Foto-herinnering: 1x per klus, X minuten nadat een klus is geopend. Onthouden
+  // per klus in localStorage zodat hij niet opnieuw komt. Sluit je de klus eerder,
+  // dan wordt de timer netjes opgeruimd.
+  useEffect(() => {
+    if (!open) return;
+    const sleutel = `revisio-fotoherinnering-${open.id}`;
+    if (typeof window !== "undefined") {
+      try { if (localStorage.getItem(sleutel)) return; } catch { /* localStorage geblokkeerd */ }
+    }
+    const t = setTimeout(() => {
+      try { localStorage.setItem(sleutel, "1"); } catch { /* niets */ }
+      setFotoPopup(true);
+    }, FOTO_HERINNERING_MIN * 60 * 1000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open?.id]);
 
   // Wisselen tussen carburateur 1 en 2: laad de technische werkbon van die
   // carburateur en voorkom dat de pending auto-opslag de net geladen data wegschrijft.
@@ -912,6 +932,17 @@ function WerkplaatsApp({ ingelogd, isAdmin, isManager, onUitloggen }: { ingelogd
         )}
       </PaginaKop>
       {fout && <div style={{ ...kaart, color: ROOD, borderColor: ROOD }}>Let op: {fout}</div>}
+
+      {fotoPopup && (
+        <div onClick={() => setFotoPopup(false)} style={{ position: "fixed", inset: 0, background: "rgba(26,33,28,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 22, zIndex: 90 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", border: `2px solid ${GROEN}`, borderRadius: 18, padding: "26px 22px", maxWidth: 360, width: "100%", textAlign: "center", boxShadow: "0 18px 50px rgba(0,0,0,0.3)" }}>
+            <div style={{ fontSize: 44, marginBottom: 8 }}>📸</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: GROEN, marginBottom: 8 }}>Let op: maak mooie foto&apos;s</div>
+            <div style={{ fontSize: 14, color: TEKST, lineHeight: 1.55, marginBottom: 20 }}>Maak duidelijke, nette foto&apos;s voor de klant. Goede foto&apos;s in het klantportaal maken echt het verschil.</div>
+            <button onClick={() => setFotoPopup(false)} style={{ background: GROEN, color: "#fff", border: "none", borderRadius: 12, padding: "13px 26px", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>Begrepen</button>
+          </div>
+        </div>
+      )}
 
       {!open && (
         <>
