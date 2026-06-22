@@ -333,7 +333,7 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
             value={zoek}
             onChange={(e) => setZoek(e.target.value)}
             placeholder="Zoek op klant, voertuig, offertenummer of titel..."
-            style={{ width: "100%", boxSizing: "border-box", border: `1.5px solid ${RAND}`, borderRadius: 10, padding: "11px 38px 11px 14px", fontSize: 14 }}
+            style={{ width: "100%", boxSizing: "border-box", border: `1.5px solid ${RAND}`, borderRadius: 10, padding: "11px 38px 11px 14px", fontSize: 14, background: "#fff", color: TEKST }}
           />
           {zoek && (
             <button onClick={() => setZoek("")} title="Wissen" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", border: "none", background: "transparent", color: GRIJS, fontSize: 18, lineHeight: 1, cursor: "pointer" }}>×</button>
