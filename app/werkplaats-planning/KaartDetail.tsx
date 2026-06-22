@@ -8,7 +8,7 @@
 import { useEffect, useRef, useState, CSSProperties, ReactNode } from "react";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/api";
-import { GROEN, GOUD, TEKST, GRIJS, RAND } from "@/lib/theme";
+import { GROEN, GOUD, TEKST, GRIJS, RAND, ROOD } from "@/lib/theme";
 import { printKlusLabel } from "./printLabel";
 import {
   TEAM, faseTitel, veroudering, dagenSinds, revisieKlokKleur, REVISIE_DOEL_DAGEN,
@@ -57,6 +57,9 @@ export default function KaartDetail({
   const [sleepItem, setSleepItem] = useState<string | null>(null); // checklist-item dat gesleept wordt
   const [chat, setChat] = useState("");
   const [gekopieerd, setGekopieerd] = useState(false);
+  const [vraagArchief, setVraagArchief] = useState(false); // bevestig-popup archiveren
+  const [bewerkId, setBewerkId] = useState<string | null>(null); // checklist-item dat bewerkt wordt
+  const [bewerkTekst, setBewerkTekst] = useState("");
   const [smal, setSmal] = useState(() => typeof window !== "undefined" && window.innerWidth < 720);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -121,6 +124,16 @@ export default function KaartDetail({
     onWijzig();
   }
 
+  // --- Archiveren ----------------------------------------------------------
+  // Zet de kaart op archief: weg van het bord, blijft bewaard in de database.
+  async function archiveer() {
+    await supabase.from("kaart").update({ archief: true }).eq("id", kaart.id);
+    await log("archiveerde de kaart");
+    setVraagArchief(false);
+    onWijzig();
+    onSluit();
+  }
+
   // --- Leden ---------------------------------------------------------------
   async function wisselLid(code: string) {
     if (leden.includes(code)) {
@@ -161,6 +174,17 @@ export default function KaartDetail({
   async function verwijderItem(it: ChecklistItem) {
     await supabase.from("kaart_checklist_item").delete().eq("id", it.id);
     await log(`verwijderde checklist-punt: "${it.tekst}"`);
+    await laad();
+    onWijzig();
+  }
+  function startBewerk(it: ChecklistItem) { setBewerkId(it.id); setBewerkTekst(it.tekst); }
+  async function bewaarItemTekst(it: ChecklistItem) {
+    const t = bewerkTekst.trim();
+    setBewerkId(null);
+    if (!t || t === it.tekst) return;
+    await supabase.from("kaart_checklist_item").update({ tekst: t }).eq("id", it.id);
+    await log(`wijzigde checklist-punt naar: "${t}"`);
+    await meldTags(t, "checklist");
     await laad();
     onWijzig();
   }
@@ -283,6 +307,7 @@ export default function KaartDetail({
           <div style={{ display: "flex", gap: 8 }}>
             {kaart.type === "klus" && kaart.klus_id && <button onClick={labelPrinten} style={knopLicht}>🏷️ Label</button>}
             <button onClick={kopieerLink} style={knopLicht}>{gekopieerd ? "Gekopieerd!" : "Kopieer link"}</button>
+            <button onClick={() => setVraagArchief(true)} style={knopRood}>Archiveren</button>
             <button onClick={onSluit} style={knopLicht}>Sluiten</button>
           </div>
         </div>
@@ -399,7 +424,21 @@ export default function KaartDetail({
                   style={{ cursor: "grab", color: "#b9b4a8", fontSize: 14, lineHeight: 1, userSelect: "none", marginTop: 3 }}
                 >⠿</span>
                 <input type="checkbox" checked={it.gedaan} onChange={() => wisselItem(it)} style={{ width: 17, height: 17, cursor: "pointer", marginTop: 2, flexShrink: 0, accentColor: GROEN }} />
-                <span style={{ flex: 1, minWidth: 0, overflowWrap: "anywhere", fontSize: 13.5, lineHeight: 1.5, color: it.gedaan ? GRIJS : TEKST, textDecoration: it.gedaan ? "line-through" : "none" }}>{renderTekst(it.tekst)}</span>
+                {bewerkId === it.id ? (
+                  <input
+                    autoFocus
+                    value={bewerkTekst}
+                    onChange={(e) => setBewerkTekst(e.target.value)}
+                    onBlur={() => bewaarItemTekst(it)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); bewaarItemTekst(it); } else if (e.key === "Escape") setBewerkId(null); }}
+                    style={{ flex: 1, minWidth: 0, boxSizing: "border-box", border: `1.5px solid ${GROEN}`, borderRadius: 6, padding: "4px 7px", fontSize: 13.5, fontFamily: "inherit" }}
+                  />
+                ) : (
+                  <span onDoubleClick={() => startBewerk(it)} title="Dubbelklik om te bewerken" style={{ flex: 1, minWidth: 0, overflowWrap: "anywhere", fontSize: 13.5, lineHeight: 1.5, color: it.gedaan ? GRIJS : TEKST, textDecoration: it.gedaan ? "line-through" : "none" }}>{renderTekst(it.tekst)}</span>
+                )}
+                {bewerkId !== it.id && (
+                  <button onClick={() => startBewerk(it)} title="Bewerken" style={{ border: "none", background: "transparent", color: GRIJS, cursor: "pointer", fontSize: 13, lineHeight: 1, marginTop: 2, flexShrink: 0 }}>✎</button>
+                )}
                 <button onClick={() => verwijderItem(it)} title="Verwijderen" style={{ border: "none", background: "transparent", color: GRIJS, cursor: "pointer", fontSize: 16, lineHeight: 1, marginTop: 1, flexShrink: 0 }}>×</button>
               </div>
             ))}
@@ -470,6 +509,19 @@ export default function KaartDetail({
             </div>
           </div>
         </div>
+
+        {vraagArchief && (
+          <div onClick={(e) => { e.stopPropagation(); setVraagArchief(false); }} style={bevestigOverlay}>
+            <div onClick={(e) => e.stopPropagation()} style={bevestigBox}>
+              <div style={{ fontFamily: SERIF, fontSize: 17, fontWeight: 700, color: TEKST, marginBottom: 6 }}>Archiveren?</div>
+              <div style={{ fontSize: 13.5, color: GRIJS, lineHeight: 1.5, marginBottom: 18 }}>Weet je zeker dat je deze kaart wilt archiveren? Hij verdwijnt van het bord, maar blijft bewaard in de database.</div>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                <button onClick={() => setVraagArchief(false)} style={knopLicht}>Annuleren</button>
+                <button onClick={archiveer} style={knopRood}>Ja, archiveren</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -513,6 +565,9 @@ const tekstVlak: CSSProperties = { width: "100%", boxSizing: "border-box", borde
 const chatVlak: CSSProperties = { flex: 1, background: "#f4f2ec", border: `1px solid ${RAND}`, borderRadius: 10, padding: "8px 11px", overflowY: "auto", maxHeight: 360, minHeight: 220 };
 const lidBol: CSSProperties = { width: 22, height: 22, borderRadius: "50%", color: "#fff", fontSize: 9.5, fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center" };
 const knopLicht: CSSProperties = { border: `1px solid ${RAND}`, background: "#fff", color: GRIJS, borderRadius: 999, padding: "6px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer" };
+const knopRood: CSSProperties = { border: "none", background: ROOD, color: "#fff", borderRadius: 999, padding: "6px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer" };
+const bevestigOverlay: CSSProperties = { position: "fixed", inset: 0, background: "rgba(26,33,28,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 60 };
+const bevestigBox: CSSProperties = { background: "#faf8f3", border: `1px solid ${RAND}`, borderRadius: 14, padding: 20, width: "100%", maxWidth: 380, boxShadow: "0 12px 40px rgba(26,60,46,0.3)" };
 const knopGroen: CSSProperties = { border: "none", background: GROEN, color: "#fff", borderRadius: 8, padding: "8px 12px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
 const mentionLijst: CSSProperties = { position: "absolute", bottom: "calc(100% + 4px)", left: 0, right: 56, background: "#fff", border: `1px solid ${RAND}`, borderRadius: 10, boxShadow: "0 8px 24px rgba(26,60,46,0.16)", overflow: "hidden", zIndex: 5 };
 const mentionRij: CSSProperties = { display: "flex", alignItems: "center", gap: 8, width: "100%", textAlign: "left", border: "none", background: "transparent", padding: "8px 11px", cursor: "pointer" };
