@@ -22,7 +22,7 @@ const items = [
   { href: "/support-hub", label: "💬 Support Hub", rol: "iedereen" },
   { href: "/werkplaats-dashboard", label: "🔧 Werkplaats Dashboard", rol: "beheer" },
   { href: "/cijfers", label: "📊 Cijfers", rol: "admin" },
-  { href: "/sales-dashboard", label: "📈 Sales Dashboard", rol: "sales" },
+  { href: "/lead-marketing-dashboard", label: "📈 Lead + Marketing", rol: "sales" },
 ] as const;
 
 export default function DashboardNav({ isAdmin: isAdminProp }: { isAdmin?: boolean }) {

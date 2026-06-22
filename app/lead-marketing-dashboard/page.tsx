@@ -45,7 +45,7 @@ function Gate() {
     <main style={{ ...wrapL, display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ background: "#fff", border: `1px solid ${RAND}`, borderRadius: 16, padding: 28, maxWidth: 380, textAlign: "center" }}>
         <h1 style={{ fontSize: 20, fontWeight: 800, color: GROEN, margin: "0 0 8px" }}>Geen toegang</h1>
-        <p style={{ fontSize: 14, color: TEKST, lineHeight: 1.5 }}>Het sales-dashboard is alleen voor het sales-team.</p>
+        <p style={{ fontSize: 14, color: TEKST, lineHeight: 1.5 }}>Dit dashboard is alleen voor het lead- en marketing-team.</p>
         <button onClick={uitloggen} style={{ marginTop: 14, border: `1px solid ${RAND}`, background: "#fff", color: GRIJS, borderRadius: 999, padding: "9px 16px", fontWeight: 700, cursor: "pointer" }}>Uitloggen</button>
       </div>
     </main>
@@ -105,7 +105,7 @@ function Dashboard() {
   return (
     <main style={wrap}>
       <div style={binnen}>
-        <PaginaKop naam={naam} onUitloggen={uitloggen} titel="Sales Dashboard" streep />
+        <PaginaKop naam={naam} onUitloggen={uitloggen} titel="Lead + Marketing Dashboard" streep />
 
         {/* Periode */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", marginBottom: 16 }}>
