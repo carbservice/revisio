@@ -162,14 +162,13 @@ function Dashboard() {
 
   // ROAS per kanaal: elk betaald kanaal z'n eigen omzet ÷ eigen spend. Alle
   // getallen staan altijd zichtbaar (geen knoppen) — dashboard = 1 oogopslag.
-  const roasVoor = (key: string): number | null => {
-    if (!data) return null;
+  const roasInfo = (key: string): { spend: number; omzet: number; roas: number | null } => {
+    if (!data) return { spend: 0, omzet: 0, roas: null };
     const spend = (key === "totaal" || key === "alle") ? data.totaal.spend : (data.spend[key as keyof typeof data.spend] || 0);
-    if (spend <= 0) return null;
     const omzet = key === "alle" ? data.totaal.omzet : key === "totaal" ? data.totaal.omzetBetaald : (data.perBron.find((s) => s.bron === key)?.omzet || 0);
-    return omzet / spend;
+    return { spend, omzet, roas: spend > 0 ? omzet / spend : null };
   };
-  const roasTotaal = roasVoor("totaal");
+  const roasTotaal = roasInfo("totaal").roas;
 
   const zoekTerm = zoek.trim().toLowerCase();
   const pijplijn = (data?.leads || []).filter((L) => {
@@ -207,7 +206,8 @@ function Dashboard() {
                 <li>Een <b>lead</b> is een formulieraanvraag. Alles hieronder is voor de gekozen periode, op de <b>aanvraagdatum</b> van de lead.</li>
                 <li><b>Deal gewonnen</b> = een lead die omzet opleverde. <b>Conversie %</b> = deals ÷ leads.</li>
                 <li><b>Omzet</b> is <b>per-deal</b>: elke betaalde factuur telt mee bij de lead die juist díé deal opleverde, in díé maand en op dát kanaal (niet alles op de eerste lead).</li>
-                <li><b>ROAS</b> = omzet ÷ spend: hoeveel euro je terugkrijgt per €1 advertentie. Boven <b>1×</b> = de advertentie verdient zichzelf terug. <b>Belangrijk:</b> de totaal-ROAS rekent <b>alleen met omzet uit betaalde kanalen</b> — organische omzet is gratis en telt niet mee (anders krijg je een veel te hoge, misleidende ROAS).</li>
+                <li><b>ROAS</b> = omzet ÷ advertentiekosten: wat je terugkrijgt per €1 advertentie. Boven <b>1×</b> = de advertentie verdient zichzelf terug. Elke kaart toont z'n eigen omzet ÷ eigen spend, dus je ziet precies waar het getal vandaan komt.</li>
+                <li><b>"Alle advertenties samen"</b> = alle omzet uit betaalde kanalen ÷ alle advertentiekosten bij elkaar. Organische (gratis) omzet telt hier <b>niet</b> mee. Let op: een kanaal kan wél omzet hebben maar nog <b>geen</b> ROAS, als de advertentiefactuur van die maand nog niet in Moneybird geboekt staat (dan is de spend nog €0).</li>
                 <li><b>Aandeel</b> = welk deel van de totale omzet van die periode dit kanaal levert.</li>
                 <li>Let op: een <b>recente maand groeit nog aan</b> — deals closen vaak pas weken later (de doorlooptijd).</li>
               </ul>
@@ -223,19 +223,19 @@ function Dashboard() {
             {/* ROAS per kanaal: alles in één oogopslag, geen knoppen */}
             <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap", margin: "0 2px 8px" }}>
               <div style={kop}>ROAS per kanaal</div>
-              <span style={{ fontSize: 12, color: GRIJS }}>€ omzet per €1 advertentie · boven 1× = de advertentie verdient zichzelf terug</span>
+              <span style={{ fontSize: 12, color: GRIJS }}>omzet ÷ advertentiekosten · boven 1× = de advertentie verdient zichzelf terug</span>
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
               {[
-                { key: "totaal", label: "Totaal (betaald)" },
+                { key: "totaal", label: "Alle advertenties samen" },
                 ...(["google_ads", "facebook", "marktplaats"] as const).filter((c) => (data.spend[c] || 0) > 0).map((c) => ({ key: c as string, label: bronLabel(c) })),
-                { key: "alle", label: "Alle (incl. organisch)" },
               ].map((o) => {
-                const r = roasVoor(o.key);
+                const r = roasInfo(o.key);
                 return (
-                  <div key={o.key} style={{ flex: "1 1 130px", minWidth: 118, background: KAART_BG, border: `1px solid ${RAND}`, borderRadius: 12, padding: "9px 13px" }}>
-                    <div style={{ fontSize: 11, color: GRIJS, fontWeight: 600 }}>{o.label}</div>
-                    <div style={{ fontSize: 20, fontWeight: 800, lineHeight: 1.15, color: r == null ? GRIJS : r >= 1 ? GROEN : ROOD }}>{r != null ? r.toFixed(1) + "x" : "—"}</div>
+                  <div key={o.key} style={{ flex: "1 1 160px", minWidth: 150, background: KAART_BG, border: `1px solid ${RAND}`, borderRadius: 12, padding: "9px 13px" }}>
+                    <div style={{ fontSize: 11.5, color: GRIJS, fontWeight: 600 }}>{o.label}</div>
+                    <div style={{ fontSize: 20, fontWeight: 800, lineHeight: 1.15, color: r.roas == null ? GRIJS : r.roas >= 1 ? GROEN : ROOD }}>{r.roas != null ? r.roas.toFixed(1) + "x" : "—"}</div>
+                    <div style={{ fontSize: 10.5, color: GRIJS, marginTop: 1 }}>{euro(r.omzet)} omzet ÷ {euro(r.spend)} spend</div>
                   </div>
                 );
               })}
