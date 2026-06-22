@@ -1283,8 +1283,11 @@ export default function WerkplaatsPagina() {
     const adres = email.trim();
     if (!adres) return;
     setBezig(true); setFout("");
-    // Magic link landt op de startpagina, net als alle andere logins.
-    const { error } = await supabase.auth.signInWithOtp({ email: adres, options: { emailRedirectTo: `${window.location.origin}/start` } });
+    // Bij een gescande QR (?klus=...) keert de inloglink terug naar diezelfde
+    // klus, zodat je niet op /start belandt. Anders naar de startpagina.
+    const heeftKlus = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("klus");
+    const naLogin = heeftKlus ? window.location.href : `${window.location.origin}/start`;
+    const { error } = await supabase.auth.signInWithOtp({ email: adres, options: { emailRedirectTo: naLogin } });
     if (error) setFout("Versturen mislukt: " + error.message);
     else setVerstuurd(true);
     setBezig(false);
@@ -1298,7 +1301,10 @@ export default function WerkplaatsPagina() {
     const { error } = await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token: c, type: "email" });
     if (error) { setFout("Code klopt niet of is verlopen. Vraag eventueel een nieuwe aan."); setBezig(false); return; }
     setBezig(false);
-    router.push("/start"); // na inloggen naar de startpagina
+    // Bij een gescande QR (?klus=...) blijf je op de werkbon staan, zodat de
+    // deep-link automatisch de juiste klus opent. Anders naar de startpagina.
+    const heeftKlus = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("klus");
+    if (!heeftKlus) router.push("/start"); // na inloggen naar de startpagina
   }
 
   async function uitloggen() {
