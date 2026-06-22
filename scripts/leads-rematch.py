@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-# Bulk-matcher: koppelt alle leads in één keer aan Moneybird-omzet (betaalde
-# facturen, first-touch naar de vroegste lead) en aan hun offerte (estimate,
-# dichtst bij de leaddatum). Pagineert contacts/facturen/offertes elk één keer
-# i.p.v. per e-mail pollen. ALLEEN-LEZEN op Moneybird; schrijft naar eigen leads.
+# PER-DEAL matcher. Koppelt elke BETAALDE factuur aan de lead die juist die deal
+# opleverde: factuur.original_estimate_id -> offerte -> dichtstbijzijnde lead van
+# hetzelfde contact. De omzet van die deal komt op DIE lead (en dus die maand/dat
+# kanaal). Zonder offerte-link: fallback naar de dichtstbijzijnde lead van het
+# contact. Zet ook per lead z'n offerte (voor de pijplijn) en klant_sinds.
+# ALLEEN-LEZEN op Moneybird; schrijft alleen naar de eigen leads-tabel.
 
 import json, time, pathlib, urllib.parse, urllib.request, urllib.error, collections
 from datetime import date
@@ -57,10 +59,15 @@ def sb_all(select):
         off += 1000
     return out
 
-def sb_patch(idd, body):
-    req = urllib.request.Request(f"{SURL}/rest/v1/leads?id=eq.{idd}", data=json.dumps(body).encode(), method="PATCH",
+def sb_patch(filter_or_id, body, is_filter=False):
+    q = filter_or_id if is_filter else f"id=eq.{filter_or_id}"
+    req = urllib.request.Request(f"{SURL}/rest/v1/leads?{q}", data=json.dumps(body).encode(), method="PATCH",
         headers={"apikey": SKEY, "Authorization": f"Bearer {SKEY}", "Content-Type": "application/json", "Prefer": "return=minimal"})
     with urllib.request.urlopen(req) as r: return r.status
+
+def dagen(a, b):
+    try: return (date.fromisoformat(a[:10]) - date.fromisoformat(b[:10])).days
+    except Exception: return None
 
 print("Moneybird ophalen...")
 contacts = mb_all("contacts.json")
@@ -68,7 +75,6 @@ invoices = mb_all("sales_invoices.json?filter=" + urllib.parse.quote("state:paid
 estimates = mb_all("estimates.json")
 print(f"  contacts: {len(contacts)} | betaalde facturen: {len(invoices)} | offertes: {len(estimates)}")
 
-# e-mail -> contact_id (uit email, send_invoices_to_email en contactpersonen)
 email2cid = {}
 for c in contacts:
     cid = str(c["id"])
@@ -79,70 +85,86 @@ for c in contacts:
         e = (cp.get("email") or "").strip().lower()
         if e: email2cid.setdefault(e, cid)
 
-# contact -> omzet (excl) + klant_sinds (vroegste factuurdatum)
-omzet_by = collections.defaultdict(lambda: {"omzet": 0.0, "sinds": None})
-for inv in invoices:
-    cid = str(inv.get("contact_id"))
-    omzet_by[cid]["omzet"] += float(inv.get("total_price_excl_tax") or 0)
-    d = inv.get("invoice_date") or (inv.get("created_at") or "")[:10]
-    if d:
-        s = omzet_by[cid]["sinds"]
-        omzet_by[cid]["sinds"] = d if (s is None or d < s) else s
+leads = sb_all("leads?select=id,email,datum,bron&order=datum.asc")
+leads_by_cid = collections.defaultdict(list)
+for L in leads:
+    cid = email2cid.get((L["email"] or "").strip().lower())
+    if cid: leads_by_cid[cid].append(L)
+for cid in leads_by_cid: leads_by_cid[cid].sort(key=lambda x: x["datum"])
 
-# contact -> offertes
-est_by = collections.defaultdict(list)
+# offerte -> lead (dichtstbijzijnde lead van hetzelfde contact) + lead -> hoofd-offerte
+estimate2lead = {}
+lead_primary = {}  # lead_id -> (afstand, est, est_datum)
 for e in estimates:
     cid = str(e.get("contact_id"))
+    grp = leads_by_cid.get(cid)
+    if not grp: continue
     ed = e.get("estimate_date") or (e.get("created_at") or "")[:10]
-    est_by[cid].append({"id": str(e.get("id")), "nr": e.get("estimate_id"), "state": e.get("state"),
-                        "date": ed, "bedrag": float(e.get("total_price_incl_tax") or 0)})
+    if not ed: continue
+    cand = [(abs(dagen(L["datum"], ed)), L) for L in grp if dagen(L["datum"], ed) is not None]
+    if not cand: continue
+    dist, L = min(cand, key=lambda x: x[0])
+    estimate2lead[str(e["id"])] = L["id"]
+    # hoofd-offerte van de lead voor de pijplijn: de meest recente
+    if L["id"] not in lead_primary or ed > lead_primary[L["id"]][2]:
+        lead_primary[L["id"]] = (dist, e, ed)
 
-leads = sb_all("leads?select=id,email,datum&order=datum.asc")
-print(f"leads: {len(leads)}")
-per_email = collections.defaultdict(list)
-for L in leads:
-    per_email[(L["email"] or "").strip().lower()].append(L)
+# per-deal omzet
+lead_omzet = collections.defaultdict(float)
+tr, fb, lost = 0.0, 0.0, 0.0
+for inv in invoices:
+    excl = float(inv.get("total_price_excl_tax") or 0)
+    eid = inv.get("original_estimate_id")
+    lid = estimate2lead.get(str(eid)) if eid else None
+    if lid:
+        tr += excl
+    else:
+        cid = str(inv.get("contact_id"))
+        grp = leads_by_cid.get(cid)
+        if grp:
+            d = inv.get("invoice_date") or (inv.get("created_at") or "")[:10]
+            lid = min(grp, key=lambda L: abs(dagen(L["datum"], d) or 99999))["id"]
+            fb += excl
+        else:
+            lost += excl
+    if lid: lead_omzet[lid] += excl
 
-def dagen(a, b):
-    try: return (date.fromisoformat(a[:10]) - date.fromisoformat(b[:10])).days
-    except Exception: return None
+# klant_sinds per contact (vroegste factuurdatum)
+sinds_by_cid = {}
+for inv in invoices:
+    cid = str(inv.get("contact_id")); d = inv.get("invoice_date") or (inv.get("created_at") or "")[:10]
+    if d and (cid not in sinds_by_cid or d < sinds_by_cid[cid]): sinds_by_cid[cid] = d
 
+tot = tr + fb + lost
+print(f"omzet via offerte-link: EUR {tr:,.0f} ({100*tr/tot:.0f}%) | fallback contact: EUR {fb:,.0f} ({100*fb/tot:.0f}%) | geen lead: EUR {lost:,.0f} ({100*lost/tot:.0f}%)")
+
+# RESET de oude (first-touch) waarden in een paar bulk-calls
+print("reset oude waarden...")
+sb_patch("omzet_excl=gt.0", {"omzet_excl": 0}, is_filter=True)
+sb_patch("klant_sinds=not.is.null", {"klant_sinds": None}, is_filter=True)
+sb_patch("offerte_id=not.is.null", {"offerte_id": None, "offerte_nummer": None, "offerte_state": None, "offerte_bedrag": None}, is_filter=True)
+
+# zet de gematchte leads
 patches = {}
-for email, grp in per_email.items():
-    if not email: continue
-    cid = email2cid.get(email)
-    grp_sorted = sorted(grp, key=lambda x: x["datum"])
-    # omzet first-touch: vroegste lead krijgt de omzet, rest 0; klant_sinds overal.
-    if cid and omzet_by.get(cid, {}).get("omzet", 0) > 0:
-        o = omzet_by[cid]
-        for j, L in enumerate(grp_sorted):
-            b = patches.setdefault(L["id"], {})
-            b["omzet_excl"] = round(o["omzet"], 2) if j == 0 else 0
-            b["klant_sinds"] = o["sinds"]
-    # offerte: elke offerte naar de dichtstbijzijnde lead (1 offerte -> 1 lead).
-    if cid and est_by.get(cid):
-        lead_best = {}
-        for e in est_by[cid]:
-            if not e["date"]: continue
-            cand = [(abs(dagen(L["datum"], e["date"])), L) for L in grp_sorted if dagen(L["datum"], e["date"]) is not None]
-            if not cand: continue
-            dist, L = min(cand, key=lambda x: x[0])
-            if L["id"] not in lead_best or dist < lead_best[L["id"]][0]:
-                lead_best[L["id"]] = (dist, e)
-        for lid, (dist, e) in lead_best.items():
-            b = patches.setdefault(lid, {})
-            b["offerte_id"] = e["id"]; b["offerte_nummer"] = e["nr"] or ""
-            b["offerte_state"] = e["state"] or ""; b["offerte_bedrag"] = e["bedrag"]
+for L in leads:
+    lid = L["id"]
+    o = round(lead_omzet.get(lid, 0.0), 2)
+    pe = lead_primary.get(lid)
+    cid = email2cid.get((L["email"] or "").strip().lower())
+    sinds = sinds_by_cid.get(cid) if (o > 0 or pe) else None
+    if o <= 0 and not pe: continue
+    body = {"omzet_excl": o, "klant_sinds": sinds}
+    if pe:
+        e = pe[1]
+        body.update({"offerte_id": str(e["id"]), "offerte_nummer": e.get("estimate_id") or "",
+                     "offerte_state": e.get("state") or "", "offerte_bedrag": float(e.get("total_price_incl_tax") or 0)})
+    patches[lid] = body
 
-print(f"te patchen leads: {len(patches)}")
-omzet_n = sum(1 for b in patches.values() if b.get("omzet_excl", 0) and b["omzet_excl"] > 0)
-off_n = sum(1 for b in patches.values() if b.get("offerte_id"))
-tot_omzet = sum(b.get("omzet_excl", 0) or 0 for b in patches.values())
-print(f"  omzet-leads: {omzet_n} | offerte-leads: {off_n} | totale omzet: EUR {tot_omzet:,.2f}")
-
+omzet_leads = sum(1 for b in patches.values() if b["omzet_excl"] > 0)
+off_leads = sum(1 for b in patches.values() if b.get("offerte_id"))
+print(f"te zetten: {len(patches)} leads | met omzet: {omzet_leads} | met offerte: {off_leads}")
 for k, (lid, body) in enumerate(patches.items(), 1):
     try: sb_patch(lid, body)
     except urllib.error.HTTPError as e: print("PATCH-fout:", e.code, e.read().decode()[:160])
-    if k % 100 == 0: print(f"  ...gepatcht {k}/{len(patches)}")
-
-print("KLAAR.")
+    if k % 100 == 0: print(f"  ...{k}/{len(patches)}")
+print("KLAAR (per-deal).")

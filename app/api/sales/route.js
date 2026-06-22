@@ -110,5 +110,36 @@ export async function GET(req) {
     roas: totaalSpend > 0 ? totaalOmzet / totaalSpend : null,
   };
 
-  return Response.json({ perBron, totaal, leads: verrijkt, spend });
+  // LTV per kanaal (HELE historie, niet periode-afhankelijk): per klant z'n
+  // lifetime omzet, gegroepeerd op het kanaal van z'n EERSTE lead (acquisitie).
+  let alle = [];
+  for (let off = 0; ; off += 1000) {
+    const { data } = await supabaseAdmin.from("leads").select("email,bron,omzet_excl,datum").order("datum", { ascending: true }).range(off, off + 999);
+    if (!data || !data.length) break;
+    alle = alle.concat(data);
+    if (data.length < 1000) break;
+  }
+  const perKlant = new Map();
+  for (const L of alle) {
+    const e = (L.email || "").toLowerCase(); if (!e) continue;
+    if (!perKlant.has(e)) perKlant.set(e, { bron: L.bron || "organisch", omzet: 0 });
+    perKlant.get(e).omzet += Number(L.omzet_excl) || 0;
+  }
+  const ltvMap = new Map();
+  let ltvKlantenTot = 0, ltvOmzetTot = 0;
+  for (const k of perKlant.values()) {
+    if (k.omzet <= 0) continue;
+    if (!ltvMap.has(k.bron)) ltvMap.set(k.bron, { bron: k.bron, klanten: 0, omzet: 0 });
+    const s = ltvMap.get(k.bron); s.klanten++; s.omzet += k.omzet;
+    ltvKlantenTot++; ltvOmzetTot += k.omzet;
+  }
+  const ltv = [...ltvMap.values()].map((s) => ({
+    bron: s.bron, klanten: s.klanten, omzet: Math.round(s.omzet * 100) / 100,
+    gem: s.klanten ? Math.round(s.omzet / s.klanten) : 0,
+    aandeel: ltvOmzetTot ? s.omzet / ltvOmzetTot : 0,
+    aandeelKlanten: ltvKlantenTot ? s.klanten / ltvKlantenTot : 0,
+  })).sort((a, b) => b.omzet - a.omzet);
+  const ltvTotaal = { klanten: ltvKlantenTot, omzet: Math.round(ltvOmzetTot * 100) / 100, gem: ltvKlantenTot ? Math.round(ltvOmzetTot / ltvKlantenTot) : 0 };
+
+  return Response.json({ perBron, totaal, leads: verrijkt, spend, ltv, ltvTotaal });
 }

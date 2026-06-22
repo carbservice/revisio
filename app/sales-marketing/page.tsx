@@ -18,12 +18,13 @@ import { GROEN, GROEN_BG, GOUD, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG, KAART_BG 
 type Actie = { id: string; soort: string; tekst: string; door: string; datum: string };
 type Lead = { id: string; datum: string; naam: string; email: string; telefoon: string; bedrijf: string; carburateur: string; bericht: string; bron: string; status: string; eigenaar: string | null; sales_notitie: string | null; opvolgen_op: string | null; omzet_excl: number; offerte_id: string | null; offerte_nummer: string | null; offerte_state: string | null; offerte_bedrag: number | null; offerte_url: string | null; acties: Actie[] };
 type PerBron = { bron: string; leads: number; klanten: number; omzet: number; spend: number; roas: number | null; conversie: number };
-type Data = { perBron: PerBron[]; totaal: { leads: number; klanten: number; omzet: number; spend: number; roas: number | null }; leads: Lead[]; spend: { google_ads: number; facebook: number; marktplaats: number } };
+type Ltv = { bron: string; klanten: number; omzet: number; gem: number; aandeel: number; aandeelKlanten: number };
+type Data = { perBron: PerBron[]; totaal: { leads: number; klanten: number; omzet: number; spend: number; roas: number | null }; leads: Lead[]; spend: { google_ads: number; facebook: number; marktplaats: number }; ltv: Ltv[]; ltvTotaal: { klanten: number; omzet: number; gem: number } };
 
 const STATUS = ["nieuw", "gebeld", "uitstellen", "geaccepteerd", "afgewezen"];
 const STATUS_KLEUR: Record<string, string> = { nieuw: "#6b7280", gebeld: "#2f6f8f", uitstellen: "#b07d12", geaccepteerd: GROEN, afgewezen: ROOD };
 const EIGENAREN = ["", "CG", "LE", "JM", "LV"];
-const BRON_LABEL: Record<string, string> = { google_ads: "Google Ads", facebook: "Facebook", organisch: "Organisch" };
+const BRON_LABEL: Record<string, string> = { google_ads: "Google Ads", facebook: "Facebook", marktplaats: "Marktplaats", organisch: "Organisch" };
 const bronLabel = (b: string) => BRON_LABEL[b] || b;
 const OFFERTE_LABEL: Record<string, string> = { open: "verstuurd", late: "verlopen", accepted: "geaccepteerd", rejected: "afgewezen", draft: "concept", billed: "gefactureerd" };
 const VERSTUURD = ["open", "late"];
@@ -188,19 +189,35 @@ function Dashboard() {
 
         {laden && !data ? <p style={{ color: GRIJS }}>Laden…</p> : data && (
           <>
+            {/* Uitleg: hoe lees je dit dashboard (inklapbaar) */}
+            <details style={{ ...kaart, marginBottom: 14, fontSize: 13.5 }}>
+              <summary style={{ cursor: "pointer", fontWeight: 800, color: GROEN }}>ⓘ Hoe lees je deze cijfers?</summary>
+              <ul style={{ margin: "10px 0 0", paddingLeft: 18, lineHeight: 1.65, color: GRIJS }}>
+                <li>Een <b>lead</b> is een formulieraanvraag. Alles hieronder is voor de gekozen periode, op de <b>aanvraagdatum</b> van de lead.</li>
+                <li><b>Deal gewonnen</b> = een lead die omzet opleverde. <b>Conversie %</b> = deals ÷ leads.</li>
+                <li><b>Omzet</b> is <b>per-deal</b>: elke betaalde factuur telt mee bij de lead die juist díé deal opleverde, in díé maand en op dát kanaal (niet alles op de eerste lead).</li>
+                <li><b>ROAS</b> = omzet ÷ spend: hoeveel euro omzet je terugkrijgt per €1 advertentie. Boven <b>1×</b> = de advertentie verdient zichzelf terug.</li>
+                <li><b>Aandeel</b> = welk deel van de totale omzet van die periode dit kanaal levert.</li>
+                <li>Let op: een <b>recente maand groeit nog aan</b> — deals closen vaak pas weken later (de doorlooptijd).</li>
+              </ul>
+            </details>
+
             <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 16 }}>
-              {kpi("Leads", String(data.totaal.leads), GROEN)}
-              {kpi("Klanten", String(data.totaal.klanten), GROEN, data.totaal.leads ? pct(data.totaal.klanten / data.totaal.leads) + " conversie" : "")}
-              {kpi("Omzet", euro(data.totaal.omzet), GROEN, "uit leads, excl btw")}
-              {kpi("Spend", euro(data.totaal.spend), data.totaal.spend ? TEKST : GRIJS)}
-              {kpi("ROAS", data.totaal.roas != null ? data.totaal.roas.toFixed(1) + "x" : "—", data.totaal.roas != null ? (data.totaal.roas >= 1 ? GROEN : ROOD) : GRIJS, "omzet ÷ spend")}
+              {kpi("Leads", String(data.totaal.leads), GROEN, "aanvragen deze periode")}
+              {kpi("Deals gewonnen", String(data.totaal.klanten), GROEN, data.totaal.leads ? pct(data.totaal.klanten / data.totaal.leads) + " conversie" : "nog geen leads")}
+              {kpi("Omzet", euro(data.totaal.omzet), GROEN, "van deze leads · per-deal · excl. btw")}
+              {kpi("Spend", euro(data.totaal.spend), data.totaal.spend ? TEKST : GRIJS, "advertentiekosten (Moneybird)")}
+              {kpi("ROAS", data.totaal.roas != null ? data.totaal.roas.toFixed(1) + "x" : "—", data.totaal.roas != null ? (data.totaal.roas >= 1 ? GROEN : ROOD) : GRIJS, data.totaal.roas != null ? `€1 spend → ${euro(data.totaal.roas)} omzet` : "geen spend")}
             </div>
 
             <div style={kaart}>
-              <div style={kop}>Per bron</div>
-              <div style={{ overflowX: "auto" }}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
+                <div style={kop}>Per bron — deze periode</div>
+                <span style={{ fontSize: 12, color: GRIJS }}>welk kanaal levert de leads, deals en omzet</span>
+              </div>
+              <div style={{ overflowX: "auto", marginTop: 10 }}>
                 <table style={tabel}>
-                  <thead><tr>{["Bron", "Leads", "Klanten", "Conversie", "Omzet", "Aandeel", "Spend", "ROAS"].map((h) => <th key={h} style={th}>{h}</th>)}</tr></thead>
+                  <thead><tr>{["Bron", "Leads", "Deals", "Conversie", "Omzet", "% omzet", "Spend", "ROAS"].map((h) => <th key={h} style={th}>{h}</th>)}</tr></thead>
                   <tbody>
                     {data.perBron.map((s) => (
                       <tr key={s.bron}>
@@ -213,6 +230,18 @@ function Dashboard() {
                       </tr>
                     ))}
                     {data.perBron.length === 0 && <tr><td style={td} colSpan={8}>Geen leads in deze periode.</td></tr>}
+                    {data.perBron.length > 0 && (
+                      <tr style={{ borderTop: `2px solid ${RAND}` }}>
+                        <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>Totaal</td>
+                        <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>{data.totaal.leads}</td>
+                        <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>{data.totaal.klanten}</td>
+                        <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>{data.totaal.leads ? pct(data.totaal.klanten / data.totaal.leads) : "—"}</td>
+                        <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>{euro(data.totaal.omzet)}</td>
+                        <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>{data.totaal.omzet ? "100%" : "—"}</td>
+                        <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>{data.totaal.spend ? euro(data.totaal.spend) : "—"}</td>
+                        <td style={{ ...td, fontWeight: 800, borderBottom: "none", color: data.totaal.roas == null ? GRIJS : data.totaal.roas >= 1 ? GROEN : ROOD }}>{data.totaal.roas != null ? data.totaal.roas.toFixed(1) + "x" : "—"}</td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -221,6 +250,44 @@ function Dashboard() {
             <div style={{ fontSize: 12, color: GRIJS, margin: "-6px 2px 14px" }}>
               Spend komt automatisch uit Moneybird (grootboeken Google Ads / Facebook Ads / Marktplaats). Let op: maand-ROAS hangt af van wanneer de advertentiefactuur in Moneybird geboekt is.
             </div>
+
+            {/* LTV per kanaal (hele historie) */}
+            {data.ltv && data.ltv.length > 0 && (
+              <div style={kaart}>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
+                  <div style={kop}>Klantwaarde per kanaal — hele historie</div>
+                  <span style={{ fontSize: 12, color: GRIJS }}>wat een klant via dit kanaal je gemiddeld oplevert (lifetime value)</span>
+                </div>
+                <div style={{ overflowX: "auto", marginTop: 10 }}>
+                  <table style={tabel}>
+                    <thead><tr>{["Kanaal", "Klanten", "% klanten", "Totale omzet", "% omzet", "Gem. per klant (LTV)"].map((h, i) => <th key={i} style={th}>{h}</th>)}</tr></thead>
+                    <tbody>
+                      {data.ltv.map((s) => (
+                        <tr key={s.bron}>
+                          <td style={{ ...td, fontWeight: 700 }}>{bronLabel(s.bron)}</td>
+                          <td style={td}>{s.klanten}</td>
+                          <td style={td}>{pct(s.aandeelKlanten)}</td>
+                          <td style={{ ...td, fontWeight: 700 }}>{euro(s.omzet)}</td>
+                          <td style={td}>{pct(s.aandeel)}</td>
+                          <td style={{ ...td, fontWeight: 800, color: GROEN }}>{euro(s.gem)}</td>
+                        </tr>
+                      ))}
+                      <tr style={{ borderTop: `2px solid ${RAND}` }}>
+                        <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>Totaal / gemiddeld</td>
+                        <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>{data.ltvTotaal.klanten}</td>
+                        <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>100%</td>
+                        <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>{euro(data.ltvTotaal.omzet)}</td>
+                        <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>100%</td>
+                        <td style={{ ...td, fontWeight: 800, borderBottom: "none", color: GROEN }}>{euro(data.ltvTotaal.gem)}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div style={{ fontSize: 12, color: GRIJS, marginTop: 8, lineHeight: 1.5 }}>
+                  Per klant tellen we alle betaalde omzet ooit op en hangen die aan het kanaal van z'n <b>eerste</b> aanvraag. <b>Gem. per klant</b> = totale omzet ÷ aantal klanten — zo zie je of bijv. een Google-klant op de lange duur meer waard is dan een organische.
+                </div>
+              </div>
+            )}
 
             {/* Pijplijn */}
             <div style={kaart}>
