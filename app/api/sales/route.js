@@ -49,14 +49,40 @@ async function haalSpend(van, tot) {
       if (sec && Array.isArray(sec.ledger_accounts)) {
         sec.ledger_accounts.forEach((ac) => {
           const naam = naamVan[ac.ledger_account_id] || "";
-          for (const [kanaal, namen] of Object.entries(SPEND_LEDGERS)) {
-            if (namen.includes(naam)) spend[kanaal] += Math.abs(Number(ac.value) || 0);
-          }
+          if (SPEND_LEDGERS.google_ads.includes(naam)) spend.google_ads += Math.abs(Number(ac.value) || 0);
+          if (SPEND_LEDGERS.facebook.includes(naam)) spend.facebook += Math.abs(Number(ac.value) || 0);
         });
       }
     });
+    // Marktplaats: NIET het hele grootboek, maar alleen de 'Pro (Admarkt)'-regels.
+    // De rest van dat grootboek zijn advertenties voor de verkoop van motoren
+    // (andere bedrijfstak), die horen niet in de carb-lead-marketing.
+    const marktLedger = Object.keys(naamVan).find((id) => naamVan[id] === "Marktplaats");
+    if (marktLedger) spend.marktplaats = await marktplaatsPro(van, tot, marktLedger);
     return spend;
   } catch { return leeg; }
+}
+
+// Som van de 'Marktplaats Pro (Admarkt)'-regels op het Marktplaats-grootboek in de
+// periode. Inkoopfacturen ondersteunen geen period-filter, dus we filteren op datum.
+async function marktplaatsPro(van, tot, ledgerId) {
+  const vanD = van.slice(0, 10), totD = tot.slice(0, 10);
+  let som = 0;
+  for (let page = 1; page <= 8; page++) {
+    const inv = await mb(`documents/purchase_invoices.json?per_page=100&page=${page}`);
+    if (!Array.isArray(inv) || !inv.length) break;
+    for (const doc of inv) {
+      const d = (doc.date || doc.invoice_date || "").slice(0, 10);
+      if (!d || d < vanD || d >= totD) continue;
+      for (const det of (doc.details || [])) {
+        if (String(det.ledger_account_id) !== ledgerId) continue;
+        const om = (det.description || "").toLowerCase();
+        if (om.includes("admarkt") || om.includes("pro")) som += Math.abs(Number(det.total_price_excl_tax || det.price || 0));
+      }
+    }
+    if (inv.length < 100) break;
+  }
+  return Math.round(som * 100) / 100;
 }
 
 export async function GET(req) {

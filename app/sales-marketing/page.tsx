@@ -73,7 +73,6 @@ function Dashboard() {
   const [mijn, setMijn] = useState(false);
   const [toonAlle, setToonAlle] = useState(false);
   const [zoek, setZoek] = useState("");
-  const [roasKanaal, setRoasKanaal] = useState("totaal"); // welk kanaal de ROAS-KPI toont
   const [flash, setFlash] = useState<Record<string, boolean>>({});      // groene "verzonden"-flash
   const [teVaak, setTeVaak] = useState<Record<string, boolean>>({});     // dedup-melding
   const laatstRef = useRef<Record<string, { tekst: string; tijd: number }>>({});
@@ -161,8 +160,8 @@ function Dashboard() {
 
   const modeKnop = (m: string): CSSProperties => ({ border: `1.5px solid ${GROEN}`, background: mode === m ? GROEN : "#fff", color: mode === m ? "#fff" : GROEN, borderRadius: 10, padding: "8px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" });
 
-  // ROAS per kanaal: elk betaald kanaal z'n eigen omzet ÷ eigen spend. Plus
-  // "Totaal" (alle betaalde omzet ÷ alle spend) en "Alle" (incl. organisch).
+  // ROAS per kanaal: elk betaald kanaal z'n eigen omzet ÷ eigen spend. Alle
+  // getallen staan altijd zichtbaar (geen knoppen) — dashboard = 1 oogopslag.
   const roasVoor = (key: string): number | null => {
     if (!data) return null;
     const spend = (key === "totaal" || key === "alle") ? data.totaal.spend : (data.spend[key as keyof typeof data.spend] || 0);
@@ -170,15 +169,7 @@ function Dashboard() {
     const omzet = key === "alle" ? data.totaal.omzet : key === "totaal" ? data.totaal.omzetBetaald : (data.perBron.find((s) => s.bron === key)?.omzet || 0);
     return omzet / spend;
   };
-  const roasOpties = data ? [
-    { key: "totaal", label: "Totaal (betaald)" },
-    ...(["google_ads", "facebook", "marktplaats"] as const).filter((c) => (data.spend[c] || 0) > 0).map((c) => ({ key: c as string, label: bronLabel(c) })),
-    { key: "alle", label: "Alle (incl. organisch)" },
-  ] : [];
-  const roasW = roasVoor(roasKanaal);
-  const roasTotaalRij = roasVoor(roasKanaal === "alle" ? "alle" : "totaal");
-  const roasSel = roasOpties.find((o) => o.key === roasKanaal);
-  const roasSub = roasW != null ? `${roasSel?.label || ""} · €1 → ${euro(roasW)}` : "geen spend dit kanaal";
+  const roasTotaal = roasVoor("totaal");
 
   const zoekTerm = zoek.trim().toLowerCase();
   const pijplijn = (data?.leads || []).filter((L) => {
@@ -227,12 +218,27 @@ function Dashboard() {
               {kpi("Deals gewonnen", String(data.totaal.klanten), GROEN, data.totaal.leads ? pct(data.totaal.klanten / data.totaal.leads) + " conversie" : "nog geen leads")}
               {kpi("Omzet", euro(data.totaal.omzet), GROEN, "van deze leads · per-deal · excl. btw")}
               {kpi("Spend", euro(data.totaal.spend), data.totaal.spend ? TEKST : GRIJS, "advertentiekosten (Moneybird)")}
-              {kpi("ROAS", roasW != null ? roasW.toFixed(1) + "x" : "—", roasW != null ? (roasW >= 1 ? GROEN : ROOD) : GRIJS, roasSub)}
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", margin: "-4px 2px 16px", fontSize: 12.5, color: GRIJS }}>
-              <span>ROAS van:</span>
-              {roasOpties.map((o) => <button key={o.key} onClick={() => setRoasKanaal(o.key)} style={toggle(roasKanaal === o.key)}>{o.label}</button>)}
+            {/* ROAS per kanaal: alles in één oogopslag, geen knoppen */}
+            <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap", margin: "0 2px 8px" }}>
+              <div style={kop}>ROAS per kanaal</div>
+              <span style={{ fontSize: 12, color: GRIJS }}>€ omzet per €1 advertentie · boven 1× = de advertentie verdient zichzelf terug</span>
+            </div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+              {[
+                { key: "totaal", label: "Totaal (betaald)" },
+                ...(["google_ads", "facebook", "marktplaats"] as const).filter((c) => (data.spend[c] || 0) > 0).map((c) => ({ key: c as string, label: bronLabel(c) })),
+                { key: "alle", label: "Alle (incl. organisch)" },
+              ].map((o) => {
+                const r = roasVoor(o.key);
+                return (
+                  <div key={o.key} style={{ flex: "1 1 130px", minWidth: 118, background: KAART_BG, border: `1px solid ${RAND}`, borderRadius: 12, padding: "9px 13px" }}>
+                    <div style={{ fontSize: 11, color: GRIJS, fontWeight: 600 }}>{o.label}</div>
+                    <div style={{ fontSize: 20, fontWeight: 800, lineHeight: 1.15, color: r == null ? GRIJS : r >= 1 ? GROEN : ROOD }}>{r != null ? r.toFixed(1) + "x" : "—"}</div>
+                  </div>
+                );
+              })}
             </div>
 
             <div style={kaart}>
@@ -264,7 +270,7 @@ function Dashboard() {
                         <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>{euro(data.totaal.omzet)}</td>
                         <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>{data.totaal.omzet ? "100%" : "—"}</td>
                         <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>{data.totaal.spend ? euro(data.totaal.spend) : "—"}</td>
-                        <td style={{ ...td, fontWeight: 800, borderBottom: "none", color: roasTotaalRij == null ? GRIJS : roasTotaalRij >= 1 ? GROEN : ROOD }}>{roasTotaalRij != null ? roasTotaalRij.toFixed(1) + "x" : "—"}</td>
+                        <td style={{ ...td, fontWeight: 800, borderBottom: "none", color: roasTotaal == null ? GRIJS : roasTotaal >= 1 ? GROEN : ROOD }}>{roasTotaal != null ? roasTotaal.toFixed(1) + "x" : "—"}</td>
                       </tr>
                     )}
                   </tbody>
