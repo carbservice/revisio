@@ -95,13 +95,16 @@ function Dashboard() {
       if (!r.ok || j.fout) window.alert("Opslaan mislukt: " + (j.fout || r.status));
     } catch { window.alert("Opslaan mislukt (geen verbinding)."); }
   }
-  async function belActie(L: Lead) {
-    const r = await apiFetch("/api/sales/actie", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lead_id: L.id, soort: "gebeld", tekst: "" }) });
+  async function logActie(L: Lead, soort: string, tekst: string) {
+    const r = await apiFetch("/api/sales/actie", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lead_id: L.id, soort, tekst }) });
     const j = await r.json().catch(() => ({}));
-    const nieuw: Actie = { id: Math.random().toString(36), soort: "gebeld", tekst: "", door: j.door || mijnCode || "", datum: new Date().toISOString() };
-    patchLokaal(L.id, { acties: [nieuw, ...(L.acties || [])], status: L.status === "nieuw" ? "gebeld" : L.status });
-    if (L.status === "nieuw") apiFetch("/api/sales/lead", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: L.id, status: "gebeld" }) });
+    const nieuw: Actie = { id: Math.random().toString(36), soort, tekst, door: j.door || mijnCode || "", datum: new Date().toISOString() };
+    const wordtGebeld = soort === "gebeld" && L.status === "nieuw";
+    patchLokaal(L.id, { acties: [nieuw, ...(L.acties || [])], status: wordtGebeld ? "gebeld" : L.status });
+    if (wordtGebeld) apiFetch("/api/sales/lead", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: L.id, status: "gebeld" }) });
   }
+  function belActie(L: Lead) { logActie(L, "gebeld", ""); }
+  function notitieActie(L: Lead) { const t = window.prompt("Notitie (komt ook op de Moneybird-offerte):"); if (t && t.trim()) logActie(L, "notitie", t.trim()); }
   // De status-dropdown is de enige knop: bij een beslissing met gekoppelde
   // offerte schrijft 'ie (na bevestiging) terug naar Moneybird. Idempotent.
   async function wijzigStatus(L: Lead, nieuw: string) {
@@ -219,6 +222,7 @@ function Dashboard() {
                           {EIGENAREN.map((e) => <option key={e} value={e}>{e || "— eigenaar —"}</option>)}
                         </select>
                         <button onClick={() => belActie(L)} style={knopje}>📞 Gebeld</button>
+                        <button onClick={() => notitieActie(L)} style={knopje}>📝 Notitie</button>
                         {L.status === "uitstellen" && <input type="date" value={L.opvolgen_op || ""} onChange={(e) => wijzigLead(L.id, "opvolgen_op", e.target.value)} title="Opvolgen op" style={{ ...sel, padding: "5px 8px" }} />}
                         {L.offerte_id && L.offerte_url && <a href={L.offerte_url} target="_blank" rel="noreferrer" style={{ ...knopje, color: GRIJS, textDecoration: "none" }}>Klant laten tekenen ↗</a>}
                       </div>

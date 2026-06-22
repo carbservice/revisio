@@ -1,9 +1,26 @@
 // app/api/sales/actie/route.js
-// Legt een actie op een lead vast (bv. gebeld op datum) in de actie-log.
+// Legt een actie op een lead vast (gebeld / notitie) in de actie-log, en schiet
+// 'm als notitie naar de gekoppelde Moneybird-offerte. Archief-leads krijgen
+// GEEN Moneybird-actie.
 
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { vereisIngelogd } from "@/lib/auth-server";
 import { magSales, codeVoorEmail } from "@/app/werkplaats-planning/planning-config";
+
+const ADMIN = process.env.MONEYBIRD_ADMIN;
+const TOKEN = process.env.MONEYBIRD_TOKEN;
+
+async function moneybirdNotitie(offerteId, tekst) {
+  if (!ADMIN || !TOKEN || !offerteId) return false;
+  try {
+    const res = await fetch(`https://moneybird.com/api/v2/${ADMIN}/estimates/${offerteId}/notes.json`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${TOKEN}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ note: { todo: false, note: tekst } }),
+    });
+    return res.ok;
+  } catch { return false; }
+}
 
 export async function POST(req) {
   const poort = await vereisIngelogd(req);
@@ -19,5 +36,15 @@ export async function POST(req) {
     lead_id, soort: soort || "notitie", tekst: tekst || "", door,
   });
   if (error) return Response.json({ fout: error.message }, { status: 500 });
-  return Response.json({ ok: true, door });
+
+  // Naar de Moneybird-offerte (niet voor archief-leads).
+  let naarMoneybird = false;
+  const { data: lead } = await supabaseAdmin.from("leads").select("offerte_id, archief").eq("id", lead_id).single();
+  if (lead && lead.offerte_id && !lead.archief) {
+    const regel = (soort === "gebeld")
+      ? `Gebeld${door ? ` door ${door}` : ""}${tekst ? `: ${tekst}` : ""} (via Revisio)`
+      : `Notitie${door ? ` (${door})` : ""}: ${tekst || ""}`;
+    naarMoneybird = await moneybirdNotitie(lead.offerte_id, regel);
+  }
+  return Response.json({ ok: true, door, naarMoneybird });
 }
