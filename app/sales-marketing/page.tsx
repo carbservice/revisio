@@ -29,10 +29,14 @@ const OFFERTE_LABEL: Record<string, string> = { open: "verstuurd", late: "verlop
 const VERSTUURD = ["open", "late"];
 
 function range(mode: string, anker: Date) {
-  const d = anker;
-  if (mode === "maand") return { van: new Date(d.getFullYear(), d.getMonth(), 1), tot: new Date(d.getFullYear(), d.getMonth() + 1, 1), label: new Date(d.getFullYear(), d.getMonth(), 1).toLocaleDateString("nl-NL", { month: "long", year: "numeric" }) };
-  if (mode === "kwartaal") { const q = Math.floor(d.getMonth() / 3); return { van: new Date(d.getFullYear(), q * 3, 1), tot: new Date(d.getFullYear(), q * 3 + 3, 1), label: `Q${q + 1} ${d.getFullYear()}` }; }
-  return { van: new Date(d.getFullYear(), 0, 1), tot: new Date(d.getFullYear() + 1, 0, 1), label: String(d.getFullYear()) };
+  // Periode = de lokale maand/kwartaal/jaar van het anker, maar de grenzen bouwen
+  // we op UTC-middernacht. Anders valt 1 juli lokaal (= 30 juni 22:00 UTC) in de
+  // verkeerde maand en pakt de spend-functie de vorige maand. (TZ-fix)
+  const y = anker.getFullYear(), m = anker.getMonth();
+  const maandLabel = new Date(y, m, 1).toLocaleDateString("nl-NL", { month: "long", year: "numeric" });
+  if (mode === "maand") return { van: new Date(Date.UTC(y, m, 1)), tot: new Date(Date.UTC(y, m + 1, 1)), label: maandLabel };
+  if (mode === "kwartaal") { const q = Math.floor(m / 3); return { van: new Date(Date.UTC(y, q * 3, 1)), tot: new Date(Date.UTC(y, q * 3 + 3, 1)), label: `Q${q + 1} ${y}` }; }
+  return { van: new Date(Date.UTC(y, 0, 1)), tot: new Date(Date.UTC(y + 1, 0, 1)), label: String(y) };
 }
 const pct = (n: number) => `${Math.round(n * 100)}%`;
 const datkort = (iso: string) => new Date(iso).toLocaleDateString("nl-NL", { day: "numeric", month: "short" });
