@@ -266,12 +266,12 @@ function Dashboard() {
             {/* Detailsecties: standaard ingeklapt = rust */}
             <details style={kaart}>
               <summary style={detSummary}>📊 Waar komen je aanvragen vandaan? (per kanaal)</summary>
-              <div style={{ overflowX: "auto", marginTop: 12 }}>
+              <div style={{ marginTop: 12, border: `1px solid ${RAND}`, borderRadius: 12, overflow: "auto" }}>
                 <table style={tabel}>
                   <thead><tr>{["Kanaal", "Aanvragen", "Klanten", "Conversie", "Omzet", "Aandeel omzet", "Advertentiekosten", "Rendement"].map((h) => <th key={h} style={th}>{h}</th>)}</tr></thead>
                   <tbody>
-                    {data.perBron.map((s) => (
-                      <tr key={s.bron}>
+                    {data.perBron.map((s, i) => (
+                      <tr key={s.bron} style={{ background: i % 2 ? "#f4f8f5" : "#fff" }}>
                         <td style={{ ...td, fontWeight: 700 }}>{bronLabel(s.bron)}</td>
                         <td style={td}>{s.leads}</td><td style={td}>{s.klanten}</td><td style={td}>{pct(s.conversie)}</td>
                         <td style={{ ...td, fontWeight: 700 }}>{euro(s.omzet)}</td>
@@ -282,7 +282,7 @@ function Dashboard() {
                     ))}
                     {data.perBron.length === 0 && <tr><td style={td} colSpan={8}>Geen leads in deze periode.</td></tr>}
                     {data.perBron.length > 0 && (
-                      <tr style={{ borderTop: `2px solid ${RAND}` }}>
+                      <tr style={{ borderTop: `2px solid ${GROEN}`, background: GROEN_BG }}>
                         <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>Totaal</td>
                         <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>{data.totaal.leads}</td>
                         <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>{data.totaal.klanten}</td>
@@ -305,12 +305,12 @@ function Dashboard() {
             {data.ltv && data.ltv.length > 0 && (
               <details style={kaart}>
                 <summary style={detSummary}>💎 Wat is een klant gemiddeld waard? (over alle jaren)</summary>
-                <div style={{ overflowX: "auto", marginTop: 12 }}>
+                <div style={{ marginTop: 12, border: `1px solid ${RAND}`, borderRadius: 12, overflow: "auto" }}>
                   <table style={tabel}>
                     <thead><tr>{["Kanaal", "Klanten", "Aandeel klanten", "Totale omzet", "Aandeel omzet", "Gemiddeld per klant"].map((h, i) => <th key={i} style={th}>{h}</th>)}</tr></thead>
                     <tbody>
-                      {data.ltv.map((s) => (
-                        <tr key={s.bron}>
+                      {data.ltv.map((s, i) => (
+                        <tr key={s.bron} style={{ background: i % 2 ? "#f4f8f5" : "#fff" }}>
                           <td style={{ ...td, fontWeight: 700 }}>{bronLabel(s.bron)}</td>
                           <td style={td}>{s.klanten}</td>
                           <td style={td}>{pct(s.aandeelKlanten)}</td>
@@ -319,7 +319,7 @@ function Dashboard() {
                           <td style={{ ...td, fontWeight: 800, color: GROEN }}>{euro(s.gem)}</td>
                         </tr>
                       ))}
-                      <tr style={{ borderTop: `2px solid ${RAND}` }}>
+                      <tr style={{ borderTop: `2px solid ${GROEN}`, background: GROEN_BG }}>
                         <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>Totaal / gemiddeld</td>
                         <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>{data.ltvTotaal.klanten}</td>
                         <td style={{ ...td, fontWeight: 800, borderBottom: "none" }}>100%</td>
@@ -464,8 +464,8 @@ const binnen: CSSProperties = { maxWidth: 1100, margin: "0 auto" };
 const kaart: CSSProperties = { background: KAART_BG, border: `1px solid ${RAND}`, borderRadius: 16, padding: 16, marginBottom: 16 };
 const kop: CSSProperties = { fontSize: 12.5, color: GRIJS, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.5 };
 const tabel: CSSProperties = { width: "100%", borderCollapse: "collapse", fontSize: 14 };
-const th: CSSProperties = { textAlign: "left", fontSize: 11.5, color: GRIJS, textTransform: "uppercase", letterSpacing: 0.4, padding: "0 10px 8px 0", borderBottom: `1px solid ${RAND}` };
-const td: CSSProperties = { padding: "9px 10px 9px 0", borderBottom: `1px solid ${RAND}` };
+const th: CSSProperties = { textAlign: "left", fontSize: 11, color: GROEN, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.4, padding: "11px 14px", background: GROEN_BG, whiteSpace: "nowrap" };
+const td: CSSProperties = { padding: "11px 14px", borderBottom: "1px solid #ecefe9" };
 const pijl: CSSProperties = { border: `1px solid ${RAND}`, background: "#fff", color: GROEN, borderRadius: 8, padding: "6px 11px", fontSize: 13, cursor: "pointer", fontWeight: 700 };
 const sel: CSSProperties = { border: `1px solid ${RAND}`, borderRadius: 8, padding: "6px 10px", fontSize: 13, background: "#fff", cursor: "pointer", fontFamily: "inherit" };
 const pil: CSSProperties = { fontSize: 11, fontWeight: 800, background: "#f1efe8", color: GRIJS, borderRadius: 999, padding: "2px 8px" };
