@@ -40,9 +40,16 @@ export async function POST(req) {
     });
     if (!res.ok) {
       const t = await res.text();
-      mbFout = res.status === 422
-        ? "Moneybird weigert: de offerte heeft geen geselecteerde regel (zet eerst een regel vast)."
-        : `Moneybird gaf ${res.status}. ${t.slice(0, 160)}`;
+      // Al in deze (of een eind-)staat? Moneybird geeft dan "State is invalid" /
+      // "can_not_change_x_to_x". Voor ons = al gebeurd, dus geen fout.
+      const alGedaan = res.status === 400 && (t.includes("can_not_change") || t.includes("State is invalid"));
+      if (alGedaan) {
+        mbFout = null;
+      } else if (res.status === 422) {
+        mbFout = "Moneybird weigert: de offerte heeft geen geselecteerde regel (zet eerst een regel vast).";
+      } else {
+        mbFout = `Moneybird gaf ${res.status}. ${t.slice(0, 160)}`;
+      }
     }
   } catch (e) {
     mbFout = "Moneybird onbereikbaar: " + e.message;

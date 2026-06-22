@@ -102,14 +102,26 @@ function Dashboard() {
     patchLokaal(L.id, { acties: [nieuw, ...(L.acties || [])], status: L.status === "nieuw" ? "gebeld" : L.status });
     if (L.status === "nieuw") apiFetch("/api/sales/lead", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: L.id, status: "gebeld" }) });
   }
-  async function moneybird(L: Lead, actie: "accepted" | "declined") {
-    const woord = actie === "accepted" ? "ACCEPTEREN" : "AFWIJZEN";
-    if (!window.confirm(`Offerte ${L.offerte_nummer || ""} in Moneybird op "${actie === "accepted" ? "geaccepteerd" : "afgewezen"}" zetten?\n\nDit wijzigt je echte administratie.`)) return;
-    patchLokaal(L.id, { status: actie === "accepted" ? "geaccepteerd" : "afgewezen" });
-    const r = await apiFetch("/api/sales/moneybird", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lead_id: L.id, actie }) });
-    const j = await r.json().catch(() => ({}));
-    if (j.fout) window.alert(`Let op (${woord}): ${j.fout}\n\nDe status staat hier wel goed; pas Moneybird eventueel met de hand aan.`);
-    else laad();
+  // De status-dropdown is de enige knop: bij een beslissing met gekoppelde
+  // offerte schrijft 'ie (na bevestiging) terug naar Moneybird. Idempotent.
+  async function wijzigStatus(L: Lead, nieuw: string) {
+    patchLokaal(L.id, { status: nieuw } as Partial<Lead>);
+    try {
+      await apiFetch("/api/sales/lead", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: L.id, status: nieuw }) });
+    } catch { window.alert("Opslaan mislukt (geen verbinding)."); }
+
+    if (L.offerte_id && (nieuw === "afgewezen" || nieuw === "geaccepteerd")) {
+      const afw = nieuw === "afgewezen";
+      const vraag = afw
+        ? `Offerte ${L.offerte_nummer || ""} ook in Moneybird afwijzen?`
+        : `Offerte ${L.offerte_nummer || ""} zelf accepteren in Moneybird?\n\nAnnuleren = je laat de klant zelf tekenen via de offerte-link.`;
+      if (window.confirm(vraag)) {
+        const r = await apiFetch("/api/sales/moneybird", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lead_id: L.id, actie: afw ? "declined" : "accepted" }) });
+        const j = await r.json().catch(() => ({}));
+        if (j.fout) window.alert(`Moneybird: ${j.fout}\n\nDe status staat hier wel goed.`);
+        else laad();
+      }
+    }
   }
 
   const modeKnop = (m: string): CSSProperties => ({ border: `1.5px solid ${GROEN}`, background: mode === m ? GROEN : "#fff", color: mode === m ? "#fff" : GROEN, borderRadius: 10, padding: "8px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" });
@@ -152,18 +164,19 @@ function Dashboard() {
               <div style={kop}>Per bron</div>
               <div style={{ overflowX: "auto" }}>
                 <table style={tabel}>
-                  <thead><tr>{["Bron", "Leads", "Klanten", "Conversie", "Omzet", "Spend", "ROAS"].map((h) => <th key={h} style={th}>{h}</th>)}</tr></thead>
+                  <thead><tr>{["Bron", "Leads", "Klanten", "Conversie", "Omzet", "Aandeel", "Spend", "ROAS"].map((h) => <th key={h} style={th}>{h}</th>)}</tr></thead>
                   <tbody>
                     {data.perBron.map((s) => (
                       <tr key={s.bron}>
                         <td style={{ ...td, fontWeight: 700 }}>{bronLabel(s.bron)}</td>
                         <td style={td}>{s.leads}</td><td style={td}>{s.klanten}</td><td style={td}>{pct(s.conversie)}</td>
                         <td style={{ ...td, fontWeight: 700 }}>{euro(s.omzet)}</td>
+                        <td style={td}>{data.totaal.omzet ? pct(s.omzet / data.totaal.omzet) : "—"}</td>
                         <td style={td}>{s.spend ? euro(s.spend) : "—"}</td>
                         <td style={{ ...td, fontWeight: 800, color: s.roas == null ? GRIJS : s.roas >= 1 ? GROEN : ROOD }}>{s.roas != null ? s.roas.toFixed(1) + "x" : "—"}</td>
                       </tr>
                     ))}
-                    {data.perBron.length === 0 && <tr><td style={td} colSpan={7}>Geen leads in deze periode.</td></tr>}
+                    {data.perBron.length === 0 && <tr><td style={td} colSpan={8}>Geen leads in deze periode.</td></tr>}
                   </tbody>
                 </table>
               </div>
@@ -199,7 +212,7 @@ function Dashboard() {
                       <div style={{ fontSize: 12.5, color: GRIJS, margin: "4px 0 8px" }}>{L.email}{L.telefoon ? ` · ${L.telefoon}` : ""}{L.carburateur ? ` · ${L.carburateur}` : ""}</div>
 
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-                        <select value={L.status || "nieuw"} onChange={(e) => wijzigLead(L.id, "status", e.target.value)} style={{ ...sel, borderColor: STATUS_KLEUR[L.status || "nieuw"], color: STATUS_KLEUR[L.status || "nieuw"], fontWeight: 700 }}>
+                        <select value={L.status || "nieuw"} onChange={(e) => wijzigStatus(L, e.target.value)} style={{ ...sel, borderColor: STATUS_KLEUR[L.status || "nieuw"], color: STATUS_KLEUR[L.status || "nieuw"], fontWeight: 700 }}>
                           {STATUS.map((s) => <option key={s} value={s}>{s}</option>)}
                         </select>
                         <select value={L.eigenaar || ""} onChange={(e) => wijzigLead(L.id, "eigenaar", e.target.value)} style={sel}>
@@ -207,11 +220,7 @@ function Dashboard() {
                         </select>
                         <button onClick={() => belActie(L)} style={knopje}>📞 Gebeld</button>
                         {L.status === "uitstellen" && <input type="date" value={L.opvolgen_op || ""} onChange={(e) => wijzigLead(L.id, "opvolgen_op", e.target.value)} title="Opvolgen op" style={{ ...sel, padding: "5px 8px" }} />}
-                        {L.offerte_id && <>
-                          <button onClick={() => moneybird(L, "accepted")} style={{ ...knopje, borderColor: GROEN, color: GROEN }}>✓ Accepteren</button>
-                          <button onClick={() => moneybird(L, "declined")} style={{ ...knopje, borderColor: ROOD, color: ROOD }}>✗ Afwijzen</button>
-                          {L.offerte_url && <a href={L.offerte_url} target="_blank" rel="noreferrer" style={{ ...knopje, color: GRIJS, textDecoration: "none" }}>Klant laten tekenen ↗</a>}
-                        </>}
+                        {L.offerte_id && L.offerte_url && <a href={L.offerte_url} target="_blank" rel="noreferrer" style={{ ...knopje, color: GRIJS, textDecoration: "none" }}>Klant laten tekenen ↗</a>}
                       </div>
 
                       <input value={L.sales_notitie || ""} onChange={(e) => wijzigLead(L.id, "sales_notitie", e.target.value)} placeholder="notitie…" style={{ width: "100%", boxSizing: "border-box", marginTop: 8, border: `1px solid ${RAND}`, borderRadius: 8, padding: "6px 10px", fontSize: 13, background: "#fff" }} />
