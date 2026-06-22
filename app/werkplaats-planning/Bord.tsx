@@ -38,6 +38,7 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
   const [sleepId, setSleepId] = useState<string | null>(null);
   const [nieuwInFase, setNieuwInFase] = useState<FaseSleutel | null>(null);
   const [nieuwTekst, setNieuwTekst] = useState("");
+  const [zoek, setZoek] = useState("");
   const [mijnCode, setMijnCode] = useState<string | null>(null);
   const [meldingPerKaart, setMeldingPerKaart] = useState<Record<string, number>>({});
   const herlaadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -285,6 +286,15 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
 
   const openKaart = openId ? kaarten.find((k) => k.id === openId) || null : null;
 
+  // Zoeken op kaarten: titel/omschrijving + klusnummer, klant, voertuig, klacht.
+  const zoekL = zoek.trim().toLowerCase();
+  function matchtZoek(k: Kaart): boolean {
+    if (!zoekL) return true;
+    const kl = k.klus_id ? klussen[k.klus_id] : undefined;
+    const hooi = [k.titel, k.omschrijving, kl?.nummer, kl?.klant, kl?.voertuig, kl?.klacht].filter(Boolean).join(" ").toLowerCase();
+    return hooi.includes(zoekL);
+  }
+
   // Offertenummer -> klus/kaart, voor het @taggen van orders in de chat.
   const klusIndex = useMemo(() => {
     const kaartByKlus = new Map<string, string>();
@@ -315,9 +325,20 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
           <h1 style={{ fontFamily: SERIF, fontSize: 23, fontWeight: 700, color: GROEN, margin: 0 }}>Werkplaats Planning</h1>
           <button onClick={synchroniseer} disabled={synct} style={knopLicht}>{synct ? "Synct..." : "Synchroniseer Moneybird"}</button>
         </div>
-        <p style={{ fontSize: 13, color: GRIJS, margin: "0 0 12px" }}>
+        <p style={{ fontSize: 13, color: GRIJS, margin: "0 0 10px" }}>
           Sleep kaarten tussen de kolommen. Geaccepteerde offertes landen vanzelf in Binnenkomst. De kleur links toont hoe lang een kaart in deze kolom staat.
         </p>
+        <div style={{ position: "relative", marginBottom: 14 }}>
+          <input
+            value={zoek}
+            onChange={(e) => setZoek(e.target.value)}
+            placeholder="Zoek op klant, voertuig, offertenummer of titel..."
+            style={{ width: "100%", boxSizing: "border-box", border: `1.5px solid ${RAND}`, borderRadius: 10, padding: "11px 38px 11px 14px", fontSize: 14 }}
+          />
+          {zoek && (
+            <button onClick={() => setZoek("")} title="Wissen" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", border: "none", background: "transparent", color: GRIJS, fontSize: 18, lineHeight: 1, cursor: "pointer" }}>×</button>
+          )}
+        </div>
       </div>
 
       {/* Kolommen: horizontaal scrollbaar (touch), of slepen op de achtergrond. */}
@@ -331,7 +352,7 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
         style={{ display: "flex", gap: 14, padding: "0 16px 40px", overflowX: "auto", WebkitOverflowScrolling: "touch", alignItems: "flex-start", cursor: pannen ? "grabbing" : "grab", userSelect: pannen ? "none" : "auto" }}
       >
         {FASES.map((f) => {
-          const kolomKaarten = kaarten.filter((k) => k.fase === f.sleutel).sort((a, b) => a.positie - b.positie);
+          const kolomKaarten = kaarten.filter((k) => k.fase === f.sleutel && matchtZoek(k)).sort((a, b) => a.positie - b.positie);
           return (
             <div
               key={f.sleutel}
