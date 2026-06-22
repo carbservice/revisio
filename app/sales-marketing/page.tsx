@@ -227,12 +227,13 @@ function Dashboard() {
                   <button onClick={() => setToonAlle((v) => !v)} style={toggle(toonAlle)}>{toonAlle ? "Alle leads" : "Alleen verstuurde offertes"}</button>
                 </div>
               </div>
-              <div style={{ position: "relative", marginBottom: 12 }}>
+              <div style={{ position: "relative", marginBottom: 12, border: `2px solid ${GROEN}`, borderRadius: 12, background: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+                <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 15, opacity: 0.7 }}>🔍</span>
                 <input
                   value={zoek}
                   onChange={(e) => setZoek(e.target.value)}
                   placeholder="Zoek op klant, e-mail, bedrijf, telefoon, voertuig of offertenummer..."
-                  style={{ width: "100%", boxSizing: "border-box", border: `1.5px solid ${RAND}`, borderRadius: 10, padding: "10px 36px 10px 14px", fontSize: 14, background: "#fff", color: TEKST }}
+                  style={{ width: "100%", boxSizing: "border-box", border: "none", outline: "none", borderRadius: 12, padding: "11px 36px 11px 38px", fontSize: 14, background: "transparent", color: TEKST }}
                 />
                 {zoek && <button onClick={() => setZoek("")} title="Wissen" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", border: "none", background: "transparent", color: GRIJS, fontSize: 18, lineHeight: 1, cursor: "pointer" }}>×</button>}
               </div>
