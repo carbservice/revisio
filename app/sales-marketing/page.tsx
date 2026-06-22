@@ -208,7 +208,7 @@ function Dashboard() {
             <div style={hero}>
               <div style={heroGlow} />
               <div style={{ position: "relative", display: "flex", flexWrap: "wrap", gap: 22, alignItems: "flex-end" }}>
-                {heroKpi("Omzet", euro(data.totaal.omzet), "per-deal · excl. btw")}
+                {heroKpi("Omzet", euro(data.totaal.omzet), "alle kanalen · per-deal · excl. btw")}
                 {heroKpi("Leads", String(data.totaal.leads), "aanvragen deze periode")}
                 {heroKpi("ROAS · alle ads", roasTotaal != null ? roasTotaal.toFixed(1) + "x" : "—", roasTotaal != null ? `${Math.round(roasTotaal * 100)}% rendement` : "nog geen spend", roasTotaal != null ? (roasTotaal >= 1 ? "#86e0b0" : "#ecab9b") : "#fff")}
               </div>
@@ -245,6 +245,10 @@ function Dashboard() {
                   </div>
                 );
               })}
+            </div>
+
+            <div style={{ fontSize: 12.5, color: GRIJS, margin: "-8px 2px 18px", lineHeight: 1.5 }}>
+              Van je <b>{euro(data.totaal.omzet)}</b> omzet kwam <b>{euro(data.totaal.omzetBetaald)}</b> via betaalde advertenties{data.totaal.omzet ? ` (${pct(data.totaal.omzetBetaald / data.totaal.omzet)})` : ""}; de rest is <b>organisch</b> (gratis). De kaarten hierboven rekenen alleen met dat advertentie-deel.
             </div>
 
             {/* Detailsecties: standaard ingeklapt = rust */}
