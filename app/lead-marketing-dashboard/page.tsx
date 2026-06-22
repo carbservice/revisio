@@ -104,7 +104,7 @@ function Dashboard() {
     if (wordtGebeld) apiFetch("/api/sales/lead", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: L.id, status: "gebeld" }) });
   }
   function belActie(L: Lead) { logActie(L, "gebeld", ""); }
-  function notitieActie(L: Lead) { const t = window.prompt("Notitie (komt ook op de Moneybird-offerte):"); if (t && t.trim()) logActie(L, "notitie", t.trim()); }
+  function notitieNaarMB(L: Lead) { const t = (L.sales_notitie || "").trim(); if (t) logActie(L, "notitie", t); }
   // De status-dropdown is de enige knop: bij een beslissing met gekoppelde
   // offerte schrijft 'ie (na bevestiging) terug naar Moneybird. Idempotent.
   async function wijzigStatus(L: Lead, nieuw: string) {
@@ -222,12 +222,14 @@ function Dashboard() {
                           {EIGENAREN.map((e) => <option key={e} value={e}>{e || "— eigenaar —"}</option>)}
                         </select>
                         <button onClick={() => belActie(L)} style={knopje}>📞 Gebeld</button>
-                        <button onClick={() => notitieActie(L)} style={knopje}>📝 Notitie</button>
                         {L.status === "uitstellen" && <input type="date" value={L.opvolgen_op || ""} onChange={(e) => wijzigLead(L.id, "opvolgen_op", e.target.value)} title="Opvolgen op" style={{ ...sel, padding: "5px 8px" }} />}
                         {L.offerte_id && L.offerte_url && <a href={L.offerte_url} target="_blank" rel="noreferrer" style={{ ...knopje, color: GRIJS, textDecoration: "none" }}>Klant laten tekenen ↗</a>}
                       </div>
 
-                      <input value={L.sales_notitie || ""} onChange={(e) => wijzigLead(L.id, "sales_notitie", e.target.value)} placeholder="notitie…" style={{ width: "100%", boxSizing: "border-box", marginTop: 8, border: `1px solid ${RAND}`, borderRadius: 8, padding: "6px 10px", fontSize: 13, background: "#fff" }} />
+                      <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+                        <input value={L.sales_notitie || ""} onChange={(e) => wijzigLead(L.id, "sales_notitie", e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") notitieNaarMB(L); }} placeholder="notitie…  (Enter of de knop = ook naar de offerte in Moneybird)" style={{ flex: 1, boxSizing: "border-box", border: `1px solid ${RAND}`, borderRadius: 8, padding: "6px 10px", fontSize: 13, background: "#fff" }} />
+                        <button onClick={() => notitieNaarMB(L)} title="Notitie naar de Moneybird-offerte sturen" style={{ border: "none", background: GROEN, color: "#fff", borderRadius: 8, padding: "6px 12px", fontSize: 12.5, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>→ Moneybird</button>
+                      </div>
 
                       {(L.acties || []).length > 0 && (
                         <div style={{ marginTop: 8, borderTop: `1px solid ${RAND}`, paddingTop: 6 }}>
