@@ -177,6 +177,16 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
     return () => window.removeEventListener("popstate", uitPad);
   }, []);
 
+  // Na "archiveren" (kaart -> Klaar/archief) het bord naar de laatste kolom
+  // scrollen, zodat je de kaart daar ziet landen.
+  useEffect(() => {
+    function naarKlaar() {
+      setTimeout(() => { const el = bordRef.current; if (el) el.scrollTo({ left: el.scrollWidth, behavior: "smooth" }); }, 400);
+    }
+    window.addEventListener("revisio:naar-klaar", naarKlaar);
+    return () => window.removeEventListener("revisio:naar-klaar", naarKlaar);
+  }, []);
+
   // In-place een kaart openen (vanuit een @klus-link of een melding) zonder
   // volledige paginanavigatie -> geen remount/herlaad van het hele bord.
   useEffect(() => {

@@ -136,6 +136,9 @@ export default function KaartDetail({
         hand_verplaatst: true, archief: false,
       }).eq("id", kaart.id);
       await log(`verplaatste de kaart naar "Klaar / archief"`);
+      // Het bord laten scrollen naar de Klaar/archief-kolom (helemaal rechts),
+      // zodat je de kaart daar ziet landen.
+      if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("revisio:naar-klaar"));
     }
     setVraagArchief(false);
     onWijzig();
