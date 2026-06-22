@@ -238,17 +238,26 @@ function Dashboard() {
                 const kleur = r.roas == null ? GRIJS : r.roas >= 1 ? GROEN : ROOD;
                 const zin = r.roas == null
                   ? "nog geen advertentiekosten deze periode"
-                  : `Elke 1 euro advertenties → brengt ${r.roas.toFixed(2).replace(".", ",")} euro omzet, dat is ${r.roas >= 1 ? "nog geen winst maar een positief resultaat" : "minder dan je uitgaf"}`;
+                  : `Elke € 1 advertenties → brengt ${euro(r.roas)} omzet, dat is ${r.roas >= 1 ? "nog geen winst maar een positief resultaat" : "minder dan je uitgaf"}`;
                 return (
-                  <div key={o.key} style={{ flex: "1 1 190px", minWidth: 178, background: "linear-gradient(160deg, #ffffff 0%, #e7f0ea 100%)", border: `1px solid ${RAND}`, borderLeft: `4px solid ${kleur}`, borderRadius: 14, padding: "12px 14px", boxShadow: "0 1px 3px rgba(26,60,46,0.06)" }}>
-                    <div style={{ fontSize: 11.5, color: GRIJS, fontWeight: 700 }}>{o.label}</div>
-                    <div style={{ display: "flex", alignItems: "baseline", gap: 7, marginTop: 2 }}>
-                      <span style={{ fontSize: 24, fontWeight: 800, lineHeight: 1.1, color: kleur }}>{r.roas != null ? r.roas.toFixed(1) + "×" : "—"}</span>
-                      {r.roas != null && <span style={{ fontSize: 13, fontWeight: 700, color: kleur }}>= {Math.round(r.roas * 100)}%</span>}
+                  <div key={o.key} style={{ flex: "1 1 240px", minWidth: 215, background: "linear-gradient(160deg, #ffffff 0%, #e7f0ea 100%)", border: `1px solid ${RAND}`, borderLeft: `5px solid ${kleur}`, borderRadius: 14, padding: "14px 16px", boxShadow: "0 1px 3px rgba(26,60,46,0.06)" }}>
+                    <div style={{ fontSize: 13, color: TEKST, fontWeight: 800 }}>{o.label}</div>
+                    <div style={{ fontSize: 10.5, color: GRIJS, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.4, marginTop: 6 }}>Rendement (ROAS)</div>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                      <span style={{ fontSize: 31, fontWeight: 800, lineHeight: 1.05, color: kleur }}>{r.roas != null ? r.roas.toFixed(1) + "×" : "—"}</span>
+                      {r.roas != null && <span style={{ fontSize: 15, fontWeight: 700, color: kleur }}>= {Math.round(r.roas * 100)}%</span>}
                     </div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: GROEN, marginTop: 4 }}>{euro(r.omzet)} <span style={{ color: GRIJS, fontWeight: 400 }}>omzet</span></div>
-                    <div style={{ fontSize: 11.5, color: GRIJS }}>voor {euro(r.spend)} advertentiekosten</div>
-                    <div style={{ fontSize: 11.5, color: kleur, fontWeight: 600, marginTop: 6, borderTop: "1px solid rgba(0,0,0,0.06)", paddingTop: 6 }}>{zin}</div>
+                    <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginTop: 11 }}>
+                      <div>
+                        <div style={{ fontSize: 20, fontWeight: 800, color: GROEN, lineHeight: 1.1 }}>{euro(r.omzet)}</div>
+                        <div style={{ fontSize: 11, color: GRIJS }}>omzet</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 20, fontWeight: 800, color: TEKST, lineHeight: 1.1 }}>{euro(r.spend)}</div>
+                        <div style={{ fontSize: 11, color: GRIJS }}>advertentiekosten</div>
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 12, color: kleur, fontWeight: 600, marginTop: 11, borderTop: "1px solid rgba(0,0,0,0.07)", paddingTop: 8, lineHeight: 1.4 }}>{zin}</div>
                   </div>
                 );
               })}
