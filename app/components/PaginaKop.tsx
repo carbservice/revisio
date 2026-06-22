@@ -11,7 +11,7 @@ import RevisioLogo from "@/app/components/RevisioLogo";
 import MeldingBel from "@/app/werkplaats-planning/MeldingBel";
 import { useGebruiker } from "@/app/components/AuthGate";
 
-export default function PaginaKop({ naam, onUitloggen, titel, streep, children }: { naam: string; onUitloggen: () => void; titel: string; streep?: boolean; children?: ReactNode }) {
+export default function PaginaKop({ naam, onUitloggen, titel, children }: { naam: string; onUitloggen: () => void; titel: string; streep?: boolean; children?: ReactNode }) {
   const { isAdmin } = useGebruiker();
   const ingelogd: CSSProperties = {
     background: KAART_BG, border: `1px solid ${RAND}`, borderRadius: 14, padding: "11px 16px",
@@ -31,10 +31,11 @@ export default function PaginaKop({ naam, onUitloggen, titel, streep, children }
         </div>
       </div>
       <DashboardNav isAdmin={isAdmin} />
-      <h1 style={{ fontSize: 24, fontWeight: 800, color: GROEN, margin: streep ? "0 0 10px" : "0 0 14px" }}>{titel}</h1>
-      {/* Optionele groene scheidingslijn: zet de bovenkant (status/nav) los van
-          de eigenlijke app eronder. Gebruikt op de werkbonnen-app (monteurfocus). */}
-      {streep && <div style={{ height: 3, background: GROEN, borderRadius: 2, margin: "0 0 18px" }} />}
+      {/* Titel + groene scheidingslijn op elke pagina: zet de bovenkant (status/
+          nav) visueel los van de pagina. Lege titel = de pagina regelt z'n eigen
+          kop (bv. Support Hub), dan slaan we deze over. */}
+      {titel && <h1 style={{ fontSize: 24, fontWeight: 800, color: GROEN, margin: "0 0 10px" }}>{titel}</h1>}
+      {titel && <div style={{ height: 3, background: GROEN, borderRadius: 2, margin: "0 0 18px" }} />}
       {children}
     </>
   );

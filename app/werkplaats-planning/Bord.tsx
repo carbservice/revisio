@@ -339,6 +339,7 @@ export default function Bord({ startKaartId }: { startKaartId?: string }) {
             <button onClick={() => setZoek("")} title="Wissen" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", border: "none", background: "transparent", color: GRIJS, fontSize: 18, lineHeight: 1, cursor: "pointer" }}>×</button>
           )}
         </div>
+        <div style={{ height: 3, background: GROEN, borderRadius: 2, margin: "2px 0 16px" }} />
       </div>
 
       {/* Kolommen: horizontaal scrollbaar (touch), of slepen op de achtergrond. */}

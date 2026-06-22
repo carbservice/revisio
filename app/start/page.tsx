@@ -116,7 +116,8 @@ function Start() {
         <h1 style={{ fontFamily: SERIF, fontSize: 34, fontWeight: 700, color: GROEN, margin: "0 0 6px" }}>
           {groet()}, {naam || "collega"}
         </h1>
-        <p style={{ fontSize: 16, color: GRIJS, margin: "0 0 18px" }}>Kies hieronder waar je heen wilt.</p>
+        <p style={{ fontSize: 16, color: GRIJS, margin: "0 0 12px" }}>Kies hieronder waar je heen wilt.</p>
+        <div style={{ height: 3, background: GROEN, borderRadius: 2, margin: "0 0 18px" }} />
 
         {/* Persoonlijke meldingen + dagoverzicht uit het planningsbord */}
         <MeldingBanner />

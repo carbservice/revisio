@@ -1,6 +1,6 @@
 "use client";
 
-// Lead + Marketing Dashboard. Alleen voor CG/LE/JM/LV.
+// Sales & Marketing. Alleen voor CG/LE/JM/LV.
 // Boven: marketing-analyse (per bron leads/conversie/omzet/ROAS, spend-invoer).
 // Onder: de lead-pijplijn = leads met een verstuurde Moneybird-offerte. Per lead:
 // status, eigenaar, bel-actie met datum-log, opvolgdatum, en terugschrijven naar
@@ -50,7 +50,7 @@ function Gate() {
     <main style={{ ...wrapL, display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ background: "#fff", border: `1px solid ${RAND}`, borderRadius: 16, padding: 28, maxWidth: 380, textAlign: "center" }}>
         <h1 style={{ fontSize: 20, fontWeight: 800, color: GROEN, margin: "0 0 8px" }}>Geen toegang</h1>
-        <p style={{ fontSize: 14, color: TEKST, lineHeight: 1.5 }}>Dit dashboard is alleen voor het lead- en marketing-team.</p>
+        <p style={{ fontSize: 14, color: TEKST, lineHeight: 1.5 }}>Dit dashboard is alleen voor het sales- en marketing-team.</p>
         <button onClick={uitloggen} style={{ marginTop: 14, border: `1px solid ${RAND}`, background: "#fff", color: GRIJS, borderRadius: 999, padding: "9px 16px", fontWeight: 700, cursor: "pointer" }}>Uitloggen</button>
       </div>
     </main>
@@ -163,7 +163,7 @@ function Dashboard() {
   return (
     <main style={wrap}>
       <div style={binnen}>
-        <PaginaKop naam={naam} onUitloggen={uitloggen} titel="Lead + Marketing Dashboard" streep />
+        <PaginaKop naam={naam} onUitloggen={uitloggen} titel="Sales & Marketing" streep />
         <style>{`@keyframes verzondenFade { 0%,60% { opacity: 1; } 100% { opacity: 0.15; } }`}</style>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", marginBottom: 16 }}>

@@ -107,6 +107,7 @@ function SupportChat() {
     <main style={{ minHeight: "100vh", background: BG, fontFamily: "'Karma', Georgia, serif", paddingBottom: 36 }}>
       <div style={{ maxWidth: 1000, margin: "0 auto", padding: "14px 16px 0" }}>
         <PaginaKop naam={naam} onUitloggen={uitloggen} titel="" />
+        <div style={{ height: 3, background: GROEN, borderRadius: 2, margin: "0 0 18px" }} />
 
         {/* Titel + uitnodigende intro */}
         <div style={{ textAlign: "center", margin: "4px 0 18px" }}>
