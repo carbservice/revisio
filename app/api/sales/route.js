@@ -108,35 +108,45 @@ export async function GET(req) {
     }
     return out;
   };
-  // Moneybird = de waarheid: alle geldige offerte-ids ophalen, zodat we leads met
-  // een in Moneybird VERWIJDERDE offerte kunnen schonen (niet meer als concept tonen).
-  const haalGeldigeOfferteIds = async () => {
+  // Moneybird = de waarheid: de actuele offertes ophalen (id -> status), zodat we de
+  // status op de lead synchroniseren (bv. nu afgewezen/geaccepteerd -> uit de pijplijn)
+  // en offertes die in Moneybird verwijderd zijn kunnen schonen.
+  const haalOffertes = async () => {
     if (!ADMIN || !TOKEN) return null;
-    const set = new Set();
+    const map = new Map();
     for (let page = 1; page <= 15; page++) {
       const est = await mb(`estimates.json?per_page=100&page=${page}`);
-      if (!Array.isArray(est)) return null; // fout -> niet schonen (veilig)
+      if (!Array.isArray(est)) return null; // fout -> niet synchroniseren (veilig)
       if (!est.length) break;
-      est.forEach((e) => set.add(String(e.id)));
+      est.forEach((e) => map.set(String(e.id), { state: e.state || "", nummer: e.estimate_id || "", bedrag: e.total_price_incl_tax != null ? Number(e.total_price_incl_tax) : null }));
       if (est.length < 100) break;
     }
-    return set;
+    return map;
   };
-  const [periodeRes, spend, alle, geldigeOffertes] = await Promise.all([
+  const [periodeRes, spend, alle, offertes] = await Promise.all([
     supabaseAdmin.from("leads").select("*").gte("datum", van).lt("datum", tot).order("datum", { ascending: false }),
     haalSpend(van, tot),
     haalAlle(),
-    haalGeldigeOfferteIds(),
+    haalOffertes(),
   ]);
   const lijst = periodeRes.data || [];
 
-  // Actieve offertes (concept/open/verlopen) die niet meer in Moneybird bestaan:
-  // wissen op de lead, zodat ze uit de pijplijn verdwijnen. (Done-offertes laten we.)
-  if (geldigeOffertes) {
-    const teSchonen = lijst.filter((L) => L.offerte_id && ["draft", "open", "late"].includes(L.offerte_state || "") && !geldigeOffertes.has(String(L.offerte_id)));
-    teSchonen.forEach((L) => { L.offerte_id = null; L.offerte_nummer = null; L.offerte_state = null; L.offerte_bedrag = null; });
-    if (teSchonen.length) {
-      supabaseAdmin.from("leads").update({ offerte_id: null, offerte_nummer: null, offerte_state: null, offerte_bedrag: null }).in("id", teSchonen.map((L) => L.id)).then(() => {}, () => {});
+  // Offerte-status synchroniseren met Moneybird. Verwijderd = wissen (alleen actieve
+  // offertes); status veranderd (bv. afgewezen/geaccepteerd) = bijwerken op de lead.
+  if (offertes) {
+    for (const L of lijst) {
+      if (!L.offerte_id) continue;
+      const o = offertes.get(String(L.offerte_id));
+      let patch = null;
+      if (!o) {
+        if (["draft", "open", "late"].includes(L.offerte_state || "")) patch = { offerte_id: null, offerte_nummer: null, offerte_state: null, offerte_bedrag: null };
+      } else if (o.state && o.state !== L.offerte_state) {
+        patch = { offerte_state: o.state, offerte_nummer: o.nummer || L.offerte_nummer, offerte_bedrag: o.bedrag != null ? o.bedrag : L.offerte_bedrag };
+      }
+      if (patch) {
+        Object.assign(L, patch);
+        supabaseAdmin.from("leads").update(patch).eq("id", L.id).then(() => {}, () => {});
+      }
     }
   }
 
