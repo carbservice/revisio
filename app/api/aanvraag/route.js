@@ -18,6 +18,15 @@ const TOKEN = process.env.MONEYBIRD_TOKEN;
 const EST_WORKFLOW = "417531256412047023"; // EstimateWorkflow "Standaard"
 const DOC_STYLE = "417607702940746976";    // document-stijl "Carburateur Service"
 
+// CORS: carbservice.nl (Strikingly) mag dit publieke endpoint aanroepen.
+const CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+const json = (data, status = 200) => Response.json(data, { status, headers: CORS });
+export function OPTIONS() { return new Response(null, { status: 204, headers: CORS }); }
+
 // Bron afleiden uit de tracking-parameters die de pagina meestuurt.
 function bronUitTracking(p) {
   p = p || {};
@@ -110,8 +119,8 @@ async function stuurMelding(d, voertuigTekst, offerteNr) {
 
 export async function POST(req) {
   const d = await req.json().catch(() => ({}));
-  if (d.website) return Response.json({ ok: true });           // honeypot: bots vullen dit
-  if (!d.email || !d.voornaam) return Response.json({ fout: "Naam en e-mail zijn verplicht." }, { status: 400 });
+  if (d.website) return json({ ok: true });           // honeypot: bots vullen dit
+  if (!d.email || !d.voornaam) return json({ fout: "Naam en e-mail zijn verplicht." }, 400);
 
   // 1) RDW (alleen met kenteken). Geen kenteken -> de handmatige merk/model/jaar.
   const voertuig = d.kenteken ? await haalVoertuig(d.kenteken) : null;
@@ -162,5 +171,5 @@ export async function POST(req) {
   // 4) Melding (zacht).
   await stuurMelding(d, voertuigTekst, offerteNr);
 
-  return Response.json({ ok: true, voertuig: voertuigTekst || null, offerte: offerteNr, mbFout });
+  return json({ ok: true, voertuig: voertuigTekst || null, offerte: offerteNr, mbFout });
 }
