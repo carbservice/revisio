@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Carbservice - Motorfiets carburateur revisie</title>
+<title>Carbservice · Motorfiets carburateur revisie</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -83,10 +84,17 @@
   .verdict h3{font-size:23px;color:var(--groen);margin-bottom:8px}
   .verdict p{color:var(--grijs);max-width:540px;margin:0 auto 20px}
   @media(max-width:600px){
-    .chips{gap:7px}
-    .chip{font-size:12.5px;padding:8px 12px;gap:6px}
-    .chip .dot{width:14px;height:14px;font-size:10px}
-    .checker-card{padding:22px 16px}
+    .checker-card{padding:18px 14px}
+    .chips{gap:6px}
+    .chip{font-size:11.5px;padding:6px 11px;gap:5px}
+    .chip .dot{width:13px;height:13px;font-size:9px}
+    .chip .warn{font-size:10px}
+    .verdict{position:sticky;bottom:0;background:#fff;margin:18px -14px 0;padding:12px 14px 14px;border-top:1px solid var(--rand);border-radius:0;box-shadow:0 -6px 18px rgba(26,60,46,.12);z-index:20}
+    .verdict .meter{margin:0 auto 9px}
+    .verdict h3{font-size:18px;margin-bottom:4px}
+    .verdict p{display:none}
+    .verdict .btn{padding:11px 22px;font-size:14.5px}
+    .urgent{font-size:12.5px;padding:10px 12px;margin-bottom:11px}
   }
 
   /* STAKES / urgentie */
@@ -363,7 +371,7 @@
         <label>E-mailadres *<input id="f_email" type="email" required></label>
       </div>
 
-      <label>Carburateur — merk / type / serienummer / tagnummer<input id="f_carburateur" type="text" placeholder="Zit er nog een oormerk aan de carburateur?"></label>
+      <label>Carburateur, merk / type / serienummer / tagnummer<input id="f_carburateur" type="text" placeholder="Zit er nog een oormerk aan de carburateur?"></label>
       <div class="form-note" style="text-align:left;margin-top:6px">Veel carburateurs zijn in de loop der tijd vervangen en komen niet meer overeen met het handboek. Vul daarom alleen het merk, type en de tagnummers in die je direct van de carburateurbehuizing afleest.</div>
 
       <label>Kenteken<input id="f_kenteken" type="text" placeholder="bijv. AB-12-CD" onblur="checkKenteken()"></label>
@@ -392,14 +400,14 @@
   <div class="wrap cols">
     <div style="max-width:280px">
       <img src="logo-wit.png" alt="Carbservice" style="height:30px;display:block;margin-bottom:12px" onerror="this.outerHTML='CARBSERVICE'">
-      <p>Wij houden jouw klassieker, boot of aggregaat op de weg, met carburateurrevisies van topkwaliteit.</p>
+      <p>Wij houden jouw klassieker, motor of boot betrouwbaar op de weg en het water, met carburateurrevisies van topkwaliteit.</p>
     </div>
     <div><b>Contact</b>
       📞 <a href="tel:+31653864208">+31 6 53864208</a><br>
       📍 Huizerweg 49, 1401 GH Bussum, Nederland<br>
     </div>
     <div><b>Gegevens</b>
-      Handelsregister (KvK): 91457068<br>Rekeningnummer: Carburateur Service – NL04INGB0103514856<br>BTW: NL004894059B78
+      Handelsregister (KvK): 91457068<br>Rekeningnummer: Carburateur Service, NL04INGB0103514856<br>BTW: NL004894059B78
     </div>
   </div>
 </footer>
@@ -454,7 +462,7 @@
       p.textContent = "Dit kan al wijzen op vervuiling of slijtage in de carburateur. Vaak goed op te lossen met een revisie, voordat het erger wordt.";
       b.style.display = 'inline-flex';
     } else {
-      t.textContent = n + " klachten herkend — duidelijk signaal";
+      t.textContent = n + " klachten herkend, duidelijk signaal";
       p.textContent = "Dit wijst sterk op een versleten of vervuilde carburateur. Hoog tijd voor een revisie. Wij maken 'm weer als nieuw, mét eindcontrole.";
       b.style.display = 'inline-flex';
     }
@@ -536,7 +544,7 @@
       var d = await r.json(); var x = d && d[0];
       if(x){
         var bj=(x.datum_eerste_toelating||'').slice(0,4);
-        box.textContent='✓ '+[[x.merk,x.handelsbenaming].filter(Boolean).join(' '),bj,x.cilinderinhoud?x.cilinderinhoud+' cc':''].filter(Boolean).join(' · ')+' — klopt dit?';
+        box.textContent='✓ '+[[x.merk,x.handelsbenaming].filter(Boolean).join(' '),bj,x.cilinderinhoud?x.cilinderinhoud+' cc':''].filter(Boolean).join(' · ')+', klopt dit?';
         box.style.display='block';
       }
     }catch(e){}
