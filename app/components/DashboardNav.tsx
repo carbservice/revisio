@@ -16,11 +16,11 @@ import { magSales } from "@/app/werkplaats-planning/planning-config";
 // (admin of manager) of "admin" (alleen admin). Eén bron voor elke pagina.
 const items = [
   { href: "/start", label: "🏠 Start", rol: "iedereen" },
+  { href: "/uren", label: "🕒 Uren Registratie", rol: "iedereen" },
   { href: "/werkplaats-planning", label: "🗂️ Werkplaats Planning", rol: "iedereen" },
   { href: "/werkbonnen", label: "🧾 Werkbonnen", rol: "iedereen" },
   { href: "/carburateur-database-hub", label: "⚙️ Carburateur Database Hub", rol: "iedereen" },
   { href: "/support-hub", label: "💬 Support Hub", rol: "iedereen" },
-  { href: "/uren", label: "🕒 Uren Registratie", rol: "iedereen" },
   { href: "/werkplaats-dashboard", label: "🔧 Werkplaats Dashboard", rol: "beheer" },
   { href: "/cijfers", label: "📊 Cijfers", rol: "admin" },
   { href: "/sales-marketing", label: "📊 Sales & Marketing", rol: "sales" },
