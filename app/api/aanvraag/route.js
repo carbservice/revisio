@@ -188,7 +188,7 @@ export async function POST(req) {
       telefoon: d.telefoon || null,
       bedrijf: d.zakelijk ? (d.bedrijfsnaam || null) : null,
       carburateur: d.carburateur || null,
-      bericht: [kenmerk, d.klachten].filter(Boolean).join(" | ") || null,
+      bericht: [d.segment ? `Type: ${d.segment}` : null, kenmerk, d.klachten].filter(Boolean).join(" | ") || null,
       bron,
     }).select("id").single();
     leadId = data ? data.id : null;

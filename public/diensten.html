@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Carbservice - Diensten</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --groen:#1a3c2e; --groen-mid:#27593f; --groen-licht:#e7f0ea; --groen-zacht:#f1f7f3;
+    --goud:#b8962e; --goud-licht:#e9cd8a;
+    --tekst:#23211c; --grijs:#6f6c64; --rand:#e2ded2; --bg:#f4f6f1; --wit:#ffffff;
+    --rood:#a23b2e;
+    --schaduw:0 10px 30px rgba(26,60,46,.10); --schaduw-l:0 2px 10px rgba(26,60,46,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--tekst);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:600;line-height:1.12;letter-spacing:-.01em}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 22px}
+  a{color:inherit}
+  .btn{display:inline-flex;align-items:center;gap:9px;background:var(--groen);color:#fff;font-weight:700;font-size:15.5px;border:none;border-radius:999px;padding:15px 28px;cursor:pointer;text-decoration:none;transition:transform .15s,box-shadow .15s;box-shadow:0 8px 22px rgba(26,60,46,.25)}
+  .btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(26,60,46,.32)}
+  .btn-goud{background:linear-gradient(135deg,var(--goud) 0%,#a07d1f 100%);box-shadow:0 8px 22px rgba(184,150,46,.32)}
+  .btn-licht{background:#fff;color:var(--groen);border:1.5px solid var(--rand);box-shadow:none}
+  .eyebrow{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--goud)}
+
+  /* TOPBAR */
+  .topbar{position:sticky;top:0;z-index:50;background:rgba(244,246,241,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--rand)}
+  .topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{font-family:'Fraunces',serif;font-weight:700;font-size:22px;color:var(--groen);letter-spacing:.02em}
+  .logo span{color:var(--goud)}
+  .topnav{display:flex;align-items:center;gap:24px;font-size:14.5px;font-weight:600}
+  .topnav a{text-decoration:none;color:var(--grijs)}
+  .topnav a:hover{color:var(--groen)}
+  .topphone{font-weight:700;color:var(--groen)}
+  @media(max-width:760px){.topnav a:not(.btn){display:none}}
+
+  /* HERO */
+  .hero{position:relative;overflow:hidden;background:linear-gradient(140deg,#27593f 0%,#1a3c2e 52%,#102a1f 100%);color:#fff}
+  .hero::after{content:"";position:absolute;top:-120px;right:-90px;width:420px;height:420px;background:radial-gradient(circle,rgba(184,150,46,.22),transparent 68%);border-radius:50%}
+  .hero .wrap{position:relative;text-align:center;max-width:760px;padding:72px 22px}
+  .hero h1{font-size:clamp(34px,5vw,54px);font-weight:700}
+  .hero p.lead{font-size:18.5px;color:rgba(255,255,255,.85);margin:22px auto 0;max-width:600px}
+
+  section{padding:74px 0}
+  .sec-head{text-align:center;max-width:680px;margin:0 auto 44px}
+  .sec-head h2{font-size:clamp(28px,3.6vw,40px);margin:12px 0 14px;color:var(--groen)}
+  .sec-head p{color:var(--grijs);font-size:17px}
+
+  /* DIENSTEN KAARTEN */
+  .diensten{background:linear-gradient(180deg,#fff 0%,var(--groen-zacht) 100%);border-bottom:1px solid var(--rand)}
+  .kaart-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .kaart{display:flex;flex-direction:column;background:#fff;border:1px solid var(--rand);border-radius:24px;box-shadow:var(--schaduw);padding:34px 30px;transition:transform .15s}
+  .kaart:hover{transform:translateY(-4px)}
+  .kaart h3{font-size:23px;color:var(--groen);margin-bottom:18px}
+  .check-list{display:grid;gap:11px;margin-bottom:24px}
+  .check-list div{display:flex;gap:11px;font-size:15px;color:var(--tekst);align-items:flex-start}
+  .check-list .v{color:var(--groen);font-weight:800;flex:none}
+  .kaart .prijs-regel{font-family:'Fraunces',serif;font-size:34px;font-weight:700;color:var(--groen);line-height:1.1;margin-top:auto}
+  .kaart .prijs-regel small{font-size:17px;color:var(--grijs);font-weight:500}
+  .kaart .prijs-sub{color:var(--grijs);font-size:13px;margin:6px 0 22px}
+  .kaart .btn{width:100%;justify-content:center}
+  @media(max-width:880px){.kaart-grid{grid-template-columns:1fr}}
+
+  footer{background:#13261c;color:rgba(255,255,255,.72);padding:48px 0;font-size:14.5px}
+  footer .cols{display:flex;flex-wrap:wrap;gap:40px;justify-content:space-between}
+  footer b{color:#fff;display:block;margin-bottom:10px;font-family:'Fraunces',serif;font-size:17px}
+  footer a{color:var(--goud-licht);text-decoration:none}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a href="#" class="logo"><img src="logo-wit.png" alt="Carbservice" style="height:34px;display:block;filter:brightness(0)" onerror="this.outerHTML='CARB<span>SERVICE</span>'"></a>
+    <nav class="topnav">
+      <a href="https://revisio-umber.vercel.app/volg" target="_blank" rel="noopener" style="font-weight:700;color:var(--groen)">Volg je revisie</a>
+      <a class="topphone" href="tel:+31653864208">📞 +31 6 53864208</a>
+    </nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" style="padding:0">
+  <div class="wrap">
+    <span class="eyebrow">Carburateur revisie</span>
+    <h1 style="margin-top:14px">Onze diensten</h1>
+    <p class="lead">Carbservice reviseert carburateurs voor auto, motor, boot en aggregaat. Kies hieronder je voertuigtype en bekijk wat we voor jou kunnen betekenen.</p>
+  </div>
+</section>
+
+<!-- DIENSTEN KAARTEN -->
+<section class="diensten">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Kies je voertuigtype</span>
+      <h2>Voor elk type carburateur</h2>
+      <p>Dezelfde vakkundige aanpak, afgestemd op jouw voertuig. Klik op de juiste categorie voor alle details.</p>
+    </div>
+    <div class="kaart-grid">
+
+      <!-- Automotive -->
+      <div class="kaart">
+        <h3>Automotive</h3>
+        <div class="check-list">
+          <div><span class="v">✓</span> Opsturen of langsbrengen</div>
+          <div><span class="v">✓</span> Inspectie en diagnose</div>
+          <div><span class="v">✓</span> Grondige reiniging</div>
+          <div><span class="v">✓</span> Revisiekits</div>
+          <div><span class="v">✓</span> Kalibratie en afstelling</div>
+          <div><span class="v">✓</span> Eindcontrole</div>
+        </div>
+        <div class="prijs-regel">Vanaf €165</div>
+        <div class="prijs-sub">v.a. prijs, zonder onderdelen</div>
+        <a href="https://automotive.carbservice.nl" class="btn btn-goud">Bekijk revisie →</a>
+      </div>
+
+      <!-- Motorfiets -->
+      <div class="kaart">
+        <h3>Motorfiets</h3>
+        <div class="check-list">
+          <div><span class="v">✓</span> Opsturen of langsbrengen</div>
+          <div><span class="v">✓</span> Inspectie en diagnose</div>
+          <div><span class="v">✓</span> Grondige reiniging</div>
+          <div><span class="v">✓</span> Revisiekits</div>
+          <div><span class="v">✓</span> Kalibratie en afstelling</div>
+          <div><span class="v">✓</span> Eindcontrole</div>
+        </div>
+        <div class="prijs-regel">Vanaf €85</div>
+        <div class="prijs-sub">v.a. prijs, zonder onderdelen</div>
+        <a href="https://motorfiets.carbservice.nl" class="btn btn-goud">Bekijk revisie →</a>
+      </div>
+
+      <!-- Marine & Aggregaat -->
+      <div class="kaart">
+        <h3>Marine &amp; Aggregaat</h3>
+        <div class="check-list">
+          <div><span class="v">✓</span> Opsturen of langsbrengen</div>
+          <div><span class="v">✓</span> Inspectie en diagnose</div>
+          <div><span class="v">✓</span> Grondige reiniging</div>
+          <div><span class="v">✓</span> Revisiekits</div>
+          <div><span class="v">✓</span> Kalibratie en afstelling</div>
+          <div><span class="v">✓</span> Eindcontrole</div>
+        </div>
+        <div class="prijs-regel">Vanaf €100</div>
+        <div class="prijs-sub">v.a. prijs, zonder onderdelen</div>
+        <a href="https://boot.carbservice.nl" class="btn btn-goud">Bekijk revisie →</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap cols">
+    <div style="max-width:280px">
+      <img src="logo-wit.png" alt="Carbservice" style="height:30px;display:block;margin-bottom:12px" onerror="this.outerHTML='CARBSERVICE'">
+      <p>Wij houden jouw klassieker, boot of aggregaat op de weg, met carburateurrevisies van topkwaliteit.</p>
+    </div>
+    <div><b>Contact</b>
+      📞 <a href="tel:+31653864208">+31 6 53864208</a><br>
+      📍 Huizerweg 49, 1401 GH Bussum, Nederland<br>
+    </div>
+    <div><b>Gegevens</b>
+      Handelsregister (KvK): 91457068<br>Rekeningnummer: Carburateur Service – NL04INGB0103514856<br>BTW: NL004894059B78
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
