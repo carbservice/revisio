@@ -20,6 +20,7 @@ const items = [
   { href: "/werkbonnen", label: "🧾 Werkbonnen", rol: "iedereen" },
   { href: "/carburateur-database-hub", label: "⚙️ Carburateur Database Hub", rol: "iedereen" },
   { href: "/support-hub", label: "💬 Support Hub", rol: "iedereen" },
+  { href: "/uren", label: "🕒 Uren Registratie", rol: "iedereen" },
   { href: "/werkplaats-dashboard", label: "🔧 Werkplaats Dashboard", rol: "beheer" },
   { href: "/cijfers", label: "📊 Cijfers", rol: "admin" },
   { href: "/sales-marketing", label: "📊 Sales & Marketing", rol: "sales" },
