@@ -79,12 +79,27 @@ async function vindOfMaakContact(d) {
   return gemaakt && gemaakt.id ? gemaakt : null;
 }
 
-async function maakConceptOfferte(contactId, regel) {
+// Standaard-productregels (zoals Zapier ze nu op de offerte zet). We verwijzen
+// naar de PRODUCTEN in Moneybird (product_id), dus wijzig je een product, dan
+// loopt dat mee in nieuwe offertes. Geen vaste tekst hier.
+const STD_PRODUCTEN = [
+  "418914796729009901", // Carburateur Revisie Arbeid
+  "418915008206865415", // Luxe revisiekit
+  "485911021308872537", // Ultrasoon-reiniging carburateur
+  "485911014739543046", // Verbruiksmateriaal & schoonmaakprocedure
+  "434480284167046191", // Transparant brandstoffilter
+  "418915116419909338", // Aangetekende verzending DHL
+  "445622443033233284", // Carburateur natstralen (renovatie)
+  "424857784786355328", // Spoedtoeslag
+];
+
+async function maakConceptOfferte(contactId, kenmerk) {
   const estimate = {
     contact_id: contactId,
     workflow_id: EST_WORKFLOW,
     document_style_id: DOC_STYLE,
-    details_attributes: [{ description: regel, amount: "1", price: "0" }],
+    reference: kenmerk,
+    details_attributes: STD_PRODUCTEN.map((pid) => ({ product_id: pid, amount: "1" })),
   };
   return mb("estimates.json", "POST", { estimate });
 }
@@ -122,10 +137,19 @@ export async function POST(req) {
   if (d.website) return json({ ok: true });           // honeypot: bots vullen dit
   if (!d.email || !d.voornaam) return json({ fout: "Naam en e-mail zijn verplicht." }, 400);
 
-  // 1) RDW (alleen met kenteken). Geen kenteken -> de handmatige merk/model/jaar.
+  // 1) RDW (alleen met geldig kenteken) + het KENMERK opbouwen voor de offerte.
+  // Geen kenteken, of iets dat geen kenteken is (RDW geen match) en geen handmatig
+  // merk/model/jaar -> "[Geen kenteken opgegeven]".
   const voertuig = d.kenteken ? await haalVoertuig(d.kenteken) : null;
-  const voertuigTekst = voertuig ? voertuig.omschrijving : (d.merk_model_jaar || "");
-  const offerteRegel = [voertuigTekst, d.carburateur ? `Carburateur: ${d.carburateur}` : ""].filter(Boolean).join("\n") || "Carburateur-revisie (aanvraag via website)";
+  let kenmerk;
+  if (voertuig) {
+    kenmerk = `${voertuig.kenteken} - ${[voertuig.merk, voertuig.model].filter(Boolean).join(" ")}, ${voertuig.bouwjaar}${voertuig.cilinderinhoud ? `, ${voertuig.cilinderinhoud} cc` : ""}`;
+  } else if ((d.merk_model_jaar || "").trim()) {
+    kenmerk = d.merk_model_jaar.trim();
+  } else {
+    kenmerk = "[Geen kenteken opgegeven]";
+  }
+  if (d.carburateur) kenmerk += `, ${d.carburateur}`;
 
   // 2) Lead in het dashboard (met bron). Zacht falen: nooit een aanvraag kwijt.
   const naam = [d.voornaam, d.achternaam].filter(Boolean).join(" ");
@@ -139,7 +163,7 @@ export async function POST(req) {
       telefoon: d.telefoon || null,
       bedrijf: d.zakelijk ? (d.bedrijfsnaam || null) : null,
       carburateur: d.carburateur || null,
-      bericht: [voertuigTekst, d.klachten].filter(Boolean).join(" | ") || null,
+      bericht: [kenmerk, d.klachten].filter(Boolean).join(" | ") || null,
       bron,
     }).select("id").single();
     leadId = data ? data.id : null;
@@ -150,7 +174,7 @@ export async function POST(req) {
   if (ADMIN && TOKEN) {
     const contact = await vindOfMaakContact(d);
     if (contact && contact.id) {
-      const est = await maakConceptOfferte(contact.id, offerteRegel);
+      const est = await maakConceptOfferte(contact.id, kenmerk);
       if (est && est.id) {
         offerteNr = est.estimate_id || null;
         if (leadId) {
@@ -169,7 +193,7 @@ export async function POST(req) {
   }
 
   // 4) Melding (zacht).
-  await stuurMelding(d, voertuigTekst, offerteNr);
+  await stuurMelding(d, kenmerk, offerteNr);
 
-  return json({ ok: true, voertuig: voertuigTekst || null, offerte: offerteNr, mbFout });
+  return json({ ok: true, voertuig: kenmerk, offerte: offerteNr, mbFout });
 }

@@ -27,7 +27,7 @@ const EIGENAREN = ["", "CG", "LE", "JM", "LV"];
 const BRON_LABEL: Record<string, string> = { google_ads: "Google Ads", facebook: "Facebook", marktplaats: "Marktplaats", organisch: "Organisch" };
 const bronLabel = (b: string) => BRON_LABEL[b] || b;
 const OFFERTE_LABEL: Record<string, string> = { open: "verstuurd", late: "verlopen", accepted: "geaccepteerd", rejected: "afgewezen", draft: "concept", billed: "gefactureerd" };
-const VERSTUURD = ["open", "late"];
+const VERSTUURD = ["draft", "open", "late"]; // concepten ook tonen (= direct opvolgen)
 
 function range(mode: string, anker: Date) {
   // Periode = de lokale maand/kwartaal/jaar van het anker, maar de grenzen bouwen
@@ -359,7 +359,7 @@ function Dashboard() {
                 <div style={kop}>Op te volgen ({pijplijn.length})</div>
                 <div style={{ display: "flex", gap: 6, marginLeft: "auto", flexWrap: "wrap" }}>
                   <button onClick={() => setMijn((v) => !v)} style={toggle(mijn)}>Mijn opvolging</button>
-                  <button onClick={() => setToonAlle((v) => !v)} style={toggle(toonAlle)}>{toonAlle ? "Alle aanvragen" : "Alleen verstuurde offertes"}</button>
+                  <button onClick={() => setToonAlle((v) => !v)} style={toggle(toonAlle)}>{toonAlle ? "Alle aanvragen" : "Op te volgen"}</button>
                 </div>
               </div>
               <div style={{ position: "relative", marginBottom: 12, border: `2px solid ${GROEN}`, borderRadius: 12, background: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
@@ -382,6 +382,7 @@ function Dashboard() {
                           <span style={{ fontWeight: 800, color: TEKST }}>{L.naam || L.email}</span>
                           {L.bedrijf && <span style={{ color: GRIJS, fontSize: 13 }}> · {L.bedrijf}</span>}
                           <span style={{ ...pil, marginLeft: 8 }}>{bronLabel(L.bron)}</span>
+                          {L.offerte_state === "draft" && L.offerte_url && <a href={L.offerte_url} target="_blank" rel="noreferrer" style={{ ...pil, background: GROEN, color: "#fff", fontWeight: 800, marginLeft: 6, textDecoration: "none" }}>🟢 Concept · direct opvolgen ↗</a>}
                           {L.offerte_nummer && L.offerte_url && <a href={L.offerte_url} target="_blank" rel="noreferrer" style={{ ...pil, background: "#e7f0ea", color: GROEN, marginLeft: 6, textDecoration: "none" }}>🧾 {L.offerte_nummer}{L.offerte_state ? ` · ${OFFERTE_LABEL[L.offerte_state] || L.offerte_state}` : ""}{L.offerte_bedrag ? ` · ${euro(Number(L.offerte_bedrag))}` : ""}</a>}
                         </div>
                         <div style={{ fontSize: 12, color: GRIJS, whiteSpace: "nowrap" }}>{datkort(L.datum)}</div>
