@@ -363,6 +363,10 @@
       <div class="form-note" id="voertuiginfo" style="display:none;text-align:left;margin-top:6px;color:var(--groen);font-weight:700"></div>
       <label>Welke klachten heb je?<textarea id="klachtveld" rows="3" placeholder="Beschrijf kort wat het voertuig doet, of klik ze hierboven aan in de checker..."></textarea></label>
 
+      <label>Foto's van je carburateur (optioneel, max 10)<input id="f_fotos" type="file" accept="image/*" multiple onchange="kiesFotos(event)" style="padding:10px 12px"></label>
+      <div class="form-note" style="text-align:left;margin-top:6px">Een foto van het typeplaatje of de carburateur helpt ons enorm bij een goede inschatting. We verkleinen ze automatisch.</div>
+      <div id="fotoPreview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+
       <button type="submit" class="btn btn-goud" style="width:100%;justify-content:center;font-size:16px;margin-top:22px">Verstuur mijn aanvraag →</button>
       <div class="form-note">Geen verplichtingen. We nemen snel contact met je op.</div>
     </form>
@@ -475,6 +479,43 @@
   })();
   function getTracking(){ try{ return JSON.parse(localStorage.getItem('cb_tracking')||'{}'); }catch(e){ return {}; } }
 
+  // ====== Foto's: in de browser verkleinen en als data-URL meesturen ======
+  var gekozenFotos = [];
+  function compress(file, maxDim, quality){
+    return new Promise(function(resolve){
+      var img = new Image();
+      img.onload = function(){
+        var w = img.width, h = img.height;
+        if(w >= h && w > maxDim){ h = Math.round(h*maxDim/w); w = maxDim; }
+        else if(h > w && h > maxDim){ w = Math.round(w*maxDim/h); h = maxDim; }
+        var c = document.createElement('canvas'); c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        try{ resolve(c.toDataURL('image/jpeg', quality)); }catch(err){ resolve(null); }
+        URL.revokeObjectURL(img.src);
+      };
+      img.onerror = function(){ resolve(null); };
+      img.src = URL.createObjectURL(file);
+    });
+  }
+  async function kiesFotos(e){
+    var files = Array.from(e.target.files || []);
+    var teveel = files.length > 10;
+    files = files.slice(0, 10);
+    gekozenFotos = [];
+    var prev = document.getElementById('fotoPreview'); prev.innerHTML = '';
+    for(var i=0;i<files.length;i++){
+      if(!/^image\//.test(files[i].type)) continue;
+      var data = await compress(files[i], 1280, 0.7);
+      if(!data) continue;
+      gekozenFotos.push(data);
+      var im = document.createElement('img');
+      im.src = data; im.alt = 'foto';
+      im.style.cssText = 'width:62px;height:62px;object-fit:cover;border-radius:8px;border:1px solid #e2ded2';
+      prev.appendChild(im);
+    }
+    if(teveel) alert("Je kunt maximaal 10 foto's meesturen. De eerste 10 zijn gekozen.");
+  }
+
   // Live kenteken-check bij de RDW
   function norm(s){ return (s||'').toUpperCase().replace(/[^A-Z0-9]/g,''); }
   async function checkKenteken(){
@@ -505,7 +546,7 @@
       bedrijfsnaam: val('f_bedrijfsnaam'), kvk: val('f_kvk'), btw: val('f_btw'),
       voornaam: val('f_voornaam'), achternaam: val('f_achternaam'), telefoon: val('f_telefoon'), email: val('f_email'),
       carburateur: val('f_carburateur'), kenteken: val('f_kenteken'), klachten: val('klachtveld'),
-      tracking: getTracking(), website: ''
+      fotos: gekozenFotos, tracking: getTracking(), website: ''
     };
     try{ await fetch(BACKEND, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) }); }
     catch(err){ /* nooit blokkeren: klant ziet altijd het bedankt-scherm */ }

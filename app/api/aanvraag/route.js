@@ -17,6 +17,8 @@ const ADMIN = process.env.MONEYBIRD_ADMIN;
 const TOKEN = process.env.MONEYBIRD_TOKEN;
 const EST_WORKFLOW = "417531256412047023"; // EstimateWorkflow "Standaard"
 const DOC_STYLE = "417607702940746976";    // document-stijl "Carburateur Service"
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://revisio-umber.vercel.app";
+const FOTO_BUCKET = "aanvraag-fotos";
 
 // CORS: carbservice.nl (Strikingly) mag dit publieke endpoint aanroepen.
 const CORS = {
@@ -104,6 +106,29 @@ async function maakConceptOfferte(contactId, kenmerk) {
   return mb("estimates.json", "POST", { estimate });
 }
 
+// Foto's van de klant: opslaan in Supabase Storage onder een onraadbaar token,
+// en de galerij-link als INTERNE notitie op de concept-offerte zetten (Lukas ziet
+// 'm in Moneybird; niet aan de klant-offerte gehangen, niet meegestuurd).
+async function uploadFotosEnNotitie(fotos, offerteId) {
+  if (!Array.isArray(fotos) || !fotos.length) return null;
+  const token = crypto.randomUUID();
+  let n = 0;
+  for (let i = 0; i < Math.min(fotos.length, 10); i++) {
+    const m = /^data:(image\/(?:jpeg|png|webp));base64,(.+)$/.exec(fotos[i] || "");
+    if (!m) continue;
+    const ext = m[1] === "image/png" ? "png" : m[1] === "image/webp" ? "webp" : "jpg";
+    const buf = Buffer.from(m[2], "base64");
+    const { error } = await supabaseAdmin.storage.from(FOTO_BUCKET).upload(`${token}/${i}.${ext}`, buf, { contentType: m[1], upsert: true });
+    if (!error) n++;
+  }
+  if (!n) return null;
+  const url = `${SITE_URL}/fotos/${token}`;
+  if (offerteId && ADMIN && TOKEN) {
+    await mb(`estimates/${offerteId}/notes.json`, "POST", { note: { todo: false, note: `Foto's van de klant (${n} stuk${n > 1 ? "s" : ""}): ${url}` } });
+  }
+  return { token, url, aantal: n };
+}
+
 // Mailtje naar Cyriel via Resend (alleen als RESEND_API_KEY is ingesteld).
 async function stuurMelding(d, voertuigTekst, offerteNr) {
   const key = process.env.RESEND_API_KEY;
@@ -170,16 +195,17 @@ export async function POST(req) {
   } catch (e) { /* lead-insert mag de rest niet blokkeren */ }
 
   // 3) Moneybird: contact + concept-offerte.
-  let offerteNr = null, mbFout = null;
+  let offerteNr = null, offerteId = null, mbFout = null;
   if (ADMIN && TOKEN) {
     const contact = await vindOfMaakContact(d);
     if (contact && contact.id) {
       const est = await maakConceptOfferte(contact.id, kenmerk);
       if (est && est.id) {
         offerteNr = est.estimate_id || null;
+        offerteId = String(est.id);
         if (leadId) {
           await supabaseAdmin.from("leads").update({
-            offerte_id: String(est.id),
+            offerte_id: offerteId,
             offerte_nummer: offerteNr || "",
             offerte_state: est.state || "draft",
           }).eq("id", leadId);
@@ -192,8 +218,12 @@ export async function POST(req) {
     }
   }
 
+  // 3b) Foto's opslaan + galerij-link als notitie op de concept-offerte (zacht).
+  let fotoInfo = null;
+  try { fotoInfo = await uploadFotosEnNotitie(d.fotos, offerteId); } catch (e) { /* foto's mogen de aanvraag niet blokkeren */ }
+
   // 4) Melding (zacht).
   await stuurMelding(d, kenmerk, offerteNr);
 
-  return json({ ok: true, voertuig: kenmerk, offerte: offerteNr, mbFout });
+  return json({ ok: true, voertuig: kenmerk, offerte: offerteNr, fotos: fotoInfo ? fotoInfo.aantal : 0, mbFout });
 }
