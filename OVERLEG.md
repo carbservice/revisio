@@ -247,6 +247,25 @@ Intern kanban-/planningsbord op `/planning`, dat onze Trello vervangt. Het bord 
 
 **Nieuwe Automotive-landingspagina** (interne mockup `automotive-nieuw.html`, nog niet live): probleemherkenning-checker, brandgevaar-urgentie, motorschade-blok (benzine koelt mee), formulier met zelf/partner + particulier/zakelijk.
 
+### Gedaan op 23 juni 2026 - publieke site live op subdomeinen + tracking strak
+
+**Architectuurkeuze: snelle subdomeinen, NIET embedden en NIET migreren (nu)**
+- De nieuwe klantpagina's zijn statische HTML op Vercel (in `revisio/public/`), elk op een eigen subdomein: `automotive` / `motorfiets` / `boot` (= marine).carbservice.nl, plus `home.html` en `diensten.html` klaar. Per subdomein stuurt een host-rewrite in `next.config.ts` (`beforeFiles`, conditie op host) de root naar de juiste `.html`. Razendsnel (~0,1 s), same-origin formulier.
+- Bewust NIET in Strikingly geplakt: dat stopt de HTML in een trage iframe en breekt de gclid-tracking. Bewust ook NOG NIET het hoofddomein gemigreerd: dat raakt de Strikingly-webshop + SEO. `carbservice.nl` blijft dus op Strikingly (incl. webshop); de Strikingly-menuknoppen linken naar de subdomeinen.
+- Weg van Zapier, in stappen: Strikingly-knoppen -> subdomeinen (Diensten gedaan, die leads lopen nu via onze backend). Zapier blijft AAN tot ook de homepage-form via onze backend loopt; pas dan Zapier + HubSpot uit.
+
+**Aanvraag-backend live** (gemerged naar main): `/api/aanvraag` + RDW + Moneybird CONCEPT-offerte + lead-in-dashboard. Kenmerk = kenteken+voertuig+carburateur (of "[Geen kenteken opgegeven]"), 8 standaard-productregels als product-referenties. 65 Moneybird-contacten met cyrielgaemers@gmail.com opgeschoond.
+
+**Foto-upload bij aanvraag**: max 10 foto's, in de browser gecomprimeerd -> Supabase Storage (bucket `aanvraag-fotos`, onraadbaar token) -> galerij-link als INTERNE notitie op de concept-offerte in Moneybird (op de offerte, niet het contact; niet meegestuurd naar de klant). Lukas niet meer afhankelijk van Cyriels Gmail. Galerij = route-handler `app/fotos/[token]/route.js`.
+
+**Moneybird = de waarheid (dashboard)**: het Sales-dashboard synchroniseert bij elke load de offerte-status uit Moneybird (afgewezen/geaccepteerd verdwijnen uit de pijplijn) en wist offertes die in Moneybird verwijderd zijn. Done-offertes blijven met rust; bij een Moneybird-fout wordt er niets gewist.
+
+**Tracking strak**: Google Tag Manager (`GTM-MC3B7HR2`) + `<noscript>` op elke landingspagina, plus conversie-event `aanvraag_verstuurd` (met voertuigtype) bij formulier-succes -> GA4-event `generate_lead`. GA4 + Ads-tags vuren nu overal (stonden op All Pages). GTM Versie 11 gepubliceerd (trigger "Aanvraag verstuurd" + tag "GA4 - Aanvraag verstuurd"; GA4-property Carburateur Service Nederland / `G-C4SXRYSSQK`). Eigen bron-tracking (gclid/utm -> leads-tabel) blijft het ROAS-dashboard voeden. **Open (24 juni):** `generate_lead` als sleutelgebeurtenis markeren in GA4 + importeren in Google Ads (reminder staat klaar).
+
+**Pagina's**: 3 voertuigpagina's met eigen teksten (klachten/merken/stakes/prijs 165/85/100), diensten-overzicht met foto's, nieuwe homepage (`home.html`: banner + diensten + Elfsight Google-reviews + FAQ + aanvraagformulier + Elfsight Carbie-chatbot; Shop linkt naar de Strikingly-winkel). Marine = puur watersport (aggregaat overal weg) + blok "marinemonteur komt naar je boot". Mobiele conversie-fix (compacte chips + sticky advies-balk), favicon (`favicon.svg`), alle dashes weg, spellcheck gedaan. End-to-end getest (testaanvraag kwam binnen, daarna opgeruimd).
+
+**Open voor morgen (24 juni)**: GA4-sleutelgebeurtenis + Ads-import; betere voertuig-specifieke foto's per pagina; homepage aanscherpen, dan `home` + `diensten` subdomeinen toevoegen en Strikingly "Home/Offerte" erheen -> homepage-leads ook van Zapier af.
+
 ## Livegang (13 juni 2026)
 
 - Monteur-app gaat live; eerste klant gaat live op het portaal.

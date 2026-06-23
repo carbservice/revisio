@@ -210,3 +210,41 @@
 - Doel: Zapier (~€30/mnd) + HubSpot (€25/mnd) vervangen door een eigen pijplijn = ~€55/mnd besparing.
 - Gebouwd: publiek `/api/aanvraag` + Revisio-formulier `/aanvraag`. Kenteken normaliseren + RDW-voertuigdata (gratis, geen sleutel), Moneybird contact (idempotent op e-mail) + CONCEPT-offerte, lead direct in het dashboard met bron, mailtje naar Cyriel. Alles faalt "zacht" (aanvraag nooit kwijt).
 - Open: Resend-mailsleutel, Moneybird-template bevestigen, Google Contacts-OAuth, live zetten. Zie de takenlijst voor Cyriel.
+
+## Dag 9 · 23 juni 2026 (publieke site live + tracking strak)
+**De aanvraag-backend live gezet en de hele klantkant van carbservice.nl opnieuw opgebouwd: 3 snelle voertuig-landingspagina's + diensten + homepage op eigen subdomeinen, met volledige tracking.**
+
+### Aanvraag-backend live (gemerged naar main)
+- `/api/aanvraag` live: kenteken -> RDW (live) -> Moneybird CONCEPT-offerte (kenmerk = kenteken+voertuig+carburateur op 1 regel, of "[Geen kenteken opgegeven]") met 8 standaard-productregels als product-referenties -> lead in het dashboard met bron. CORS aan voor cross-origin.
+- 65 Moneybird-contacten met cyrielgaemers@gmail.com (telefoon/inloop-noodvulling) opgeschoond.
+
+### Drie voertuig-landingspagina's live op eigen subdomeinen
+- automotive / motorfiets / boot(=marine & aggregaat, nu puur watersport).carbservice.nl, elk met eigen teksten (klachten, merken, stakes, prijs 165/85/100).
+- Bewust GEEN Strikingly-embed (dat was traag = iframe + brak de tracking). In plaats daarvan statische pagina's op Vercel met host-rewrites in next.config (per subdomein de root naar de juiste .html). Razendsnel (~0,1 s).
+- Mobiele conversie-fix: compacte klacht-chips + advies-balk plakt sticky onderaan in beeld. Favicon (favicon.svg), alle dashes weg (em/en-dash -> middendot/komma), spellcheck.
+- Marine: "aggregaat" overal weg, watersport-framing (sloep/motorboot/dinghy, binnenboord/buitenboord) + blok "onze marinemonteur komt naar je boot" (op locatie/jachthaven).
+
+### Diensten-overzicht + homepage
+- `diensten.html`: 3 kaarten met foto's -> de subdomeinen, knop "Doe de klachtencheck".
+- `home.html` (nieuwe homepage): banner + diensten + USP + Elfsight Google-reviews + FAQ + aanvraagformulier + Elfsight Carbie-chatbot. Shop linkt naar de bestaande Strikingly-winkel (die blijft Strikingly).
+
+### Foto-upload bij aanvraag
+- Klant uploadt max 10 foto's (in de browser gecomprimeerd) -> Supabase Storage (bucket aanvraag-fotos, onraadbaar token) -> galerij-link als INTERNE notitie op de concept-offerte in Moneybird. Lukas ziet de foto's vanuit Moneybird, geen Gmail-doorsturen meer.
+
+### Moneybird = de waarheid (dashboard)
+- Het Sales-dashboard synchroniseert bij elke load de offerte-status uit Moneybird (afgewezen/geaccepteerd verdwijnen uit de pijplijn) en wist offertes die in Moneybird verwijderd zijn.
+
+### Tracking strak (GTM op alle pagina's)
+- Google Tag Manager (GTM-MC3B7HR2) + `<noscript>` op elke landingspagina, plus een conversie-event `aanvraag_verstuurd` (met voertuigtype) bij formulier-succes. GA4 + Google Ads-tags vuren nu overal (waren op All Pages).
+- In GTM gepubliceerd (Versie 11): trigger "Aanvraag verstuurd" + tag "GA4 - Aanvraag verstuurd" (event generate_lead, GA4-property Carburateur Service Nederland / G-C4SXRYSSQK).
+- End-to-end getest: testaanvraag op automotive kwam binnen (segment automotive, RDW Peugeot 306, concept-offerte), test-lead daarna opgeruimd.
+- Eigen bron-tracking (gclid/utm -> leads-tabel) blijft daarnaast bestaan en voedt het ROAS-dashboard.
+
+### Strikingly
+- De 3 Diensten-knoppen op carbservice.nl wijzen nu naar de subdomeinen -> die leads lopen via onze backend (niet meer via Zapier). Zapier blijft AAN tot ook de homepage-form is omgezet.
+
+### Open voor morgen (24 juni)
+- GA4: `generate_lead` als sleutelgebeurtenis markeren + importeren in Google Ads (reminder staat klaar voor 9:00).
+- Betere, voertuig-specifieke foto's per pagina (nu demo-placeholders).
+- Homepage aanscherpen (boodschap/FAQ/secties), dan home + diensten subdomeinen toevoegen en Strikingly "Home/Offerte" erheen -> homepage-leads ook van Zapier af.
+- Pas als alles via de subdomeinen loopt: Zapier + HubSpot uitzetten.
