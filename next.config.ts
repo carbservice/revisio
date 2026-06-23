@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
         { source: "/", has: [{ type: "host", value: "motorfiets.carbservice.nl" }], destination: "/motorfiets.html" },
         { source: "/", has: [{ type: "host", value: "boot.carbservice.nl" }], destination: "/marine.html" },
         { source: "/", has: [{ type: "host", value: "diensten.carbservice.nl" }], destination: "/diensten.html" },
+        { source: "/", has: [{ type: "host", value: "home.carbservice.nl" }], destination: "/home.html" },
       ],
     };
   },
