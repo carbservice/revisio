@@ -74,6 +74,7 @@ function Dashboard() {
   const [laden, setLaden] = useState(true);
   const [mijn, setMijn] = useState(false);
   const [toonAlle, setToonAlle] = useState(false);
+  const [gewonnenFilter, setGewonnenFilter] = useState(false);
   const [zoek, setZoek] = useState("");
   const [flash, setFlash] = useState<Record<string, boolean>>({});      // groene "verzonden"-flash
   const [teVaak, setTeVaak] = useState<Record<string, boolean>>({});     // dedup-melding
@@ -173,7 +174,7 @@ function Dashboard() {
 
   const zoekTerm = zoek.trim().toLowerCase();
   const pijplijn = (data?.leads || []).filter((L) => {
-    const inPijp = toonAlle || L.status === "geaccepteerd" || VERSTUURD.includes(L.offerte_state || "");
+    const inPijp = gewonnenFilter ? L.status === "geaccepteerd" : (toonAlle || L.status === "geaccepteerd" || VERSTUURD.includes(L.offerte_state || ""));
     const vanMij = !mijn || L.eigenaar === mijnCode;
     const raakt = !zoekTerm || [L.naam, L.email, L.bedrijf, L.telefoon, L.carburateur, L.offerte_nummer].some((v) => (v || "").toLowerCase().includes(zoekTerm));
     return inPijp && vanMij && raakt;
@@ -182,6 +183,7 @@ function Dashboard() {
     if (pa !== pb) return pa - pb;            // op te volgen bovenaan, afgerond onderaan
     return (b.datum || "").localeCompare(a.datum || ""); // binnen een groep: nieuwste eerst
   });
+  const aantalGewonnen = (data?.leads || []).filter((L) => L.status === "geaccepteerd").length;
 
   return (
     <main style={wrap}>
@@ -361,10 +363,11 @@ function Dashboard() {
             {/* Pijplijn */}
             <div style={kaart}>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", marginBottom: 12 }}>
-                <div style={kop}>Op te volgen ({pijplijn.length})</div>
+                <div style={kop}>{gewonnenFilter ? "Gewonnen" : "Op te volgen"} ({pijplijn.length})</div>
                 <div style={{ display: "flex", gap: 6, marginLeft: "auto", flexWrap: "wrap" }}>
                   <button onClick={() => setMijn((v) => !v)} style={toggle(mijn)}>Mijn opvolging</button>
                   <button onClick={() => setToonAlle((v) => !v)} style={toggle(toonAlle)}>{toonAlle ? "Alle aanvragen" : "Op te volgen"}</button>
+                  <button onClick={() => setGewonnenFilter((v) => !v)} style={toggle(gewonnenFilter)}>🏆 Gewonnen ({aantalGewonnen})</button>
                 </div>
               </div>
               <div style={{ position: "relative", marginBottom: 12, border: `2px solid ${GROEN}`, borderRadius: 12, background: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
