@@ -34,7 +34,7 @@ const UITLEG: Record<string, string> = {
 
 const DEFAULT_VOLGORDE = [
   "omzet", "brutomarge", "nettowinst", "kosten",
-  "aanvragen", "omzetAds", "roas",
+  "aanvragen", "omzetAds", "roas", "belactiviteit",
   "productgroep",
   "margeChart",
   "closing",
@@ -285,6 +285,28 @@ function Dashboard() {
       case "roas": {
         const r = actief.cijfers.roas, sp = actief.cijfers.adSpend, o = actief.cijfers.omzetAds;
         return (<>{kaartKop(GROEN, "doel", "ROAS (Google + Meta)")}<div style={waardeGroot}>{r == null ? "—" : `${r.toFixed(2)}x`}</div><div style={sub}>{sp ? `${euro(o || 0)} omzet ÷ ${euro(sp)} spend` : "geen advertentiekosten deze periode"}</div></>);
+      }
+      case "belactiviteit": {
+        const dagen = (data.belactiviteit || []) as Array<{ dag: string; totaal: number; gesproken: number; perPersoon: Array<{ door: string; gesproken: number; gemist: number }> }>;
+        return (<>
+          {kaartKop(GROEN, "inkomend", "Belactiviteit per dag")}
+          {dagen.length === 0 ? <div style={sub}>nog geen gesprekken gelogd (laatste 14 dagen)</div> : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 7, marginTop: 6 }}>
+              {dagen.slice(0, 10).map((d) => (
+                <div key={d.dag} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8, borderBottom: `1px solid ${RAND}`, paddingBottom: 6 }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: 13.5, textTransform: "capitalize" }}>{new Date(d.dag).toLocaleDateString("nl-NL", { weekday: "short", day: "numeric", month: "short" })}</div>
+                    <div style={{ fontSize: 12, color: GRIJS }}>{d.perPersoon.map((p) => `${p.door || "?"} ${p.gesproken + p.gemist}${p.gemist ? ` (${p.gemist} gemist)` : ""}`).join(" · ")}</div>
+                  </div>
+                  <div style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                    <span style={{ fontSize: 22, fontWeight: 800, color: GROEN }}>{d.totaal}</span>
+                    <div style={{ fontSize: 11, color: GRIJS }}>{d.gesproken} gesproken</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>);
       }
       case "productgroep": {
         const pg = data.omzetPerProductgroep;

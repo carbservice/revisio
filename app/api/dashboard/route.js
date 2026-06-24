@@ -299,7 +299,33 @@ export async function GET(req) {
       zet(views.jaar.cijfers, 0, M);
     } catch (e) { /* marketing-cijfers optioneel; blokkeren de financiele cijfers niet */ }
 
-    const data = { status, maanden, views, btw, omzetPerProductgroep, vooruitblik };
+    // Belactiviteit: gebeld + niet-opgenomen-acties per dag per persoon (laatste 14 dagen).
+    let belactiviteit = [];
+    try {
+      const sinds = new Date(Date.now() - 14 * 86400000).toISOString().slice(0, 10);
+      const { data: bel } = await supabaseAdmin.from("lead_actie")
+        .select("datum, door, soort")
+        .in("soort", ["gebeld", "niet opgenomen"])
+        .gte("datum", sinds);
+      const perDag = new Map();
+      for (const a of bel || []) {
+        const dag = String(a.datum).slice(0, 10);
+        if (!perDag.has(dag)) perDag.set(dag, new Map());
+        const m = perDag.get(dag);
+        const wie = a.door || "?";
+        if (!m.has(wie)) m.set(wie, { gesproken: 0, gemist: 0 });
+        if (a.soort === "gebeld") m.get(wie).gesproken++;
+        else m.get(wie).gemist++;
+      }
+      belactiviteit = [...perDag.entries()].sort((a, b) => b[0].localeCompare(a[0])).map(([dag, m]) => ({
+        dag,
+        totaal: [...m.values()].reduce((s, v) => s + v.gesproken + v.gemist, 0),
+        gesproken: [...m.values()].reduce((s, v) => s + v.gesproken, 0),
+        perPersoon: [...m.entries()].map(([door, v]) => ({ door, ...v })).sort((a, b) => (b.gesproken + b.gemist) - (a.gesproken + a.gemist)),
+      }));
+    } catch (e) { /* belactiviteit optioneel */ }
+
+    const data = { status, maanden, views, btw, omzetPerProductgroep, vooruitblik, belactiviteit };
 
     cache = { tijd: Date.now(), data };
     return Response.json(data);
