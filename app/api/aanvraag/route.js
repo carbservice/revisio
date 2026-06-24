@@ -132,6 +132,12 @@ function bronLabel(bron, tracking) {
   return "Organisch (geen advertentie)";
 }
 
+// Leesbaar voertuigtype/pagina waar de aanvraag vandaan komt.
+function segmentLabel(seg) {
+  const m = { automotive: "Automotive (auto)", motorfiets: "Motorfiets", marine: "Marine (boot)", home: "Homepage" };
+  return m[seg] || seg || "onbekend";
+}
+
 // Foto's van de klant: opslaan in Supabase Storage onder een onraadbaar token,
 // en de galerij-link als INTERNE notitie op de concept-offerte zetten (Lukas ziet
 // 'm in Moneybird; niet aan de klant-offerte gehangen, niet meegestuurd).
@@ -236,10 +242,11 @@ export async function POST(req) {
             offerte_state: est.state || "draft",
           }).eq("id", leadId);
         }
-        // Interne notitie met de bron EN de klacht van de klant (zacht, blokkeert niets).
+        // Interne notitie met bron, pagina/voertuigtype EN de klacht (zacht, blokkeert niets).
         try {
           const aanvraagNotitie = [
             `Bron van deze aanvraag: ${bronLabel(bron, d.tracking)}`,
+            d.segment ? `Aangevraagd via: ${segmentLabel(d.segment)}` : null,
             d.klachten ? `Klacht van de klant: ${d.klachten}` : null,
           ].filter(Boolean).join("\n");
           await mb(`estimates/${offerteId}/notes.json`, "POST", { note: { todo: false, note: aanvraagNotitie } });
