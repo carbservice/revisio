@@ -380,10 +380,19 @@ function Dashboard() {
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {pijplijn.map((L) => {
                   const afgewezen = L.status === "afgewezen";
-                  const _delen = (L.bericht || "").split(" | ").map((s) => s.trim()).filter(Boolean);
-                  const _zonderType = _delen.filter((d) => !/^Type:/i.test(d));
-                  const kenmerk = _zonderType[0] || L.carburateur || "";
-                  const klacht = _zonderType.slice(1).join(" · ");
+                  const _ruw = (L.bericht || "").trim();
+                  const _delen = _ruw.split(" | ").map((s) => s.trim()).filter(Boolean);
+                  let kenmerk = "", klacht = "";
+                  if (_delen.length > 1 || /^Type:/i.test(_ruw)) {
+                    // Gestructureerde aanvraag: Type | kenmerk | klacht
+                    const _zt = _delen.filter((d) => !/^Type:/i.test(d));
+                    kenmerk = _zt[0] || L.carburateur || "";
+                    klacht = _zt.slice(1).join(" · ");
+                  } else {
+                    // Vrije tekst = de klacht/het bericht van de klant zelf
+                    kenmerk = L.carburateur || "";
+                    klacht = _ruw;
+                  }
                   return (
                     <div key={L.id} style={{ border: `1px solid ${afgewezen ? "#e0b3a8" : RAND}`, background: afgewezen ? ROOD_BG : "#fff", borderRadius: 10, padding: "10px 12px" }}>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", justifyContent: "space-between" }}>
