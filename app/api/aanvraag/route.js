@@ -91,9 +91,17 @@ const STD_PRODUCTEN = [
   "485911014739543046", // Verbruiksmateriaal & schoonmaakprocedure
   "434480284167046191", // Transparant brandstoffilter
   "418915116419909338", // Aangetekende verzending DHL
+  "445622443033233284", // Carburateur natstralen (renovatie)  -> OPTIONEEL
+  "424857784786355328", // Spoedtoeslag                        -> OPTIONEEL
+];
+
+// Deze twee komen als OPTIONELE regel op de offerte (grijs, niet meegerekend in
+// het totaal), tenzij de klant ze zelf aanvinkt. Moneybird verwacht dan
+// is_optional=true en is_selected=false (zo staan de 182 oude offertes ook).
+const OPTIONELE_PRODUCTEN = new Set([
   "445622443033233284", // Carburateur natstralen (renovatie)
   "424857784786355328", // Spoedtoeslag
-];
+]);
 
 async function maakConceptOfferte(contactId, kenmerk) {
   const estimate = {
@@ -101,9 +109,27 @@ async function maakConceptOfferte(contactId, kenmerk) {
     workflow_id: EST_WORKFLOW,
     document_style_id: DOC_STYLE,
     reference: kenmerk,
-    details_attributes: STD_PRODUCTEN.map((pid) => ({ product_id: pid, amount: "1" })),
+    details_attributes: STD_PRODUCTEN.map((pid) => {
+      const regel = { product_id: pid, amount: "1" };
+      if (OPTIONELE_PRODUCTEN.has(pid)) { regel.is_optional = true; regel.is_selected = false; }
+      return regel;
+    }),
   };
   return mb("estimates.json", "POST", { estimate });
+}
+
+// Leesbare bron-omschrijving voor in de offerte-notitie. Splitst Meta in
+// Instagram/Facebook waar de utm_source dat aangeeft (anders algemeen Meta).
+function bronLabel(bron, tracking) {
+  const s = String((tracking && tracking.utm_source) || "").toLowerCase();
+  if (bron === "google_ads") return "Google Ads (advertentie)";
+  if (bron === "facebook") {
+    if (s.includes("insta") || s === "ig") return "Meta Instagram (advertentie)";
+    if (s.includes("face") || s === "fb") return "Meta Facebook (advertentie)";
+    return "Meta Facebook of Instagram (advertentie)";
+  }
+  if (bron === "marktplaats") return "Marktplaats (advertentie)";
+  return "Organisch (geen advertentie)";
 }
 
 // Foto's van de klant: opslaan in Supabase Storage onder een onraadbaar token,
@@ -210,6 +236,8 @@ export async function POST(req) {
             offerte_state: est.state || "draft",
           }).eq("id", leadId);
         }
+        // Interne notitie met de bron van de aanvraag (zacht, blokkeert niets).
+        try { await mb(`estimates/${offerteId}/notes.json`, "POST", { note: { todo: false, note: `Bron van deze aanvraag: ${bronLabel(bron, d.tracking)}` } }); } catch (e) {}
       } else {
         mbFout = "offerte: " + (est && est._tekst ? est._tekst : "onbekend");
       }
