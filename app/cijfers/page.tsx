@@ -372,9 +372,25 @@ function Dashboard() {
         <ScrollNaarBoven />
         <PaginaKop naam={naam} onUitloggen={uitloggen} titel="Cijfers" />
 
-        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
-          <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Hoe staan we er nu voor</h2>
-          <span style={{ fontSize: 11.5, color: GRIJS }}>live uit Moneybird, {s.ytdLabel}</span>
+        <div style={{ background: "linear-gradient(135deg, #27593f 0%, #1a3c2e 55%, #102a1f 100%)", color: "#fff", borderRadius: 20, padding: "26px 28px", margin: "6px 0 22px", position: "relative", overflow: "hidden", boxShadow: "0 14px 36px rgba(26,60,46,.22)" }}>
+          <div style={{ position: "absolute", top: -80, right: -60, width: 300, height: 300, background: "radial-gradient(circle, rgba(184,150,46,.18), transparent 68%)", borderRadius: "50%" }} />
+          <div style={{ position: "relative" }}>
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,.75)", fontWeight: 600 }}>{groet()}{naam ? `, ${naam}` : ""} · live uit Moneybird, {s.ytdLabel}</div>
+            <div style={{ fontSize: "clamp(22px,3vw,30px)", fontWeight: 700, marginTop: 4 }}>Hoe staan we er nu voor</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px,1fr))", gap: 16, marginTop: 18 }}>
+              {([
+                ["Omzet dit jaar", euro(s.omzet)],
+                ["Nettowinst", euro(s.nettowinst)],
+                ["ROAS (Google+Meta)", data.views.jaar.cijfers.roas != null ? `${data.views.jaar.cijfers.roas.toFixed(2)}x` : "—"],
+                ["Aanvragen dit jaar", String(data.views.jaar.cijfers.aanvragen ?? 0)],
+              ] as [string, string][]).map(([label, val]) => (
+                <div key={label}>
+                  <div style={{ fontSize: "clamp(20px,2.4vw,28px)", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{val}</div>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,.7)", marginTop: 2 }}>{label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 14 }}>
           <StatusTegel kleur={GROEN} icon="bank" titel="Saldo (zonder btw-pot)" waarde={euro(s.saldoExclBtw)} onder="alle rekeningen, btw-spaarpot eraf" />
