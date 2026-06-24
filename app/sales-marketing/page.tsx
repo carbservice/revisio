@@ -21,8 +21,8 @@ type PerBron = { bron: string; leads: number; klanten: number; omzet: number; sp
 type Ltv = { bron: string; klanten: number; omzet: number; gem: number; aandeel: number; aandeelKlanten: number };
 type Data = { perBron: PerBron[]; totaal: { leads: number; klanten: number; omzet: number; spend: number; omzetBetaald: number; roas: number | null }; leads: Lead[]; spend: { google_ads: number; facebook: number; marktplaats: number }; ltv: Ltv[]; ltvTotaal: { klanten: number; omzet: number; gem: number } };
 
-const STATUS = ["nieuw", "gebeld", "uitstellen", "geaccepteerd", "afgewezen"];
-const STATUS_KLEUR: Record<string, string> = { nieuw: "#6b7280", gebeld: "#2f6f8f", uitstellen: "#b07d12", geaccepteerd: GROEN, afgewezen: ROOD };
+const STATUS = ["nieuw", "gebeld", "vernieuwde offerte", "uitstellen", "geaccepteerd", "afgewezen"];
+const STATUS_KLEUR: Record<string, string> = { nieuw: "#6b7280", gebeld: "#2f6f8f", "vernieuwde offerte": "#0d9488", uitstellen: "#b07d12", geaccepteerd: GROEN, afgewezen: ROOD };
 const EIGENAREN = ["", "CG", "LE", "JM", "LV"];
 const BRON_LABEL: Record<string, string> = { google_ads: "Google Ads", facebook: "Facebook", marktplaats: "Marktplaats", organisch: "Organisch" };
 const bronLabel = (b: string) => BRON_LABEL[b] || b;
@@ -387,7 +387,16 @@ function Dashboard() {
                         </div>
                         <div style={{ fontSize: 12, color: GRIJS, whiteSpace: "nowrap" }}>{datkort(L.datum)}</div>
                       </div>
-                      <div style={{ fontSize: 12.5, color: GRIJS, margin: "4px 0 8px" }}>{L.email}{L.telefoon ? ` · ${L.telefoon}` : ""}{L.carburateur ? ` · ${L.carburateur}` : ""}</div>
+                      {L.telefoon
+                        ? <a href={`tel:${L.telefoon.replace(/[^\d+]/g, "")}`} style={{ display: "inline-block", margin: "6px 0 2px", fontSize: 23, fontWeight: 800, color: GROEN, textDecoration: "none", letterSpacing: ".5px" }}>📞 {L.telefoon}</a>
+                        : <div style={{ margin: "6px 0 2px", fontSize: 14, color: ROOD, fontWeight: 700 }}>⚠ Geen telefoonnummer</div>}
+                      <div style={{ fontSize: 12.5, color: GRIJS, marginBottom: 8 }}>{L.email}{L.carburateur ? ` · ${L.carburateur}` : ""}</div>
+                      {L.bericht && (
+                        <div style={{ marginBottom: 8, background: "#fbf7ec", border: "1px solid #ecdcae", borderRadius: 8, padding: "8px 11px", fontSize: 13.5, color: TEKST, lineHeight: 1.5 }}>
+                          <span style={{ fontSize: 11, fontWeight: 800, color: "#9a7b1f", textTransform: "uppercase", letterSpacing: 0.4, display: "block", marginBottom: 2 }}>📋 Aanvraag · klacht</span>
+                          {L.bericht.replace(/^Type:[^|]*\|\s*/i, "").split(" | ").join(" · ")}
+                        </div>
+                      )}
 
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
                         <select value={L.status || "nieuw"} onChange={(e) => wijzigStatus(L, e.target.value)} style={{ ...sel, borderColor: STATUS_KLEUR[L.status || "nieuw"], color: STATUS_KLEUR[L.status || "nieuw"], fontWeight: 700 }}>
