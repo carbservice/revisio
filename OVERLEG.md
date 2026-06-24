@@ -266,6 +266,12 @@ Intern kanban-/planningsbord op `/planning`, dat onze Trello vervangt. Het bord 
 
 **Open voor morgen (24 juni)**: GA4-sleutelgebeurtenis + Ads-import; betere voertuig-specifieke foto's per pagina; homepage aanscherpen, dan `home` + `diensten` subdomeinen toevoegen en Strikingly "Home/Offerte" erheen -> homepage-leads ook van Zapier af.
 
+### Gedaan op 24 juni 2026 - cijfer-dashboard, logs met datum+tijd, fotografie-funnel Rin
+- **Cijfer-dashboard (/cijfers)**: actieve Offerte-aanvragen-teller (periode-bewust: maand/kwartaal/jaar), plus ROAS (Google + Meta) en Omzet uit advertenties als sleepbare, periode-bewuste kaarten. Futuristische gradient-groene hero met de headline-KPI's. Aanvragen + omzet uit de Supabase-leads, spend uit de bestaande maand-rapporten (geen extra Moneybird-calls).
+- **Logs overal met volledige datum + tijd** (dag, maand, jaar, tijd): werkbon-logspoor en tijdregels, planning-activiteitenlog en de lead-acties.
+- **Zijproject /rin**: fotografie-funnel voor Rin (YourPersonalPaparazzi) in haar eigen merk en toon. Aanvraag -> /api/rin -> tabel `rin_aanvragen`. Samen verder op dinsdag 30 juni 19.00.
+- Open: GA4-sleutelgebeurtenis + Google Ads-import, Resend-mailsleutel, dagelijkse auto-sync (omzet/leads/spend), betere foto's op de landingspagina's.
+
 ## Livegang (13 juni 2026)
 
 - Monteur-app gaat live; eerste klant gaat live op het portaal.

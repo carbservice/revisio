@@ -248,3 +248,25 @@
 - Betere, voertuig-specifieke foto's per pagina (nu demo-placeholders).
 - Homepage aanscherpen (boodschap/FAQ/secties), dan home + diensten subdomeinen toevoegen en Strikingly "Home/Offerte" erheen -> homepage-leads ook van Zapier af.
 - Pas als alles via de subdomeinen loopt: Zapier + HubSpot uitzetten.
+
+## Dag 10 · 24 juni 2026
+**Cijfers in een nieuw jasje en alles met datum + tijd.**
+
+### Cijfer-dashboard uitgebouwd (/cijfers)
+- Actieve **Offerte-aanvragen-teller** die meebeweegt met de filter maand / kwartaal / jaar (uit de Supabase-leads).
+- **ROAS (Google + Meta)** en **Omzet uit advertenties** als periode-bewuste, sleepbare kaarten. De spend komt uit de maand-rapporten die er al waren (geen extra Moneybird-calls); het Marktplaats-detail blijft op /sales-marketing.
+- **Futuristische gradient-groene hero** met de headline-KPI's: omzet, nettowinst, ROAS en aanvragen dit jaar.
+- Learning: door de aanvragen + ROAS aan de bestaande maand/views-structuur te hangen, tellen alle filters automatisch correct mee.
+
+### Logs: overal volledige datum + tijd
+- `datumTijd` krijgt het jaar erbij (werkbon-logspoor en tijdregels), de planning-activiteitenlog toont nu altijd de volledige datum + tijd in plaats van alleen de tijd bij vandaag, en de lead-acties krijgen het jaar erbij.
+
+### Fotografie-funnel voor Rin (/rin, zijproject)
+- /rin omgebouwd tot een fotografie-funnel voor **YourPersonalPaparazzi** (Rin Hortulanus), in haar eigen merk en toon (gebaseerd op yourpersonalpaparazzi.eu). Aanvraag → /api/rin → tabel `rin_aanvragen` (zacht falend). Open: SQL draaien, eigen URL koppelen, echte foto's. Samen verder op dinsdag 30 juni.
+
+### Open / volgende
+- GA4 `generate_lead` als sleutelgebeurtenis bevestigen + importeren in Google Ads.
+- Resend-mailsleutel → automatische bevestigingsmail naar de klant.
+- Dagelijkse auto-sync (cron) voor omzet/leads/spend; nu nog momentopnames.
+- Betere, voertuig-specifieke foto's op de landingspagina's.
+- planning-schema.sql eenmalig in Supabase draaien; service-role-key roteren + rol-test.
