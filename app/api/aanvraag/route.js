@@ -168,7 +168,7 @@ async function uploadFotosEnNotitie(fotos, offerteId) {
 // Mailtje naar Cyriel via Resend (alleen als RESEND_API_KEY is ingesteld).
 async function stuurMelding(d, voertuigTekst, offerteNr) {
   const key = process.env.RESEND_API_KEY;
-  const naar = process.env.AANVRAAG_MAIL || "carburateurservice@gmail.com";
+  const naar = process.env.AANVRAAG_MAIL || "info@carbservice.nl";
   const van = process.env.AANVRAAG_MAIL_VAN || "Revisio <onboarding@resend.dev>";
   if (!key) return false;
   const tekst =
@@ -187,6 +187,25 @@ async function stuurMelding(d, voertuigTekst, offerteNr) {
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({ from: van, to: [naar], subject: `Nieuwe aanvraag: ${d.voornaam} ${d.achternaam}`, text: tekst }),
     });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// WhatsApp-melding bij een nieuwe lead, naar het eigen zakelijke nummer via
+// CallMeBot (gratis, 1-op-1). Zacht falend: doet niets zonder WHATSAPP_APIKEY.
+async function stuurWhatsapp(d, voertuigTekst, offerteNr) {
+  const apikey = process.env.WHATSAPP_APIKEY;
+  const nummer = process.env.WHATSAPP_NUMMER || "31653864208";
+  if (!apikey) return false;
+  const tekst =
+    `Dit is een automatisch bericht van Revisio.\n\n` +
+    `Er is een nieuwe lead: ${voertuigTekst || "onbekend"}\n` +
+    `Van: ${d.voornaam} ${d.achternaam} (${d.telefoon || "-"})` +
+    (offerteNr ? `\nConcept-offerte: ${offerteNr}` : "");
+  try {
+    await fetch(`https://api.callmebot.com/whatsapp.php?phone=${nummer}&text=${encodeURIComponent(tekst)}&apikey=${apikey}`);
     return true;
   } catch {
     return false;
@@ -270,6 +289,7 @@ export async function POST(req) {
 
   // 4) Melding (zacht).
   await stuurMelding(d, kenmerk, offerteNr);
+  await stuurWhatsapp(d, kenmerk, offerteNr);
 
   return json({ ok: true, voertuig: kenmerk, offerte: offerteNr, fotos: fotoInfo ? fotoInfo.aantal : 0, mbFout });
 }
