@@ -420,13 +420,10 @@ function Dashboard() {
                         ? <a href={`tel:${L.telefoon.replace(/[^\d+]/g, "")}`} style={{ display: "inline-block", margin: "6px 0 2px", fontSize: 23, fontWeight: 800, color: GROEN, textDecoration: "none", letterSpacing: ".5px" }}>📞 {L.telefoon}</a>
                         : <div style={{ margin: "6px 0 2px", fontSize: 14, color: ROOD, fontWeight: 700 }}>⚠ Geen telefoonnummer</div>}
                       <div style={{ fontSize: 12.5, color: GRIJS, marginBottom: 8 }}>{L.email}{L.carburateur ? ` · ${L.carburateur}` : ""}</div>
-                      {(kenmerk || klacht || L.bericht) && (
-                        <div style={{ marginBottom: 8, background: "#fbf7ec", border: "1px solid #ecdcae", borderRadius: 8, padding: "9px 12px", lineHeight: 1.5 }}>
-                          {kenmerk && <div style={{ fontSize: 13.5, color: TEKST }}><span style={{ fontSize: 11, fontWeight: 800, color: "#9a7b1f", textTransform: "uppercase", letterSpacing: 0.4, marginRight: 6 }}>Kenmerk</span>{kenmerk}</div>}
-                          {klacht && <div style={{ fontSize: 15, color: TEKST, marginTop: 4, fontWeight: 700 }}><span style={{ fontSize: 11, fontWeight: 800, color: "#9a7b1f", textTransform: "uppercase", letterSpacing: 0.4, marginRight: 6 }}>Klacht</span>{klacht}</div>}
-                          {!kenmerk && !klacht && L.bericht && <div style={{ fontSize: 13.5, color: TEKST }}>{L.bericht}</div>}
-                        </div>
-                      )}
+                      <div style={{ marginBottom: 8, background: "#fbf7ec", border: "1px solid #ecdcae", borderRadius: 8, padding: "9px 12px", lineHeight: 1.5 }}>
+                        <div style={{ fontSize: 13.5, color: TEKST }}><span style={{ fontSize: 11, fontWeight: 800, color: "#9a7b1f", textTransform: "uppercase", letterSpacing: 0.4, marginRight: 6 }}>Kenmerk</span>{kenmerk || <span style={{ color: GRIJS, fontStyle: "italic" }}>niet opgegeven</span>}</div>
+                        <div style={{ fontSize: klacht ? 15 : 13.5, color: TEKST, marginTop: 4, fontWeight: klacht ? 700 : 400 }}><span style={{ fontSize: 11, fontWeight: 800, color: "#9a7b1f", textTransform: "uppercase", letterSpacing: 0.4, marginRight: 6 }}>Klacht</span>{klacht || <span style={{ color: GRIJS, fontStyle: "italic", fontWeight: 400 }}>niet opgegeven</span>}</div>
+                      </div>
 
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
                         <select value={L.status || "nieuw"} onChange={(e) => wijzigStatus(L, e.target.value)} style={{ ...sel, borderColor: STATUS_KLEUR[L.status || "nieuw"], color: STATUS_KLEUR[L.status || "nieuw"], fontWeight: 700 }}>
