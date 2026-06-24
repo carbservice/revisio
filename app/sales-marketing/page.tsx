@@ -23,6 +23,8 @@ type Data = { perBron: PerBron[]; totaal: { leads: number; klanten: number; omze
 
 const STATUS = ["nieuw", "gebeld", "vernieuwde offerte", "uitstellen", "geaccepteerd", "afgewezen"];
 const STATUS_KLEUR: Record<string, string> = { nieuw: "#6b7280", gebeld: "#2f6f8f", "vernieuwde offerte": "#0d9488", uitstellen: "#b07d12", geaccepteerd: GROEN, afgewezen: ROOD };
+// Sorteervolgorde: te-bellen bovenaan, afgehandelde leads zakken naar onderen.
+const STATUS_PRIO: Record<string, number> = { nieuw: 0, "vernieuwde offerte": 1, gebeld: 2, uitstellen: 3, geaccepteerd: 4, afgewezen: 5 };
 const EIGENAREN = ["", "CG", "LE", "JM", "LV"];
 const BRON_LABEL: Record<string, string> = { google_ads: "Google Ads", facebook: "Facebook", marktplaats: "Marktplaats", organisch: "Organisch" };
 const bronLabel = (b: string) => BRON_LABEL[b] || b;
@@ -176,6 +178,10 @@ function Dashboard() {
     const vanMij = !mijn || L.eigenaar === mijnCode;
     const raakt = !zoekTerm || [L.naam, L.email, L.bedrijf, L.telefoon, L.carburateur, L.offerte_nummer].some((v) => (v || "").toLowerCase().includes(zoekTerm));
     return inPijp && vanMij && raakt;
+  }).sort((a, b) => {
+    const pa = STATUS_PRIO[a.status || "nieuw"] ?? 2, pb = STATUS_PRIO[b.status || "nieuw"] ?? 2;
+    if (pa !== pb) return pa - pb;            // op te volgen bovenaan, afgerond onderaan
+    return (b.datum || "").localeCompare(a.datum || ""); // binnen een groep: nieuwste eerst
   });
 
   return (
@@ -405,7 +411,8 @@ function Dashboard() {
                         <select value={L.eigenaar || ""} onChange={(e) => wijzigLead(L.id, "eigenaar", e.target.value)} style={sel}>
                           {EIGENAREN.map((e) => <option key={e} value={e}>{e || "— eigenaar —"}</option>)}
                         </select>
-                        <button onClick={() => belActie(L)} style={knopje}>📞 Gebeld</button>
+                        <button onClick={() => belActie(L)} style={knopje} title="Klant gesproken">📞 Gesproken</button>
+                        <button onClick={() => logActie(L, "niet opgenomen", "")} style={{ ...knopje, color: ROOD, borderColor: "#e6b8ad", background: ROOD_BG }} title="Gebeld, maar de klant nam niet op">📵 Niet opgenomen</button>
                         {L.status === "uitstellen" && <input type="date" value={L.opvolgen_op || ""} onChange={(e) => wijzigLead(L.id, "opvolgen_op", e.target.value)} title="Opvolgen op" style={{ ...sel, padding: "5px 8px" }} />}
                         {L.offerte_id && L.offerte_url && <a href={L.offerte_url} target="_blank" rel="noreferrer" style={{ ...knopje, color: GRIJS, textDecoration: "none" }}>Klant laten tekenen ↗</a>}
                       </div>
