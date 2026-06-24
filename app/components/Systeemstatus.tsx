@@ -37,12 +37,12 @@ export default function Systeemstatus() {
   const geladen = services !== null;
   const vind = (frag: string) => (services || []).find((s) => s.naam.includes(frag));
   const rijen = [
-    { kort: "App", ok: appOk, ms: null as number | null },
-    { kort: "API", ok: appOk, ms: null as number | null },
+    { kort: "Revisio app", ok: appOk, ms: null as number | null },
+    { kort: "Revisio API", ok: appOk, ms: null as number | null },
     { kort: "Moneybird", ok: !!vind("Moneybird")?.ok, ms: vind("Moneybird")?.ms ?? null },
     { kort: "Supabase", ok: !!vind("Supabase")?.ok, ms: vind("Supabase")?.ms ?? null },
     { kort: "GitHub", ok: !!vind("GitHub")?.ok, ms: vind("GitHub")?.ms ?? null },
-    { kort: "B2 Backup", ok: !!vind("Backblaze")?.ok, ms: vind("Backblaze")?.ms ?? null },
+    { kort: "Backblaze B2 backup", ok: !!vind("Backblaze")?.ok, ms: vind("Backblaze")?.ms ?? null },
   ];
 
   const kaart: CSSProperties = { background: KAART_BG, border: `1px solid ${RAND}`, borderRadius: 14, padding: "12px 16px", marginBottom: 20, boxShadow: KAART_SCHADUW };
