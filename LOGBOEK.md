@@ -264,7 +264,29 @@
 ### Fotografie-funnel voor Rin (/rin, zijproject)
 - /rin omgebouwd tot een fotografie-funnel voor **YourPersonalPaparazzi** (Rin Hortulanus), in haar eigen merk en toon (gebaseerd op yourpersonalpaparazzi.eu). Aanvraag → /api/rin → tabel `rin_aanvragen` (zacht falend). Open: SQL draaien, eigen URL koppelen, echte foto's. Samen verder op dinsdag 30 juni.
 
+### Sales-pijplijn flink verbeterd (/sales-marketing)
+- Leadkaart overzichtelijk: **telefoonnummer groot en klikbaar** (tel:-link), **Kenmerk en Klacht altijd apart** en duidelijk (met "niet opgegeven" als een veld leeg is, zodat elke kaart consistent/waterdicht is), **changelog** met eigen kop en groter.
+- Data-inzicht: van 40 recente leads zijn er maar 2 het gestructureerde aanvraag-formaat; de rest is vrije tekst (`bericht` = klacht, `carburateur` = kenmerk). De parsing is daarop afgestemd.
+- Nieuwe status **"vernieuwde offerte"**; pijplijn **sorteert op status** (te-bellen bovenaan, afgehandelde zakken naar onderen).
+- Belknop: alleen nog **"Niet opgenomen"** (de "Gesproken"-knop is op verzoek verwijderd).
+- **Geaccepteerd** wordt gelogd (datum + persoon) maar doet **geen actie meer in Moneybird**; de gewonnen lead blijft staan met een feestelijke **groene balk + vlaggetjes-slinger** ("GEWONNEN, YEAH BABY!"). Telt mee als gewonnen.
+- **"Gewonnen"-filter + teller** bij de pijplijn.
+
+### Cijfer-dashboard: sales-activiteit per dag
+- Nieuwe sleepbare kaart **"Sales-activiteit per dag"**: per dag en per persoon de gebelde/gemiste leads en de gewonnen deals (laatste 14 dagen, uit `lead_actie`).
+
+### Meldingen + kleine UX
+- **WhatsApp-melding bij elke nieuwe lead** ingebouwd (CallMeBot → +31653864208); wacht alleen nog op de `WHATSAPP_APIKEY` in Vercel. Ontdekt: de aanvraag-mail ging nooit af doordat de **Resend-sleutel** ontbreekt; ontvanger staat nu standaard op info@carbservice.nl.
+- Statusbalk toont **volledige namen** (Revisio app, Revisio API, Backblaze B2 backup, ...).
+- Auto-uitlog van 2 uur naar **18 uur** (de 2-uurs-cap logde mensen midden in de werkdag uit).
+
+### Stephan (Google Ads): SEO-advies
+- Stephan adviseert de landingspagina's als **subdirectory** (carbservice.nl/auto-carburateur-reviseren etc.) i.p.v. subdomeinen. Plan: **Cloudflare path-routing** (alleen die paden naar onze Vercel-backend, de rest rechtstreeks naar Strikingly), zodat de webshop niet trager wordt. Feedback gelogd, concept-reply opgesteld. Stephan pakt de Ads-conversie (primary) + offline conversies op.
+
 ### Open / volgende
+- **Beslissen + bouwen**: Stephan-subdirectory via **Cloudflare path-routing** (apex-routing, webshop eerst testen).
+- **Volgende ronde**: dag-afsluiting per medewerker (push/WhatsApp/mail): "Naam: X leads behandeld, X geaccepteerd".
+- `WHATSAPP_APIKEY` in Vercel zetten (activeren vanaf +31653864208) en de melding live testen.
 - GA4 `generate_lead` als sleutelgebeurtenis bevestigen + importeren in Google Ads.
 - Resend-mailsleutel → automatische bevestigingsmail naar de klant.
 - Dagelijkse auto-sync (cron) voor omzet/leads/spend; nu nog momentopnames.

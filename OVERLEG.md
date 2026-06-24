@@ -270,7 +270,11 @@ Intern kanban-/planningsbord op `/planning`, dat onze Trello vervangt. Het bord 
 - **Cijfer-dashboard (/cijfers)**: actieve Offerte-aanvragen-teller (periode-bewust: maand/kwartaal/jaar), plus ROAS (Google + Meta) en Omzet uit advertenties als sleepbare, periode-bewuste kaarten. Futuristische gradient-groene hero met de headline-KPI's. Aanvragen + omzet uit de Supabase-leads, spend uit de bestaande maand-rapporten (geen extra Moneybird-calls).
 - **Logs overal met volledige datum + tijd** (dag, maand, jaar, tijd): werkbon-logspoor en tijdregels, planning-activiteitenlog en de lead-acties.
 - **Zijproject /rin**: fotografie-funnel voor Rin (YourPersonalPaparazzi) in haar eigen merk en toon. Aanvraag -> /api/rin -> tabel `rin_aanvragen`. Samen verder op dinsdag 30 juni 19.00.
-- Open: GA4-sleutelgebeurtenis + Google Ads-import, Resend-mailsleutel, dagelijkse auto-sync (omzet/leads/spend), betere foto's op de landingspagina's.
+- **Sales-pijplijn (/sales-marketing)**: leadkaart overzichtelijk (telefoon groot + klikbaar, Kenmerk en Klacht altijd apart met "niet opgegeven"-fallback, grotere changelog), nieuwe status "vernieuwde offerte", pijplijn-sortering (afgehandelde zakken naar onderen), alleen nog "Niet opgenomen"-knop, "Gewonnen"-filter + teller. Geaccepteerd wordt gelogd maar doet niets in Moneybird en geeft een feestelijke groene balk; telt mee als gewonnen.
+- **Cijfer-dashboard**: nieuwe sleepbare kaart "Sales-activiteit per dag" (gebeld/gemist/gewonnen per persoon, laatste 14 dagen).
+- **Meldingen + UX**: WhatsApp-melding bij nieuwe lead ingebouwd (CallMeBot -> +31653864208, wacht op WHATSAPP_APIKEY); aanvraag-mail ging nooit af door ontbrekende Resend-sleutel (ontvanger nu info@carbservice.nl); statusbalk volledige namen; auto-uitlog 2u -> 18u.
+- **Stephan (Google Ads)**: adviseert subdirectory-URL's (carbservice.nl/auto-carburateur-reviseren); plan = Cloudflare path-routing met Strikingly als fallback. Stephan pakt de Ads-conversie (primary) + offline conversies.
+- Open: Cloudflare-routing voor de subdirectory-URL's, WHATSAPP_APIKEY in Vercel, GA4-sleutelgebeurtenis + Google Ads-import, Resend-mailsleutel, dagelijkse auto-sync (omzet/leads/spend), betere foto's op de landingspagina's.
 
 ## Livegang (13 juni 2026)
 
@@ -307,6 +311,7 @@ Intern kanban-/planningsbord op `/planning`, dat onze Trello vervangt. Het bord 
 - Oude foto's alsnog comprimeren (opschoonscript).
 - Opschoning van afgeronde en betaalde klussen ouder dan bijvoorbeeld twee jaar, altijd handmatig te starten.
 - Automatisch klant-mailtje met volglink bij een nieuwe update of het laatste stadium.
+- Dag-afsluiting per medewerker: einde dag een push (WhatsApp/mail) met "Naam: X leads behandeld, X geaccepteerd" (geaccepteerd alleen tonen als er die dag iets is). Data zit al in `lead_actie`.
 
 ## Belangrijke aandachtspunten
 
