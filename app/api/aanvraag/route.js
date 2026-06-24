@@ -103,7 +103,10 @@ const OPTIONELE_PRODUCTEN = new Set([
   "424857784786355328", // Spoedtoeslag
 ]);
 
-async function maakConceptOfferte(contactId, kenmerk) {
+// Moneybird custom field "Klacht:" op de estimate (verschijnt onder het kenmerk).
+const KLACHT_FIELD = "441017599027840196";
+
+async function maakConceptOfferte(contactId, kenmerk, klachten) {
   const estimate = {
     contact_id: contactId,
     workflow_id: EST_WORKFLOW,
@@ -115,6 +118,7 @@ async function maakConceptOfferte(contactId, kenmerk) {
       return regel;
     }),
   };
+  if (klachten) estimate.custom_fields_attributes = [{ id: KLACHT_FIELD, value: klachten }];
   return mb("estimates.json", "POST", { estimate });
 }
 
@@ -231,7 +235,7 @@ export async function POST(req) {
   if (ADMIN && TOKEN) {
     const contact = await vindOfMaakContact(d);
     if (contact && contact.id) {
-      const est = await maakConceptOfferte(contact.id, kenmerk);
+      const est = await maakConceptOfferte(contact.id, kenmerk, d.klachten);
       if (est && est.id) {
         offerteNr = est.estimate_id || null;
         offerteId = String(est.id);
@@ -242,12 +246,12 @@ export async function POST(req) {
             offerte_state: est.state || "draft",
           }).eq("id", leadId);
         }
-        // Interne notitie met bron, pagina/voertuigtype EN de klacht (zacht, blokkeert niets).
+        // Interne notitie met bron + pagina/voertuigtype (de klacht zelf staat in
+        // het eigen Moneybird-veld "Klacht:" onder het kenmerk, niet in de notitie).
         try {
           const aanvraagNotitie = [
             `Bron van deze aanvraag: ${bronLabel(bron, d.tracking)}`,
             d.segment ? `Aangevraagd via: ${segmentLabel(d.segment)}` : null,
-            d.klachten ? `Klacht van de klant: ${d.klachten}` : null,
           ].filter(Boolean).join("\n");
           await mb(`estimates/${offerteId}/notes.json`, "POST", { note: { todo: false, note: aanvraagNotitie } });
         } catch (e) {}
