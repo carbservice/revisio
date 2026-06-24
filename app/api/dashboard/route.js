@@ -2,6 +2,7 @@
 // app/api/dashboard/route.js
 
 import { vereisAdmin } from "@/lib/auth-server";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 const ADMIN = process.env.MONEYBIRD_ADMIN;
 const TOKEN = process.env.MONEYBIRD_TOKEN;
@@ -136,6 +137,24 @@ const MAANDEN = ["januari","februari","maart","april","mei","juni","juli","augus
 const p2 = (n) => String(n).padStart(2, "0");
 const kort = (i) => MAANDEN[i].charAt(0).toUpperCase() + MAANDEN[i].slice(1, 3);
 
+// Lead-bron -> betaald kanaal (organisch/onbekend = geen kanaal).
+function kanaalVanBron(bron) {
+  if (bron === "google_ads") return "google_ads";
+  if (bron === "facebook") return "facebook";
+  if ((bron || "").toLowerCase().includes("markt")) return "marktplaats";
+  return null;
+}
+// Advertentie-spend (Google Ads + Facebook Ads) uit een maand-winst-verliesrapport.
+function adSpendUitRaw(raw, naamVan) {
+  let s = 0;
+  const exp = (raw.expenses_by_ledger_account && raw.expenses_by_ledger_account.ledger_accounts) || [];
+  for (const a of exp) {
+    const nm = naamVan[a.ledger_account_id] || "";
+    if (nm === "Google Ads" || nm === "Facebook Ads") s += Math.abs(Number(a.value) || 0);
+  }
+  return s;
+}
+
 export async function GET(req) {
   // Portier: alleen ingelogde admins mogen de cijfers ophalen.
   const poort = await vereisAdmin(req);
@@ -248,6 +267,37 @@ export async function GET(req) {
     const ontvangen = btwVan(verkoopKwartaal);
     const voorbelasting = btwVan(inkoopKwartaal) + btwVan(bonnenKwartaal);
     const btw = { ontvangen, voorbelasting, afTeDragen: ontvangen - voorbelasting };
+
+    // Offerte-aanvragen (leads) + omzet uit advertenties + ROAS per maand/periode.
+    // Aanvragen en omzet uit Supabase; spend (Google + Meta) uit de maand-rapporten
+    // die hierboven al zijn opgehaald, dus geen extra Moneybird-calls. Marktplaats-
+    // detail blijft op /sales-marketing; deze ROAS is Google + Meta.
+    try {
+      const { data: leadsRows } = await supabaseAdmin.from("leads")
+        .select("datum, bron, omzet_excl")
+        .gte("datum", `${Y}-01-01`).lt("datum", `${Y + 1}-01-01`);
+      const aanvPM = Array(12).fill(0), omzetAdsPM = Array(12).fill(0);
+      for (const r of leadsRows || []) {
+        const mn = Number(String(r.datum).slice(5, 7)) - 1;
+        if (mn < 0 || mn > 11) continue;
+        aanvPM[mn]++;
+        const k = kanaalVanBron(r.bron);
+        if (k === "google_ads" || k === "facebook") omzetAdsPM[mn] += Number(r.omzet_excl || 0);
+      }
+      const spendPM = Array(12).fill(0);
+      for (let i = 0; i <= curM; i++) spendPM[i] = adSpendUitRaw(curRaws[i], naamVan);
+      const zet = (cijfers, from, to) => {
+        let a = 0, o = 0, sp = 0;
+        for (let i = from; i <= to; i++) { a += aanvPM[i]; o += omzetAdsPM[i]; sp += spendPM[i]; }
+        cijfers.aanvragen = a;
+        cijfers.omzetAds = Math.round(o * 100) / 100;
+        cijfers.adSpend = Math.round(sp * 100) / 100;
+        cijfers.roas = sp > 0 ? o / sp : null;
+      };
+      for (let i = 0; i <= curM; i++) zet(maanden[i].cijfers, i, i);
+      zet(views.kwartaal.cijfers, qStart, M);
+      zet(views.jaar.cijfers, 0, M);
+    } catch (e) { /* marketing-cijfers optioneel; blokkeren de financiele cijfers niet */ }
 
     const data = { status, maanden, views, btw, omzetPerProductgroep, vooruitblik };
 

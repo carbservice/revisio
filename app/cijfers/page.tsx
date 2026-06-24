@@ -34,6 +34,7 @@ const UITLEG: Record<string, string> = {
 
 const DEFAULT_VOLGORDE = [
   "omzet", "brutomarge", "nettowinst", "kosten",
+  "aanvragen", "omzetAds", "roas",
   "productgroep",
   "margeChart",
   "closing",
@@ -273,6 +274,18 @@ function Dashboard() {
       case "brutomarge": return kpiKaart("brutomarge", "Brutomarge", GROEN, "percent", "brutomarge_pct");
       case "nettowinst": return kpiKaart("nettowinst", "Nettowinst", GROEN, "up", "netto_pct");
       case "kosten": return kpiKaart("kosten", "Kosten", GOUD, "down", undefined, false);
+      case "aanvragen": {
+        const n = actief.cijfers.aanvragen;
+        return (<>{kaartKop(GROEN, "inkomend", "Offerte-aanvragen")}<div style={waardeGroot}>{n == null ? "—" : n}</div><div style={sub}>nieuwe aanvragen in {actief.huidigLabel}</div>{actief.loopt && <div style={{ fontSize: 11.5, color: GRIJS, marginTop: 6, fontStyle: "italic" }}>deze maand loopt nog</div>}</>);
+      }
+      case "omzetAds": {
+        const o = actief.cijfers.omzetAds;
+        return (<>{kaartKop(GOUD, "euro", "Omzet uit advertenties")}<div style={waardeGroot}>{euro(o || 0)}</div><div style={sub}>uit Google + Meta-leads, {actief.huidigLabel}</div></>);
+      }
+      case "roas": {
+        const r = actief.cijfers.roas, sp = actief.cijfers.adSpend, o = actief.cijfers.omzetAds;
+        return (<>{kaartKop(GROEN, "doel", "ROAS (Google + Meta)")}<div style={waardeGroot}>{r == null ? "—" : `${r.toFixed(2)}x`}</div><div style={sub}>{sp ? `${euro(o || 0)} omzet ÷ ${euro(sp)} spend` : "geen advertentiekosten deze periode"}</div></>);
+      }
       case "productgroep": {
         const pg = data.omzetPerProductgroep;
         if (!pg || !pg.groepen || pg.groepen.length === 0) return null;
