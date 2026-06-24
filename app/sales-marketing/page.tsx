@@ -403,7 +403,7 @@ function Dashboard() {
                               <span key={i} style={{ width: 0, height: 0, borderLeft: "6px solid transparent", borderRight: "6px solid transparent", borderTop: `11px solid ${["#ffd43b", "#ff8787", "#ffffff", "#74c0fc", "#f783ac"][i % 5]}` }} />
                             ))}
                           </div>
-                          <div style={{ textAlign: "center", color: "#fff", fontWeight: 800, fontSize: 14, letterSpacing: ".5px" }}>🎉 Gewonnen! Feest! 🎉</div>
+                          <div style={{ textAlign: "center", color: "#fff", fontWeight: 800, fontSize: 14, letterSpacing: ".5px" }}>🎉 GEWONNEN, YEAH BABY! 🎉</div>
                         </div>
                       )}
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", justifyContent: "space-between" }}>
