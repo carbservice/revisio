@@ -236,8 +236,14 @@ export async function POST(req) {
             offerte_state: est.state || "draft",
           }).eq("id", leadId);
         }
-        // Interne notitie met de bron van de aanvraag (zacht, blokkeert niets).
-        try { await mb(`estimates/${offerteId}/notes.json`, "POST", { note: { todo: false, note: `Bron van deze aanvraag: ${bronLabel(bron, d.tracking)}` } }); } catch (e) {}
+        // Interne notitie met de bron EN de klacht van de klant (zacht, blokkeert niets).
+        try {
+          const aanvraagNotitie = [
+            `Bron van deze aanvraag: ${bronLabel(bron, d.tracking)}`,
+            d.klachten ? `Klacht van de klant: ${d.klachten}` : null,
+          ].filter(Boolean).join("\n");
+          await mb(`estimates/${offerteId}/notes.json`, "POST", { note: { todo: false, note: aanvraagNotitie } });
+        } catch (e) {}
       } else {
         mbFout = "offerte: " + (est && est._tekst ? est._tekst : "onbekend");
       }
