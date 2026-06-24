@@ -226,6 +226,7 @@ export async function POST(req) {
       carburateur: d.carburateur || null,
       bericht: [d.segment ? `Type: ${d.segment}` : null, kenmerk, d.klachten].filter(Boolean).join(" | ") || null,
       bron,
+      segment: d.segment || null,
     }).select("id").single();
     leadId = data ? data.id : null;
   } catch (e) { /* lead-insert mag de rest niet blokkeren */ }
