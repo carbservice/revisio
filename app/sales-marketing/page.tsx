@@ -413,7 +413,7 @@ function Dashboard() {
                       {(L.acties || []).length > 0 && (
                         <div style={{ marginTop: 8, borderTop: `1px solid ${RAND}`, paddingTop: 6 }}>
                           {(L.acties || []).slice(0, 4).map((a) => (
-                            <div key={a.id} style={{ fontSize: 11.5, color: GRIJS }}>• {a.door || "?"} {a.soort}{a.tekst ? ` — ${a.tekst}` : ""} · {new Date(a.datum).toLocaleString("nl-NL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</div>
+                            <div key={a.id} style={{ fontSize: 11.5, color: GRIJS }}>• {a.door || "?"} {a.soort}{a.tekst ? `: ${a.tekst}` : ""} · {new Date(a.datum).toLocaleString("nl-NL", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</div>
                           ))}
                         </div>
                       )}

@@ -547,10 +547,7 @@ function datumKort(iso: string | null | undefined): string {
 function tijd(iso: string): string {
   const d = new Date(iso);
   if (!Number.isFinite(d.getTime())) return "";
-  const vandaag = new Date();
-  const zelfdeDag = d.toDateString() === vandaag.toDateString();
-  const uur = d.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" });
-  return zelfdeDag ? uur : `${d.toLocaleDateString("nl-NL", { day: "numeric", month: "short" })} ${uur}`;
+  return d.toLocaleString("nl-NL", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
 // --- Stijl -----------------------------------------------------------------
