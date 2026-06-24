@@ -542,6 +542,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
   // ====== Koppeling met de Revisio-backend ======
   var BACKEND = "https://revisio-umber.vercel.app/api/aanvraag";
+  var KENTEKEN_VELD = true;
 
   // Bron onthouden: bij binnenkomst gclid/utm/fbclid opslaan, zodat de bron
   // bewaard blijft ook als iemand eerst rondklikt voor 'ie het formulier invult.
@@ -617,6 +618,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     e.preventDefault();
     var val = function(id){ var el=document.getElementById(id); return el ? el.value.trim() : ''; };
     if(!val('f_voornaam') || !val('f_achternaam') || !val('f_telefoon') || !val('f_email') || !val('klachtveld')){ alert('Vul je voornaam, achternaam, telefoonnummer, e-mailadres en je klacht in.'); return false; }
+    if(typeof KENTEKEN_VELD !== 'undefined' && KENTEKEN_VELD && !val('f_kenteken')){
+      if(!confirm("Je hebt geen kenteken ingevuld. Wij lezen kentekens automatisch uit, dat scheelt jou werk. Heb je geen kenteken? Geen probleem, klik op OK om te versturen. Anders klik Annuleren om 'm alsnog in te vullen.")){ return false; }
+    }
     var btn = document.querySelector('#aanvraagForm button[type="submit"]');
     if(btn){ btn.disabled=true; btn.textContent='Versturen…'; }
     var payload = {
