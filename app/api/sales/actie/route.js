@@ -40,7 +40,7 @@ export async function POST(req) {
   // Naar de Moneybird-offerte (niet voor archief-leads).
   let naarMoneybird = false;
   const { data: lead } = await supabaseAdmin.from("leads").select("offerte_id, archief").eq("id", lead_id).single();
-  if (lead && lead.offerte_id && !lead.archief) {
+  if (lead && lead.offerte_id && !lead.archief && soort !== "geaccepteerd") {
     const regel = (soort === "gebeld")
       ? `Gebeld${door ? ` door ${door}` : ""}${tekst ? `: ${tekst}` : ""} (via Revisio)`
       : (soort === "niet opgenomen")

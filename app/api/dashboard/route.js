@@ -305,7 +305,7 @@ export async function GET(req) {
       const sinds = new Date(Date.now() - 14 * 86400000).toISOString().slice(0, 10);
       const { data: bel } = await supabaseAdmin.from("lead_actie")
         .select("datum, door, soort")
-        .in("soort", ["gebeld", "niet opgenomen"])
+        .in("soort", ["gebeld", "niet opgenomen", "geaccepteerd"])
         .gte("datum", sinds);
       const perDag = new Map();
       for (const a of bel || []) {
@@ -313,15 +313,17 @@ export async function GET(req) {
         if (!perDag.has(dag)) perDag.set(dag, new Map());
         const m = perDag.get(dag);
         const wie = a.door || "?";
-        if (!m.has(wie)) m.set(wie, { gesproken: 0, gemist: 0 });
+        if (!m.has(wie)) m.set(wie, { gesproken: 0, gemist: 0, gewonnen: 0 });
         if (a.soort === "gebeld") m.get(wie).gesproken++;
-        else m.get(wie).gemist++;
+        else if (a.soort === "niet opgenomen") m.get(wie).gemist++;
+        else m.get(wie).gewonnen++;
       }
       belactiviteit = [...perDag.entries()].sort((a, b) => b[0].localeCompare(a[0])).map(([dag, m]) => ({
         dag,
         totaal: [...m.values()].reduce((s, v) => s + v.gesproken + v.gemist, 0),
         gesproken: [...m.values()].reduce((s, v) => s + v.gesproken, 0),
-        perPersoon: [...m.entries()].map(([door, v]) => ({ door, ...v })).sort((a, b) => (b.gesproken + b.gemist) - (a.gesproken + a.gemist)),
+        gewonnen: [...m.values()].reduce((s, v) => s + v.gewonnen, 0),
+        perPersoon: [...m.entries()].map(([door, v]) => ({ door, ...v })).sort((a, b) => (b.gesproken + b.gemist + b.gewonnen) - (a.gesproken + a.gemist + a.gewonnen)),
       }));
     } catch (e) { /* belactiviteit optioneel */ }
 

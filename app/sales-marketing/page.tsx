@@ -146,13 +146,12 @@ function Dashboard() {
       await apiFetch("/api/sales/lead", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: L.id, status: nieuw }) });
     } catch { window.alert("Opslaan mislukt (geen verbinding)."); }
 
-    if (L.offerte_id && (nieuw === "afgewezen" || nieuw === "geaccepteerd")) {
-      const afw = nieuw === "afgewezen";
-      const vraag = afw
-        ? `Offerte ${L.offerte_nummer || ""} ook in Moneybird afwijzen?`
-        : `Offerte ${L.offerte_nummer || ""} zelf accepteren in Moneybird?\n\nAnnuleren = je laat de klant zelf tekenen via de offerte-link.`;
-      if (window.confirm(vraag)) {
-        const r = await apiFetch("/api/sales/moneybird", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lead_id: L.id, actie: afw ? "declined" : "accepted" }) });
+    if (nieuw === "geaccepteerd") {
+      // Geaccepteerd alleen loggen (telt mee in het sales-dagoverzicht); GEEN actie in Moneybird.
+      logActie(L, "geaccepteerd", "");
+    } else if (L.offerte_id && nieuw === "afgewezen") {
+      if (window.confirm(`Offerte ${L.offerte_nummer || ""} ook in Moneybird afwijzen?`)) {
+        const r = await apiFetch("/api/sales/moneybird", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lead_id: L.id, actie: "declined" }) });
         const j = await r.json().catch(() => ({}));
         if (j.fout) window.alert(`Moneybird: ${j.fout}\n\nDe status staat hier wel goed.`);
         else laad();
@@ -381,6 +380,10 @@ function Dashboard() {
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {pijplijn.map((L) => {
                   const afgewezen = L.status === "afgewezen";
+                  const _delen = (L.bericht || "").split(" | ").map((s) => s.trim()).filter(Boolean);
+                  const _zonderType = _delen.filter((d) => !/^Type:/i.test(d));
+                  const kenmerk = _zonderType[0] || L.carburateur || "";
+                  const klacht = _zonderType.slice(1).join(" · ");
                   return (
                     <div key={L.id} style={{ border: `1px solid ${afgewezen ? "#e0b3a8" : RAND}`, background: afgewezen ? ROOD_BG : "#fff", borderRadius: 10, padding: "10px 12px" }}>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", justifyContent: "space-between" }}>
@@ -397,10 +400,11 @@ function Dashboard() {
                         ? <a href={`tel:${L.telefoon.replace(/[^\d+]/g, "")}`} style={{ display: "inline-block", margin: "6px 0 2px", fontSize: 23, fontWeight: 800, color: GROEN, textDecoration: "none", letterSpacing: ".5px" }}>📞 {L.telefoon}</a>
                         : <div style={{ margin: "6px 0 2px", fontSize: 14, color: ROOD, fontWeight: 700 }}>⚠ Geen telefoonnummer</div>}
                       <div style={{ fontSize: 12.5, color: GRIJS, marginBottom: 8 }}>{L.email}{L.carburateur ? ` · ${L.carburateur}` : ""}</div>
-                      {L.bericht && (
-                        <div style={{ marginBottom: 8, background: "#fbf7ec", border: "1px solid #ecdcae", borderRadius: 8, padding: "8px 11px", fontSize: 13.5, color: TEKST, lineHeight: 1.5 }}>
-                          <span style={{ fontSize: 11, fontWeight: 800, color: "#9a7b1f", textTransform: "uppercase", letterSpacing: 0.4, display: "block", marginBottom: 2 }}>📋 Aanvraag · klacht</span>
-                          {L.bericht.replace(/^Type:[^|]*\|\s*/i, "").split(" | ").join(" · ")}
+                      {(kenmerk || klacht || L.bericht) && (
+                        <div style={{ marginBottom: 8, background: "#fbf7ec", border: "1px solid #ecdcae", borderRadius: 8, padding: "9px 12px", lineHeight: 1.5 }}>
+                          {kenmerk && <div style={{ fontSize: 13.5, color: TEKST }}><span style={{ fontSize: 11, fontWeight: 800, color: "#9a7b1f", textTransform: "uppercase", letterSpacing: 0.4, marginRight: 6 }}>Kenmerk</span>{kenmerk}</div>}
+                          {klacht && <div style={{ fontSize: 15, color: TEKST, marginTop: 4, fontWeight: 700 }}><span style={{ fontSize: 11, fontWeight: 800, color: "#9a7b1f", textTransform: "uppercase", letterSpacing: 0.4, marginRight: 6 }}>Klacht</span>{klacht}</div>}
+                          {!kenmerk && !klacht && L.bericht && <div style={{ fontSize: 13.5, color: TEKST }}>{L.bericht}</div>}
                         </div>
                       )}
 
@@ -427,9 +431,10 @@ function Dashboard() {
                       )}
 
                       {(L.acties || []).length > 0 && (
-                        <div style={{ marginTop: 8, borderTop: `1px solid ${RAND}`, paddingTop: 6 }}>
-                          {(L.acties || []).slice(0, 4).map((a) => (
-                            <div key={a.id} style={{ fontSize: 11.5, color: GRIJS }}>• {a.door || "?"} {a.soort}{a.tekst ? `: ${a.tekst}` : ""} · {new Date(a.datum).toLocaleString("nl-NL", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</div>
+                        <div style={{ marginTop: 10, borderTop: `1px solid ${RAND}`, paddingTop: 8 }}>
+                          <div style={{ fontSize: 11, fontWeight: 800, color: GRIJS, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 5 }}>Changelog</div>
+                          {(L.acties || []).slice(0, 6).map((a) => (
+                            <div key={a.id} style={{ fontSize: 13, color: TEKST, marginBottom: 3 }}>• {a.door || "?"} <b>{a.soort}</b>{a.tekst ? `: ${a.tekst}` : ""} <span style={{ color: GRIJS }}>· {new Date(a.datum).toLocaleString("nl-NL", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span></div>
                           ))}
                         </div>
                       )}
