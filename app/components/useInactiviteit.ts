@@ -8,7 +8,7 @@
 import { useEffect, useRef } from "react";
 
 const KEY = "revisio-laatste-activiteit";
-const STANDAARD_MIN = 120; // 2 uur; pas hier aan
+const STANDAARD_MIN = 1080; // 18 uur; pas hier aan
 
 // Wis het activiteits-stempel (aanroepen bij handmatig uitloggen).
 export function wisInactiviteit() {
