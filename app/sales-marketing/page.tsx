@@ -173,7 +173,7 @@ function Dashboard() {
 
   const zoekTerm = zoek.trim().toLowerCase();
   const pijplijn = (data?.leads || []).filter((L) => {
-    const inPijp = toonAlle || VERSTUURD.includes(L.offerte_state || "");
+    const inPijp = toonAlle || L.status === "geaccepteerd" || VERSTUURD.includes(L.offerte_state || "");
     const vanMij = !mijn || L.eigenaar === mijnCode;
     const raakt = !zoekTerm || [L.naam, L.email, L.bedrijf, L.telefoon, L.carburateur, L.offerte_nummer].some((v) => (v || "").toLowerCase().includes(zoekTerm));
     return inPijp && vanMij && raakt;
@@ -380,6 +380,7 @@ function Dashboard() {
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {pijplijn.map((L) => {
                   const afgewezen = L.status === "afgewezen";
+                  const gewonnen = L.status === "geaccepteerd";
                   const _ruw = (L.bericht || "").trim();
                   const _delen = _ruw.split(" | ").map((s) => s.trim()).filter(Boolean);
                   let kenmerk = "", klacht = "";
@@ -394,7 +395,17 @@ function Dashboard() {
                     klacht = _ruw;
                   }
                   return (
-                    <div key={L.id} style={{ border: `1px solid ${afgewezen ? "#e0b3a8" : RAND}`, background: afgewezen ? ROOD_BG : "#fff", borderRadius: 10, padding: "10px 12px" }}>
+                    <div key={L.id} style={{ border: `${gewonnen ? 2 : 1}px solid ${gewonnen ? GROEN : afgewezen ? "#e0b3a8" : RAND}`, background: gewonnen ? GROEN_BG : afgewezen ? ROOD_BG : "#fff", borderRadius: 10, padding: "10px 12px", overflow: "hidden" }}>
+                      {gewonnen && (
+                        <div style={{ margin: "-10px -12px 8px", padding: "6px 12px 8px", background: "linear-gradient(90deg,#2f9e44,#37b24d,#2f9e44)" }}>
+                          <div style={{ display: "flex", gap: 5, justifyContent: "center", marginBottom: 4, flexWrap: "wrap" }}>
+                            {Array.from({ length: 16 }).map((_, i) => (
+                              <span key={i} style={{ width: 0, height: 0, borderLeft: "6px solid transparent", borderRight: "6px solid transparent", borderTop: `11px solid ${["#ffd43b", "#ff8787", "#ffffff", "#74c0fc", "#f783ac"][i % 5]}` }} />
+                            ))}
+                          </div>
+                          <div style={{ textAlign: "center", color: "#fff", fontWeight: 800, fontSize: 14, letterSpacing: ".5px" }}>🎉 Gewonnen! Feest! 🎉</div>
+                        </div>
+                      )}
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", justifyContent: "space-between" }}>
                         <div style={{ minWidth: 0 }}>
                           <span style={{ fontWeight: 800, color: TEKST }}>{L.naam || L.email}</span>
