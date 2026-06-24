@@ -119,7 +119,6 @@ function Dashboard() {
       return true;
     } catch { window.alert("Niet opgeslagen (geen verbinding)."); return false; }
   }
-  function belActie(L: Lead) { logActie(L, "gebeld", ""); }
   async function notitieNaarMB(L: Lead) {
     const t = (L.sales_notitie || "").trim();
     if (!t) return;
@@ -435,7 +434,6 @@ function Dashboard() {
                         <select value={L.eigenaar || ""} onChange={(e) => wijzigLead(L.id, "eigenaar", e.target.value)} style={sel}>
                           {EIGENAREN.map((e) => <option key={e} value={e}>{e || "— eigenaar —"}</option>)}
                         </select>
-                        <button onClick={() => belActie(L)} style={knopje} title="Klant gesproken">📞 Gesproken</button>
                         <button onClick={() => logActie(L, "niet opgenomen", "")} style={{ ...knopje, color: ROOD, borderColor: "#e6b8ad", background: ROOD_BG }} title="Gebeld, maar de klant nam niet op">📵 Niet opgenomen</button>
                         {L.status === "uitstellen" && <input type="date" value={L.opvolgen_op || ""} onChange={(e) => wijzigLead(L.id, "opvolgen_op", e.target.value)} title="Opvolgen op" style={{ ...sel, padding: "5px 8px" }} />}
                         {L.offerte_id && L.offerte_url && <a href={L.offerte_url} target="_blank" rel="noreferrer" style={{ ...knopje, color: GRIJS, textDecoration: "none" }}>Klant laten tekenen ↗</a>}
