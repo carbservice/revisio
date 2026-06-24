@@ -378,7 +378,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="grid2">
         <label>Voornaam *<input id="f_voornaam" type="text" required></label>
         <label>Achternaam *<input id="f_achternaam" type="text" required></label>
-        <label>Telefoonnummer<input id="f_telefoon" type="tel" placeholder="06..."></label>
+        <label>Telefoonnummer *<input id="f_telefoon" type="tel" placeholder="06..." required></label>
         <label>E-mailadres *<input id="f_email" type="email" required></label>
       </div>
 
@@ -387,7 +387,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       <label>Kenteken<input id="f_kenteken" type="text" placeholder="bijv. AB-12-CD" onblur="checkKenteken()"></label>
       <div class="form-note" id="voertuiginfo" style="display:none;text-align:left;margin-top:6px;color:var(--groen);font-weight:700"></div>
-      <label>Welke klachten heb je?<textarea id="klachtveld" rows="3" placeholder="Beschrijf kort wat het voertuig doet, of klik ze hierboven aan in de checker..."></textarea></label>
+      <label>Welke klachten heb je? *<textarea id="klachtveld" rows="3" required placeholder="Beschrijf kort wat het voertuig doet, of klik ze hierboven aan in de checker..."></textarea></label>
 
       <label>Foto's van je carburateur (optioneel, max 10)<input id="f_fotos" type="file" accept="image/*" multiple onchange="kiesFotos(event)" style="padding:10px 12px"></label>
       <div class="form-note" style="text-align:left;margin-top:6px">Een foto van het typeplaatje of de carburateur helpt ons enorm bij een goede inschatting. We verkleinen ze automatisch.</div>
@@ -565,7 +565,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   async function verstuur(e){
     e.preventDefault();
     var val = function(id){ var el=document.getElementById(id); return el ? el.value.trim() : ''; };
-    if(!val('f_voornaam') || !val('f_email')){ alert('Vul minimaal je voornaam en e-mailadres in.'); return false; }
+    if(!val('f_voornaam') || !val('f_achternaam') || !val('f_telefoon') || !val('f_email') || !val('klachtveld')){ alert('Vul je voornaam, achternaam, telefoonnummer, e-mailadres en je klacht in.'); return false; }
     var btn = document.querySelector('#aanvraagForm button[type="submit"]');
     if(btn){ btn.disabled=true; btn.textContent='Versturen…'; }
     var payload = {
