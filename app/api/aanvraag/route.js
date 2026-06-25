@@ -195,7 +195,7 @@ async function stuurMelding(d, voertuigTekst, offerteNr) {
 
 // WhatsApp-melding bij een nieuwe lead, naar het eigen zakelijke nummer via
 // CallMeBot (gratis, 1-op-1). Zacht falend: doet niets zonder WHATSAPP_APIKEY.
-async function stuurWhatsapp(d, voertuigTekst, offerteNr) {
+async function stuurWhatsapp(d, voertuigTekst, offerteUrl) {
   const apikey = process.env.WHATSAPP_APIKEY;
   const nummer = process.env.WHATSAPP_NUMMER || "31653864208";
   if (!apikey) return false;
@@ -203,7 +203,7 @@ async function stuurWhatsapp(d, voertuigTekst, offerteNr) {
     `Dit is een automatisch bericht van Revisio.\n\n` +
     `Er is een nieuwe lead: ${voertuigTekst || "onbekend"}\n` +
     `Van: ${d.voornaam} ${d.achternaam} (${d.telefoon || "-"})` +
-    (offerteNr ? `\nConcept-offerte: ${offerteNr}` : "");
+    (offerteUrl ? `\n\nConcept-offerte in Moneybird:\n${offerteUrl}` : "");
   try {
     await fetch(`https://api.callmebot.com/whatsapp.php?phone=${nummer}&text=${encodeURIComponent(tekst)}&apikey=${apikey}`);
     return true;
@@ -289,7 +289,9 @@ export async function POST(req) {
 
   // 4) Melding (zacht).
   await stuurMelding(d, kenmerk, offerteNr);
-  await stuurWhatsapp(d, kenmerk, offerteNr);
+  const mbAdmin = process.env.MONEYBIRD_ADMIN;
+  const offerteLink = offerteId && mbAdmin ? `https://moneybird.com/${mbAdmin}/estimates/${offerteId}` : null;
+  await stuurWhatsapp(d, kenmerk, offerteLink);
 
   return json({ ok: true, voertuig: kenmerk, offerte: offerteNr, fotos: fotoInfo ? fotoInfo.aantal : 0, mbFout });
 }
