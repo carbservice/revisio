@@ -52,6 +52,9 @@ const SERIF = "'Karma', Georgia, serif";
 function norm(s: string) { return (s || "").toUpperCase().replace(/\s+/g, ""); }
 function jaarUit(s: string): number | null { const m = (s || "").match(/(19|20)\d\d/); return m ? parseInt(m[0], 10) : null; }
 
+// Cross-reference-rij uit de 7 DVG Vergaser-Uebersicht boeken (tagnummer -> carburateur -> voertuig).
+type BoekRij = { tag: string; carb: string; voertuig: string; motor: string; jaar: string; extra?: string; boek: string; bron: string };
+
 // Bouwt de doorzoekbare tekst van een kaart, inclusief synoniemen (Solex/Pierburg,
 // Mercedes-Benz/MB/Daimler-Benz/DB, VW/Volkswagen) en cilinderaantal.
 function zoekTekst(c: Kennblad): string {
@@ -89,6 +92,7 @@ function Hub() {
   const [gekopieerd, setGekopieerd] = useState(false);
   const [kennbladen, setKennbladen] = useState<Kennblad[]>([]);
   const [laden, setLaden] = useState(true);
+  const [boeken, setBoeken] = useState<BoekRij[]>([]);
 
   // Carburateurs uit Supabase laden en samenstellen; daarna eventuele deep-link openen.
   useEffect(() => {
@@ -106,6 +110,11 @@ function Hub() {
       const id = new URLSearchParams(window.location.search).get("id");
       if (id && lijst.some((c) => c.id === id)) setOpenId(id);
     })();
+  }, []);
+
+  // Cross-reference uit de 7 DVG-boeken (statische scan-extractie in public/hub).
+  useEffect(() => {
+    fetch("/hub/boeken-crossref.json").then((r) => (r.ok ? r.json() : [])).then(setBoeken).catch(() => {});
   }, []);
 
   function openen(c: Kennblad) {
@@ -151,6 +160,30 @@ function Hub() {
       });
     });
   }, [zoek, kennbladen]);
+
+  // Index tagnummer -> kennblad-id, zodat een boek-tag naar het kennblad kan linken.
+  const tagIndex = useMemo(() => {
+    const m: Record<string, string> = {};
+    for (const c of kennbladen) {
+      for (const t of c.tag_norm) if (t) m[norm(t)] = c.id;
+      for (const v of c.variants) if (v.tag) m[norm(v.tag)] = c.id;
+    }
+    return m;
+  }, [kennbladen]);
+
+  // Boek-cross-reference filteren met dezelfde zoekopdracht (woord-AND op tag/voertuig/carb/motor/jaar).
+  const boekLijst = useMemo(() => {
+    const woorden = zoek.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    if (woorden.length === 0) return [] as BoekRij[];
+    const res: BoekRij[] = [];
+    for (const r of boeken) {
+      const ruw = `${r.tag} ${r.carb} ${r.voertuig} ${r.motor} ${r.jaar} ${r.extra || ""} ${r.boek}`;
+      const spaced = " " + ruw.toLowerCase().replace(/\s+/g, " ") + " ";
+      const compact = norm(ruw);
+      if (woorden.every((w) => spaced.includes(w) || compact.includes(norm(w)))) { res.push(r); if (res.length >= 300) break; }
+    }
+    return res;
+  }, [zoek, boeken]);
 
   const open = openId ? kennbladen.find((c) => c.id === openId) || null : null;
   const li = LANG_INDEX[taal];
@@ -220,6 +253,9 @@ function Hub() {
               <p style={{ color: GRIJS, gridColumn: "1 / -1", textAlign: "center", padding: 30 }}>Geen kennblad gevonden voor &ldquo;{zoek}&rdquo;.</p>
             )}
           </div>
+        )}
+        {!laden && !open && (
+          <BoekSectie rows={boekLijst} total={boeken.length} zoek={zoek} tagIndex={tagIndex} openId={(id) => { const c = kennbladen.find((k) => k.id === id); if (c) openen(c); }} />
         )}
       </div>
     </main>
@@ -402,6 +438,52 @@ function Detail({ c, li, taal, setTaal, terug, kopieer, gekopieerd }: { c: Kennb
         </div>
       )}
     </div>
+  );
+}
+
+// Cross-reference-sectie onderaan de Hub: zoek een tagnummer/voertuig/carburateur in de 7 DVG-boeken.
+// Een tag die ook in een kennblad voorkomt, linkt door naar dat kennblad.
+function BoekSectie({ rows, total, zoek, tagIndex, openId }: { rows: BoekRij[]; total: number; zoek: string; tagIndex: Record<string, string>; openId: (id: string) => void }) {
+  return (
+    <section style={{ ...paneel, marginTop: 24, marginBottom: 50 }}>
+      <h3 style={kop}>Tagnummer cross-reference · 7 DVG-boeken</h3>
+      <div style={{ color: GRIJS, fontSize: 13, marginBottom: 12, lineHeight: 1.5 }}>
+        {total.toLocaleString("nl-NL")} cross-references uit de DVG Vergaser-Übersicht boeken (BMW · Mercedes · Opel · Ford · Audi/NSU/Porsche/VW · algemeen). Zoek hierboven op <b>tagnummer</b>, <b>voertuig</b> of <b>carburateur</b>; een tag met onderstreping opent het bijbehorende kennblad.
+      </div>
+      {zoek.trim() === "" ? (
+        <div style={{ color: GRIJS, fontSize: 13.5, fontStyle: "italic" }}>Typ een tagnummer (bv. E 15370), voertuig (bv. Opel Kadett) of carburateur (bv. 38 PDSI) in de zoekbalk bovenaan.</div>
+      ) : rows.length === 0 ? (
+        <div style={{ color: GRIJS, fontSize: 13.5 }}>Geen tagnummer-treffer in de DVG-boeken voor &ldquo;{zoek}&rdquo;.</div>
+      ) : (
+        <>
+          <div style={{ color: GRIJS, fontSize: 12, marginBottom: 8 }}>{rows.length} treffer{rows.length === 1 ? "" : "s"}{rows.length >= 300 ? " (eerste 300 getoond, verfijn je zoekopdracht)" : ""}</div>
+          <div style={{ overflowX: "auto" }}>
+            <table style={tabel}>
+              <thead><tr>{["Tagnummer", "Carburateur", "Voertuig", "Motor", "Bouwjaar", "Boek"].map((h) => <th key={h} style={th}>{h}</th>)}</tr></thead>
+              <tbody>
+                {rows.map((r, i) => {
+                  const kid = tagIndex[norm(r.tag)];
+                  return (
+                    <tr key={i}>
+                      <td style={{ ...td, fontWeight: 800, color: GOUD, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
+                        {kid ? (
+                          <button onClick={() => openId(kid)} title="Open kennblad" style={{ background: "none", border: 0, color: GOUD, fontWeight: 800, cursor: "pointer", padding: 0, font: "inherit", textDecoration: "underline" }}>{r.tag} ↗</button>
+                        ) : r.tag}
+                      </td>
+                      <td style={{ ...td, fontWeight: 700 }}>{r.carb}</td>
+                      <td style={td}>{r.voertuig}</td>
+                      <td style={{ ...td, color: GRIJS, fontSize: 12.5 }}>{r.motor}</td>
+                      <td style={{ ...td, color: GRIJS, fontSize: 12.5, whiteSpace: "nowrap" }}>{r.jaar}</td>
+                      <td style={{ ...td, color: GRIJS, fontSize: 12 }}>{r.boek}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+    </section>
   );
 }
 
