@@ -3,6 +3,7 @@
 // app/api/shopify/callback/route.js
 
 export const dynamic = "force-dynamic";
+// (deploy-trigger zodat de SHOPIFY_-omgevingsvariabelen actief worden)
 
 function html(body, status = 200) {
   return new Response(
@@ -17,7 +18,14 @@ export async function GET(req) {
   const shop = url.searchParams.get("shop") || process.env.SHOPIFY_STORE;
   const cid = process.env.SHOPIFY_CLIENT_ID;
   const secret = process.env.SHOPIFY_CLIENT_SECRET;
-  if (!code || !shop) return html("Ontbrekende <b>code</b> of <b>shop</b> in de callback.", 400);
+  if (!code) {
+    return html(`<h3>Status-check (geen code meegegeven)</h3><ul>
+      <li>SHOPIFY_CLIENT_ID: ${cid ? "✅ aanwezig" : "❌ ontbreekt"}</li>
+      <li>SHOPIFY_CLIENT_SECRET: ${secret ? "✅ aanwezig" : "❌ ontbreekt"}</li>
+      <li>SHOPIFY_STORE: ${process.env.SHOPIFY_STORE ? "✅ aanwezig" : "❌ ontbreekt"}</li></ul>
+      <p>Staan deze alle drie op ✅? Dan is de deploy goed; open dan de autorisatie-link.</p>`);
+  }
+  if (!shop) return html("Ontbrekende <b>shop</b> in de callback.", 400);
   if (!cid || !secret) return html("SHOPIFY_CLIENT_ID / SHOPIFY_CLIENT_SECRET ontbreken in de Vercel-omgeving. Voeg ze toe en redeploy.", 500);
 
   try {
