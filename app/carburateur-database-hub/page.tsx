@@ -303,7 +303,7 @@ function Detail({ c, li, taal, setTaal, terug, kopieer, gekopieerd }: { c: Kennb
   return (
     <div style={{ paddingBottom: 60 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
-        <button onClick={terug} style={{ background: "none", border: 0, color: GROEN, fontSize: 15, fontWeight: 700, cursor: "pointer", padding: "14px 0" }}>← terug naar overzicht</button>
+        <button onClick={terug} style={{ background: GROEN, border: 0, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", padding: "10px 18px", borderRadius: 10, boxShadow: "0 2px 8px rgba(10,40,25,.18)" }}>← terug naar overzicht</button>
         <button onClick={kopieer} style={{ background: gekopieerd ? GOUD : "#fff", color: gekopieerd ? "#fff" : GROEN, border: `1px solid ${gekopieerd ? GOUD : RAND}`, borderRadius: 10, padding: "8px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>{gekopieerd ? "Gekopieerd!" : "🔗 Kopieer link"}</button>
       </div>
       <div style={{ fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: GROEN }}>{[c.fabrikant, c.type].filter(Boolean).join(" ")}</div>
