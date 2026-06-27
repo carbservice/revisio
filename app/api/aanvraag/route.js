@@ -38,6 +38,7 @@ function bronUitTracking(p) {
   if (s.includes("google")) return "google_ads";
   if (s.includes("facebook") || s === "fb" || s === "ig" || s === "meta") return "facebook";
   if (s.includes("markt")) return "marktplaats";
+  if (s.includes("shop")) return "shop";
   if (s) return "organisch";
   return "organisch";
 }
@@ -133,6 +134,7 @@ function bronLabel(bron, tracking) {
     return "Meta Facebook of Instagram (advertentie)";
   }
   if (bron === "marktplaats") return "Marktplaats (advertentie)";
+  if (bron === "shop") return "Webshop (contactpagina)";
   return "Organisch (geen advertentie)";
 }
 
@@ -195,7 +197,7 @@ async function stuurMelding(d, voertuigTekst, offerteNr) {
 
 // WhatsApp-melding bij een nieuwe lead, naar het eigen zakelijke nummer via
 // CallMeBot (gratis, 1-op-1). Zacht falend: doet niets zonder WHATSAPP_APIKEY.
-async function stuurWhatsapp(d, voertuigTekst, offerteUrl) {
+async function stuurWhatsapp(d, voertuigTekst, offerteUrl, bronTekst) {
   const apikey = process.env.WHATSAPP_APIKEY;
   const nummer = process.env.WHATSAPP_NUMMER || "31653864208";
   if (!apikey) return false;
@@ -203,6 +205,7 @@ async function stuurWhatsapp(d, voertuigTekst, offerteUrl) {
     `Dit is een automatisch bericht van Revisio.\n\n` +
     `Er is een nieuwe lead: ${voertuigTekst || "onbekend"}\n` +
     `Van: ${d.voornaam} ${d.achternaam} (${d.telefoon || "-"})` +
+    (bronTekst ? `\nBron: ${bronTekst}` : "") +
     (offerteUrl ? `\n\nConcept-offerte in Moneybird:\n${offerteUrl}` : "");
   try {
     await fetch(`https://api.callmebot.com/whatsapp.php?phone=${nummer}&text=${encodeURIComponent(tekst)}&apikey=${apikey}`);
@@ -291,7 +294,7 @@ export async function POST(req) {
   await stuurMelding(d, kenmerk, offerteNr);
   const mbAdmin = process.env.MONEYBIRD_ADMIN;
   const offerteLink = offerteId && mbAdmin ? `https://moneybird.com/${mbAdmin}/estimates/${offerteId}` : null;
-  await stuurWhatsapp(d, kenmerk, offerteLink);
+  await stuurWhatsapp(d, kenmerk, offerteLink, bronLabel(bron, d.tracking));
 
   return json({ ok: true, voertuig: kenmerk, offerte: offerteNr, fotos: fotoInfo ? fotoInfo.aantal : 0, mbFout });
 }

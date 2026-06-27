@@ -4,7 +4,7 @@
 // /api/aanvraag. Live kenteken-check bij de RDW, segmentatie (zelf vs partner,
 // particulier vs zakelijk), en een honeypot tegen bots.
 
-import { useState, CSSProperties } from "react";
+import { useState, useEffect, CSSProperties } from "react";
 import { GROEN, TEKST, GRIJS, RAND, BG, KAART_BG, GROEN_BG } from "@/lib/theme";
 import { normaliseerKenteken } from "@/lib/rdw";
 
@@ -26,6 +26,16 @@ export default function AanvraagPagina() {
   const [v, setV] = useState<Velden>({ voornaam: "", achternaam: "", telefoon: "", email: "", bedrijfsnaam: "", kvk: "", btw: "", carburateur: "", merk_model_jaar: "" });
 
   const set = (k: keyof Velden, val: string) => setV((s) => ({ ...s, [k]: val }));
+
+  // Eigen hoogte naar de parent-pagina posten, zodat de iframe-embed (o.a. de
+  // shop-contactpagina) automatisch meeschaalt en niets afkapt.
+  useEffect(() => {
+    const post = () => window.parent?.postMessage({ revisioFormHeight: document.documentElement.scrollHeight }, "*");
+    post();
+    const ro = new ResizeObserver(post);
+    ro.observe(document.documentElement);
+    return () => ro.disconnect();
+  }, []);
 
   async function checkKenteken() {
     const k = normaliseerKenteken(kenteken);
