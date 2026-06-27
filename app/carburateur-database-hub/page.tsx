@@ -55,6 +55,9 @@ function jaarUit(s: string): number | null { const m = (s || "").match(/(19|20)\
 // Cross-reference-rij uit de 7 DVG Vergaser-Uebersicht boeken (tagnummer -> carburateur -> voertuig).
 type BoekRij = { tag: string; carb: string; voertuig: string; motor: string; jaar: string; extra?: string; boek: string; bron: string };
 
+// Boek-bouwjaar voluit: "9.65-12.65" -> "9.1965-12.1965", "1.66" -> "1.1966". Reeds 4-cijferige jaren blijven staan.
+function fullJaar(s: string): string { return (s || "").replace(/(\d{1,2})\.(\d{2})(?!\d)/g, (_m, mo, yy) => `${mo}.19${yy}`); }
+
 // Bouwt de doorzoekbare tekst van een kaart, inclusief synoniemen (Solex/Pierburg,
 // Mercedes-Benz/MB/Daimler-Benz/DB, VW/Volkswagen) en cilinderaantal.
 function zoekTekst(c: Kennblad): string {
@@ -473,7 +476,7 @@ function BoekSectie({ rows, total, zoek, tagIndex, openId }: { rows: BoekRij[]; 
                       <td style={{ ...td, fontWeight: 700 }}>{r.carb}</td>
                       <td style={td}>{r.voertuig}</td>
                       <td style={{ ...td, color: GRIJS, fontSize: 12.5 }}>{r.motor}</td>
-                      <td style={{ ...td, color: GRIJS, fontSize: 12.5, whiteSpace: "nowrap" }}>{r.jaar}</td>
+                      <td style={{ ...td, color: GRIJS, fontSize: 12.5, whiteSpace: "nowrap" }}>{fullJaar(r.jaar)}</td>
                       <td style={{ ...td, color: GRIJS, fontSize: 12 }}>{r.boek}</td>
                     </tr>
                   );
