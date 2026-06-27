@@ -55,8 +55,41 @@ function jaarUit(s: string): number | null { const m = (s || "").match(/(19|20)\
 // Cross-reference-rij uit de 7 DVG Vergaser-Uebersicht boeken (tagnummer -> carburateur -> voertuig).
 type BoekRij = { tag: string; carb: string; voertuig: string; motor: string; jaar: string; extra?: string; boek: string; bron: string };
 
-// Boek-bouwjaar voluit: "9.65-12.65" -> "9.1965-12.1965", "1.66" -> "1.1966". Reeds 4-cijferige jaren blijven staan.
-function fullJaar(s: string): string { return (s || "").replace(/(\d{1,2})\.(\d{2})(?!\d)/g, (_m, mo, yy) => `${mo}.19${yy}`); }
+// Boek-bouwjaar leesbaar maken. In de DVG-boeken is "8.62" = augustus 1962 (maand.jaar).
+// "8.62" -> "aug 1962", "9.59-8.61" -> "sep 1959 t/m aug 1961", "1950-1952" -> "1950 t/m 1952".
+function fullJaar(s: string): string {
+  const MND = ["", "jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
+  if (!s) return "";
+  return s
+    .replace(/(\d{1,2})\.(\d{2,4})(?!\d)/g, (_m, mo, yr) => {
+      const mi = parseInt(mo, 10);
+      const jaar = yr.length === 2 ? "19" + yr : yr;
+      return (mi >= 1 && mi <= 12 ? MND[mi] : mo) + " " + jaar;
+    })
+    .replace(/(^|[\s/-])(\d{2})(?=$|[\s/-])/g, (_m, pre, yy) => pre + "19" + yy)
+    .replace(/\s*-\s*/g, " t/m ");
+}
+
+// Originele scans staan privé in bucket support-boekjes; /api/boekje geeft een beveiligde signed-URL (achter login).
+const BOEK_PDF: Record<string, string> = {
+  "DVG Vergaser-Uebersicht AU-NSU-PO-VW (okt 1975)": "dvg-tagnummers/dvg-au-nsu-po-vw-okt1975.pdf",
+  "DVG Vergaser-Uebersicht Ford (okt 1975)": "dvg-tagnummers/dvg-ford-okt1975.pdf",
+  "DVG Vergaser-Uebersicht BMW (okt 1975)": "dvg-tagnummers/dvg-bmw-okt1975.pdf",
+  "DVG Vergaser-Uebersicht DB (okt 1975)": "dvg-tagnummers/dvg-db-okt1975.pdf",
+  "DVG Vergaser-Uebersicht Opel (okt 1975)": "dvg-tagnummers/dvg-opel-okt1975.pdf",
+  "DVG Vergaser-Uebersicht algemeen (okt 1975)": "dvg-tagnummers/dvg-algemeen-okt1975.pdf",
+  "DVG Vergaser-Uebersicht algemeen (sep 1974)": "dvg-tagnummers/dvg-algemeen-sep1974.pdf",
+};
+const BOEKEN_SCANS: [string, string][] = [
+  ["BMW", "dvg-tagnummers/dvg-bmw-okt1975.pdf"],
+  ["Mercedes", "dvg-tagnummers/dvg-db-okt1975.pdf"],
+  ["Opel", "dvg-tagnummers/dvg-opel-okt1975.pdf"],
+  ["Ford", "dvg-tagnummers/dvg-ford-okt1975.pdf"],
+  ["Audi/NSU/Porsche/VW", "dvg-tagnummers/dvg-au-nsu-po-vw-okt1975.pdf"],
+  ["Algemeen okt '75", "dvg-tagnummers/dvg-algemeen-okt1975.pdf"],
+  ["Algemeen sep '74", "dvg-tagnummers/dvg-algemeen-sep1974.pdf"],
+];
+async function openBoek(pad: string) { try { const r = await fetch(`/api/boekje?bron=${encodeURIComponent(pad)}`); const j = await r.json(); if (j.url) window.open(j.url, "_blank", "noopener"); } catch { } }
 
 // Bouwt de doorzoekbare tekst van een kaart, inclusief synoniemen (Solex/Pierburg,
 // Mercedes-Benz/MB/Daimler-Benz/DB, VW/Volkswagen) en cilinderaantal.
@@ -453,6 +486,12 @@ function BoekSectie({ rows, total, zoek, tagIndex, openId }: { rows: BoekRij[]; 
       <div style={{ color: GRIJS, fontSize: 13, marginBottom: 12, lineHeight: 1.5 }}>
         {total.toLocaleString("nl-NL")} cross-references uit de DVG Vergaser-Übersicht boeken (BMW · Mercedes · Opel · Ford · Audi/NSU/Porsche/VW · algemeen). Zoek hierboven op <b>tagnummer</b>, <b>voertuig</b> of <b>carburateur</b>; een tag met onderstreping opent het bijbehorende kennblad.
       </div>
+      <div style={{ fontSize: 12.5, marginBottom: 14, lineHeight: 1.9 }}>
+        <span style={{ color: GRIJS }}>📖 Originele scans openen: </span>
+        {BOEKEN_SCANS.map(([label, pad], i) => (
+          <span key={pad}>{i > 0 ? " · " : ""}<button onClick={() => openBoek(pad)} style={{ background: "none", border: 0, color: GROEN, fontWeight: 700, cursor: "pointer", padding: 0, font: "inherit", textDecoration: "underline" }}>{label}</button></span>
+        ))}
+      </div>
       {zoek.trim() === "" ? (
         <div style={{ color: GRIJS, fontSize: 13.5, fontStyle: "italic" }}>Typ een tagnummer (bv. E 15370), voertuig (bv. Opel Kadett) of carburateur (bv. 38 PDSI) in de zoekbalk bovenaan.</div>
       ) : rows.length === 0 ? (
@@ -477,7 +516,7 @@ function BoekSectie({ rows, total, zoek, tagIndex, openId }: { rows: BoekRij[]; 
                       <td style={td}>{r.voertuig}</td>
                       <td style={{ ...td, color: GRIJS, fontSize: 12.5 }}>{r.motor}</td>
                       <td style={{ ...td, color: GRIJS, fontSize: 12.5, whiteSpace: "nowrap" }}>{fullJaar(r.jaar)}</td>
-                      <td style={{ ...td, color: GRIJS, fontSize: 12 }}>{r.boek}</td>
+                      <td style={{ ...td, color: GRIJS, fontSize: 12 }}>{BOEK_PDF[r.bron] ? <button onClick={() => openBoek(BOEK_PDF[r.bron])} title="Open originele scan" style={{ background: "none", border: 0, color: GROEN, fontWeight: 700, cursor: "pointer", padding: 0, font: "inherit", textDecoration: "underline" }}>{r.boek} 📖</button> : r.boek}</td>
                     </tr>
                   );
                 })}
