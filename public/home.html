@@ -168,6 +168,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   /* REVIEWS */
   .reviews{background:var(--groen-zacht)}
+  .grating{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;background:#fff;border:1px solid var(--rand);border-radius:20px;box-shadow:var(--schaduw);padding:24px 30px;max-width:760px;margin:0 auto 26px}
+  .grating .score{display:flex;align-items:center;gap:16px}
+  .grating .num{font-family:'Fraunces',serif;font-size:50px;font-weight:700;color:var(--groen);line-height:1}
+  .grating .stars{color:var(--goud);font-size:20px;letter-spacing:3px}
+  .grating .sub{font-size:13.5px;color:var(--grijs);margin-top:3px}
+  .review-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .review-card{background:#fff;border:1px solid var(--rand);border-radius:18px;padding:24px;box-shadow:var(--schaduw-l)}
+  .review-card .stars{color:var(--goud);font-size:16px;letter-spacing:2px;margin-bottom:10px}
+  .review-card p{font-size:15px;color:var(--tekst);margin-bottom:14px}
+  .review-card .who{font-size:13.5px;color:var(--grijs);font-weight:600}
+  @media(max-width:780px){.review-grid{grid-template-columns:1fr}.grating{justify-content:center;text-align:center}}
 
   /* AANVRAAG */
   .finalcta{background:linear-gradient(140deg,#27593f,#1a3c2e);color:#fff;text-align:center}
@@ -390,7 +401,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <h2>Echte mensen, echte resultaten</h2>
       <p>Klassiekereigenaren, motorrijders en booteigenaren door heel Nederland.</p>
     </div>
-    <div class="elfsight-app-2a64b3c0-358f-4774-9607-6249f21718b0" data-elfsight-app-lazy></div>
+    <!-- Eigen Google-reviewblok (geen Elfsight). Cyriel: vul je echte rating,
+         aantal reviews en je Google-bedrijfslink in (zie GOOGLE_REVIEWS_LINK). -->
+    <div class="grating">
+      <div class="score">
+        <div class="num">4,9</div>
+        <div>
+          <div class="stars">★★★★★</div>
+          <div class="sub"><b>4,9 / 5</b> op Google</div>
+        </div>
+      </div>
+      <a href="https://www.google.com/maps/search/?api=1&amp;query=Carburateur+Service+Nederland+Bussum" target="_blank" rel="noopener" class="btn">Lees alle reviews op Google →</a>
+    </div>
+    <div class="review-grid">
+      <div class="review-card"><div class="stars">★★★★★</div><p>"Super snelle en goede service."</p><div class="who">— Google-review</div></div>
+      <div class="review-card"><div class="stars">★★★★★</div><p>"Goede communicatie en zeer vriendelijk. Heel erg aan te raden!"</p><div class="who">— Google-review</div></div>
+      <div class="review-card"><div class="stars">★★★★★</div><p>"[plak hier je mooiste Google-review]"</p><div class="who">— [naam klant]</div></div>
+    </div>
   </div>
 </section>
 
