@@ -6,7 +6,7 @@
 
 import { useState, useEffect, CSSProperties } from "react";
 import { GROEN, TEKST, GRIJS, RAND, BG, KAART_BG, GROEN_BG } from "@/lib/theme";
-import { normaliseerKenteken } from "@/lib/rdw";
+import { normaliseerKenteken, haalVoertuig } from "@/lib/rdw";
 
 type Velden = {
   voornaam: string; achternaam: string; telefoon: string; email: string;
@@ -38,18 +38,10 @@ export default function AanvraagPagina() {
   }, []);
 
   async function checkKenteken() {
-    const k = normaliseerKenteken(kenteken);
     setVoertuig(null); setGeenMatch(false);
-    if (k.length < 4) return;
-    try {
-      const res = await fetch(`https://opendata.rdw.nl/resource/m9d7-ebf2.json?kenteken=${k}`);
-      const r = await res.json();
-      const x = r && r[0];
-      if (x) {
-        const bj = (x.datum_eerste_toelating || "").slice(0, 4);
-        setVoertuig([[x.merk, x.handelsbenaming].filter(Boolean).join(" "), bj, x.cilinderinhoud ? `${x.cilinderinhoud} cc` : ""].filter(Boolean).join(" · "));
-      } else setGeenMatch(true);
-    } catch { setGeenMatch(true); }
+    if (normaliseerKenteken(kenteken).length < 4) return;
+    const v = await haalVoertuig(kenteken);
+    if (v) setVoertuig(v.omschrijving); else setGeenMatch(true);
   }
 
   async function verstuur(e: React.FormEvent) {
