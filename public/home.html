@@ -95,7 +95,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   .sec-head p{color:var(--grijs);font-size:17px}
 
   /* TYPE-KAARTEN */
-  .types{background:linear-gradient(140deg,#27593f 0%,#1a3c2e 60%,#102a1f 100%);color:#fff}
+  .types{position:relative;overflow:hidden;background:linear-gradient(140deg,#27593f 0%,#1a3c2e 60%,#102a1f 100%);color:#fff}
+  .types::after{content:"";position:absolute;top:-120px;right:-90px;width:460px;height:460px;background:radial-gradient(circle,rgba(184,150,46,.20),transparent 68%);border-radius:50%;pointer-events:none}
+  .types .wrap{position:relative;z-index:1}
   .types .sec-head h2{color:#fff}
   .types .sec-head p{color:rgba(255,255,255,.82)}
   .types .type-card{box-shadow:0 22px 48px rgba(0,0,0,.34)}
