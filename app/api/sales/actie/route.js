@@ -6,18 +6,12 @@
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { vereisIngelogd } from "@/lib/auth-server";
 import { magSales, codeVoorEmail } from "@/app/werkplaats-planning/planning-config";
-
-const ADMIN = process.env.MONEYBIRD_ADMIN;
-const TOKEN = process.env.MONEYBIRD_TOKEN;
+import { mbRaw, MB_ADMIN as ADMIN, MB_TOKEN as TOKEN } from "@/lib/moneybird";
 
 async function moneybirdNotitie(offerteId, tekst) {
   if (!ADMIN || !TOKEN || !offerteId) return false;
   try {
-    const res = await fetch(`https://moneybird.com/api/v2/${ADMIN}/estimates/${offerteId}/notes.json`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${TOKEN}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ note: { todo: false, note: tekst } }),
-    });
+    const res = await mbRaw(`estimates/${offerteId}/notes.json`, "POST", { note: { todo: false, note: tekst } });
     return res.ok;
   } catch { return false; }
 }

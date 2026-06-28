@@ -4,8 +4,7 @@
 // server-side; de werkplaats is in Moneybird ingelogd.
 
 import { vereisBeheer } from "@/lib/auth-server";
-
-const ADMIN = process.env.MONEYBIRD_ADMIN;
+import { MB_ADMIN as ADMIN } from "@/lib/moneybird";
 
 export async function GET(req) {
   // Portier: alleen beheer (admin/manager) mag de offertelink ophalen.

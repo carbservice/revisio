@@ -8,9 +8,8 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { vereisIngelogd } from "@/lib/auth-server";
 import { geoffreerdeArbeidUit, geoffreerdeUren, UURTARIEF_EX_BTW } from "@/lib/tarief";
 import { codeVoorEmail } from "@/app/werkplaats-planning/planning-config";
+import { mbRaw } from "@/lib/moneybird";
 
-const ADMIN = process.env.MONEYBIRD_ADMIN;
-const TOKEN = process.env.MONEYBIRD_TOKEN;
 const SITE = "https://revisio-umber.vercel.app";
 
 export async function POST(request) {
@@ -28,7 +27,7 @@ export async function POST(request) {
     // Geoffreerde arbeid uit Moneybird.
     let geofArbeid = 0, nummer = (link && link.nummer) || "", klant = (link && link.klant) || "";
     try {
-      const res = await fetch(`https://moneybird.com/api/v2/${ADMIN}/estimates/${klus_id}.json`, { headers: { Authorization: `Bearer ${TOKEN}` }, cache: "no-store" });
+      const res = await mbRaw(`estimates/${klus_id}.json`);
       if (res.ok) {
         const e = await res.json();
         geofArbeid = geoffreerdeArbeidUit(e);

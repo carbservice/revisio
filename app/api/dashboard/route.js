@@ -3,11 +3,10 @@
 
 import { vereisAdmin } from "@/lib/auth-server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { MB_ADMIN, MB_TOKEN } from "@/lib/moneybird";
 
-const ADMIN = process.env.MONEYBIRD_ADMIN;
-const TOKEN = process.env.MONEYBIRD_TOKEN;
-const BASE = `https://moneybird.com/api/v2/${ADMIN}`;
-const HEADERS = { Authorization: `Bearer ${TOKEN}` };
+const BASE = `https://moneybird.com/api/v2/${MB_ADMIN}`;
+const HEADERS = { Authorization: `Bearer ${MB_TOKEN}` };
 
 const BANKGROEP = "417531255605692035";
 const BTW_SPAARPOT = "482563736709629049";

@@ -3,8 +3,8 @@
 // terug of die nu bereikbaar is, plus de responstijd. Server-side, zodat
 // tokens veilig blijven en er geen CORS-gedoe is.
 
-const MB_ADMIN = process.env.MONEYBIRD_ADMIN;
-const MB_TOKEN = process.env.MONEYBIRD_TOKEN;
+import { MB_ADMIN, MB_TOKEN } from "@/lib/moneybird";
+
 const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SB_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 

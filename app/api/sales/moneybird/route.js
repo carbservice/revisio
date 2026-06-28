@@ -6,9 +6,7 @@
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { vereisIngelogd } from "@/lib/auth-server";
 import { magSales } from "@/app/werkplaats-planning/planning-config";
-
-const ADMIN = process.env.MONEYBIRD_ADMIN;
-const TOKEN = process.env.MONEYBIRD_TOKEN;
+import { mbRaw, MB_ADMIN as ADMIN, MB_TOKEN as TOKEN } from "@/lib/moneybird";
 
 // dashboard-actie -> (Moneybird-state, lokale lead-status)
 const ACTIES = {
@@ -33,11 +31,7 @@ export async function POST(req) {
   // Moneybird-state wijzigen.
   let mbFout = null, nieuweState = map.state;
   try {
-    const res = await fetch(`https://moneybird.com/api/v2/${ADMIN}/estimates/${lead.offerte_id}/change_state.json`, {
-      method: "PATCH",
-      headers: { Authorization: `Bearer ${TOKEN}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ state: map.state }),
-    });
+    const res = await mbRaw(`estimates/${lead.offerte_id}/change_state.json`, "PATCH", { state: map.state });
     if (!res.ok) {
       const t = await res.text();
       // Al in deze (of een eind-)staat? Moneybird geeft dan "State is invalid" /

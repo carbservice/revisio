@@ -5,13 +5,8 @@
 // we kunnen 'm vanaf de kaart koppelen met een simpele link.
 
 import { vereisBeheer } from "@/lib/auth-server";
+import { mbRaw as mb } from "@/lib/moneybird";
 
-const ADMIN = process.env.MONEYBIRD_ADMIN;
-const TOKEN = process.env.MONEYBIRD_TOKEN;
-
-function mb(path) {
-  return fetch(`https://moneybird.com/api/v2/${ADMIN}/${path}`, { headers: { Authorization: `Bearer ${TOKEN}` }, cache: "no-store" });
-}
 function bericht(tekst) {
   return new Response(`<!doctype html><meta charset="utf-8"><body style="font-family:system-ui,sans-serif;padding:40px;color:#23211c;background:#f1f7f1"><p style="font-size:17px">${tekst}</p></body>`, { headers: { "Content-Type": "text/html; charset=utf-8" } });
 }

@@ -10,11 +10,10 @@
 
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { haalVoertuig } from "@/lib/rdw";
+import { mb, MB_ADMIN as ADMIN, MB_TOKEN as TOKEN } from "@/lib/moneybird";
 
 export const dynamic = "force-dynamic";
 
-const ADMIN = process.env.MONEYBIRD_ADMIN;
-const TOKEN = process.env.MONEYBIRD_TOKEN;
 const EST_WORKFLOW = "417531256412047023"; // EstimateWorkflow "Standaard"
 const DOC_STYLE = "417607702940746976";    // document-stijl "Carburateur Service"
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://revisio-umber.vercel.app";
@@ -41,21 +40,6 @@ function bronUitTracking(p) {
   if (s.includes("shop")) return "shop";
   if (s) return "organisch";
   return "organisch";
-}
-
-async function mb(path, method = "GET", body) {
-  try {
-    const res = await fetch(`https://moneybird.com/api/v2/${ADMIN}/${path}`, {
-      method,
-      headers: { Authorization: `Bearer ${TOKEN}`, "Content-Type": "application/json" },
-      cache: "no-store",
-      body: body ? JSON.stringify(body) : undefined,
-    });
-    if (!res.ok) return { _fout: res.status, _tekst: (await res.text()).slice(0, 200) };
-    return res.json();
-  } catch (e) {
-    return { _fout: 0, _tekst: String(e).slice(0, 200) };
-  }
 }
 
 // Bestaand contact op e-mail hergebruiken, anders nieuw aanmaken (geen dubbels).
@@ -292,8 +276,7 @@ export async function POST(req) {
 
   // 4) Melding (zacht).
   await stuurMelding(d, kenmerk, offerteNr);
-  const mbAdmin = process.env.MONEYBIRD_ADMIN;
-  const offerteLink = offerteId && mbAdmin ? `https://moneybird.com/${mbAdmin}/estimates/${offerteId}` : null;
+  const offerteLink = offerteId && ADMIN ? `https://moneybird.com/${ADMIN}/estimates/${offerteId}` : null;
   await stuurWhatsapp(d, kenmerk, offerteLink, bronLabel(bron, d.tracking));
 
   return json({ ok: true, voertuig: kenmerk, offerte: offerteNr, fotos: fotoInfo ? fotoInfo.aantal : 0, mbFout });

@@ -1,14 +1,16 @@
 "use client";
 
-// Adminportaal urenregistratie: bovenaan de uren die nog geAKKORDEERD moeten
+// Beheerportaal urenregistratie: bovenaan de uren die nog geAKKORDEERD moeten
 // worden (per medewerker, per dag, met goedkeuren/afkeuren), daaronder de
 // maandtotalen per medewerker (goedgekeurd = wat naar de loonaanvraag gaat).
-// Alleen zichtbaar voor wie in app_admins staat (RLS: is_admin()).
+// Toegang via het reguliere app_gebruikers-systeem (admin only); het
+// akkorderen loopt via de beveiligde API-route /api/uren (portier: vereisAdmin).
 
 import { useEffect, useState, useCallback, CSSProperties } from "react";
 import AuthGate, { useGebruiker } from "@/app/components/AuthGate";
 import PaginaKop from "@/app/components/PaginaKop";
 import { supabase } from "@/lib/supabase";
+import { apiFetch } from "@/lib/api";
 import { GROEN, GROEN_BG, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG, KAART_BG } from "@/lib/theme";
 
 const ORANJE = "#e0911e";
@@ -18,21 +20,17 @@ const dezeMaand = () => new Date().toISOString().slice(0, 7);
 const datkort = (d: string) => new Date(d).toLocaleDateString("nl-NL", { weekday: "short", day: "numeric", month: "short" });
 
 export default function OverzichtPagina() {
-  return <AuthGate><Overzicht /></AuthGate>;
+  return <AuthGate requireAdmin><Overzicht /></AuthGate>;
 }
 
 function Overzicht() {
   const { naam, uitloggen } = useGebruiker();
-  const [isAdm, setIsAdm] = useState<boolean | null>(null);
   const [maand, setMaand] = useState(dezeMaand());
   const [rows, setRows] = useState<Row[]>([]);
   const [laden, setLaden] = useState(true);
   const [fout, setFout] = useState<string | null>(null);
 
-  useEffect(() => { supabase.from("app_admins").select("user_id").limit(1).then(({ data }) => setIsAdm(!!(data && data.length))); }, []);
-
   const laad = useCallback(async () => {
-    if (!isAdm) return;
     setLaden(true); setFout(null);
     const eerste = `${maand}-01`;
     const [j, m] = maand.split("-").map(Number);
@@ -43,21 +41,21 @@ function Overzicht() {
       .order("datum", { ascending: true }).order("start_tijd", { ascending: true });
     if (error) setFout(error.message); else setRows((data || []) as Row[]);
     setLaden(false);
-  }, [maand, isAdm]);
+  }, [maand]);
 
   useEffect(() => { laad(); }, [laad]);
 
+  // Akkorderen loopt via de beveiligde route (portier: vereisAdmin); de
+  // anon-sleutel schrijft niet meer rechtstreeks.
   async function zet(filter: { id?: string; user_id?: string }, status: "goedgekeurd" | "afgekeurd") {
-    const patch = { status, goedgekeurd_op: new Date().toISOString(), goedgekeurd_door: naam };
-    let q = supabase.from("urenregistratie").update(patch).eq("status", "ingediend");
-    if (filter.id) q = q.eq("id", filter.id);
-    if (filter.user_id) {
-      const eerste = `${maand}-01`; const [j, m] = maand.split("-").map(Number);
-      const laatste = new Date(j, m, 0).toISOString().slice(0, 10);
-      q = q.eq("user_id", filter.user_id).gte("datum", eerste).lte("datum", laatste);
-    }
-    const { error } = await q;
-    if (error) setFout(error.message); else laad();
+    setFout(null);
+    const r = await apiFetch("/api/uren", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: filter.id, user_id: filter.user_id, maand, status }),
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || j.fout) setFout(j.fout || `Niet opgeslagen (${r.status})`); else laad();
   }
 
   // Te akkorderen, gegroepeerd per medewerker
@@ -79,11 +77,7 @@ function Overzicht() {
     <main style={wrap}><div style={binnen}>
       <PaginaKop naam={naam} onUitloggen={uitloggen} titel="Uren Akkorderen" />
 
-      {isAdm === null ? <p style={{ color: GRIJS }}>Laden…</p> : !isAdm ? (
-        <div style={{ ...kaart, color: GRIJS }}>Geen toegang. Dit portaal is alleen voor admins. Voeg je auth-user-id toe aan <b>app_admins</b> in Supabase.</div>
-      ) : (
-        <>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
             <span style={{ fontSize: 14, color: GRIJS }}>Maand:</span>
             <input type="month" value={maand} onChange={(e) => setMaand(e.target.value)} style={{ ...inp, width: "auto" }} />
             <a href="/uren" style={{ marginLeft: "auto", color: GROEN, fontWeight: 700, fontSize: 14, textDecoration: "none" }}>← Mijn uren</a>
@@ -137,8 +131,6 @@ function Overzicht() {
               </tbody>
             </table>
           </div>
-        </>
-      )}
     </div></main>
   );
 }

@@ -3,11 +3,9 @@
 
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { vereisBeheer } from "@/lib/auth-server";
+import { mbRaw, MB_ADMIN, MB_TOKEN } from "@/lib/moneybird";
 
 export const dynamic = "force-dynamic";
-
-const MB_ADMIN = process.env.MONEYBIRD_ADMIN;
-const MB_TOKEN = process.env.MONEYBIRD_TOKEN;
 
 // Map klus_id (= Moneybird estimate-id) naar ordernummer/klant/kenmerk.
 // Faalt stil terug op een lege map, zodat het dashboard altijd laadt.
@@ -17,10 +15,7 @@ async function moneybirdMap() {
     const map = {};
     let page = 1;
     while (true) {
-      const res = await fetch(
-        `https://moneybird.com/api/v2/${MB_ADMIN}/estimates.json?filter=${encodeURIComponent("period:this_year,state:accepted")}&per_page=100&page=${page}`,
-        { headers: { Authorization: `Bearer ${MB_TOKEN}` }, cache: "no-store" }
-      );
+      const res = await mbRaw(`estimates.json?filter=${encodeURIComponent("period:this_year,state:accepted")}&per_page=100&page=${page}`);
       if (!res.ok) break;
       const batch = await res.json();
       (batch || []).forEach((e) => {

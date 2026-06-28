@@ -7,11 +7,10 @@
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { vereisIngelogd } from "@/lib/auth-server";
 import { magSales } from "@/app/werkplaats-planning/planning-config";
+import { mbRaw, MB_ADMIN as ADMIN, MB_TOKEN as TOKEN } from "@/lib/moneybird";
 
 export const dynamic = "force-dynamic";
 
-const ADMIN = process.env.MONEYBIRD_ADMIN;
-const TOKEN = process.env.MONEYBIRD_TOKEN;
 const offerteUrl = (id) => (id && ADMIN ? `https://moneybird.com/${ADMIN}/estimates/${id}` : null);
 
 // Grootboek-namen per advertentiekanaal (Moneybird). Som van alle rekeningen met
@@ -25,8 +24,10 @@ function kanaalVanBron(bron) {
   return null; // organisch / onbekend = geen betaald kanaal
 }
 
+// Deze route wil bij een fout bewust `null` (de call-sites checken op null /
+// Array.isArray), dus we gebruiken mbRaw en houden die null-contract hier lokaal.
 async function mb(path) {
-  const res = await fetch(`https://moneybird.com/api/v2/${ADMIN}/${path}`, { headers: { Authorization: `Bearer ${TOKEN}` }, cache: "no-store" });
+  const res = await mbRaw(path);
   return res.ok ? res.json() : null;
 }
 

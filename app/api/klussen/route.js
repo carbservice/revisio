@@ -9,11 +9,10 @@
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { vereisIngelogd } from "@/lib/auth-server";
 import { geoffreerdeArbeidUit } from "@/lib/tarief";
+import { MB_ADMIN, MB_TOKEN } from "@/lib/moneybird";
 
-const ADMIN = process.env.MONEYBIRD_ADMIN;
-const TOKEN = process.env.MONEYBIRD_TOKEN;
-const BASE = `https://moneybird.com/api/v2/${ADMIN}`;
-const HEADERS = { Authorization: `Bearer ${TOKEN}` };
+const BASE = `https://moneybird.com/api/v2/${MB_ADMIN}`;
+const HEADERS = { Authorization: `Bearer ${MB_TOKEN}` };
 
 function wacht(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
