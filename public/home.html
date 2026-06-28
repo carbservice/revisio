@@ -82,6 +82,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   .type-card:hover{transform:translateY(-5px);box-shadow:var(--schaduw)}
   .type-card .ph{aspect-ratio:16/10;background:linear-gradient(160deg,#3a6e52,#1f4632);position:relative;overflow:hidden}
   .type-card .ph img{width:100%;height:100%;object-fit:cover;display:block}
+  .type-card .ph .slide{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .9s ease}
+  .type-card .ph .slide.on{opacity:1}
   .type-card .body{padding:20px 22px 24px}
   .type-card .em{font-size:30px;display:block;margin-bottom:6px}
   .type-card h3{font-size:21px;color:var(--groen);margin-bottom:6px}
@@ -286,20 +288,36 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="wrap">
     <div class="sec-head">
       <span class="eyebrow">Waar kunnen we je mee helpen?</span>
-      <h2>Kies jouw voertuig</h2>
+      <h2>Auto, motorfiets of boot?</h2>
       <p>Voor elk type hetzelfde vakwerk: ultrasoon gereinigd, A-kwaliteit onderdelen, exact op fabrieksinstelling afgesteld.</p>
     </div>
     <div class="types-grid">
       <a class="type-card" href="automotive.html">
-        <div class="ph"><img src="demo/werkbank-3.jpg" alt="Automotive carburateur" onerror="this.parentNode.style.background='linear-gradient(160deg,#3a6e52,#1f4632)'"></div>
+        <div class="ph">
+          <img class="slide on" src="demo/werkbank-1.jpg" alt="Automotive carburateur" onerror="this.style.display='none'">
+          <img class="slide" src="demo/werkbank-2.jpg" alt="" onerror="this.style.display='none'">
+          <img class="slide" src="demo/werkbank-3.jpg" alt="" onerror="this.style.display='none'">
+          <img class="slide" src="demo/auto-1.jpg" alt="" onerror="this.style.display='none'">
+          <img class="slide" src="demo/auto-2.jpg" alt="" onerror="this.style.display='none'">
+          <img class="slide" src="demo/auto-3.jpg" alt="" onerror="this.style.display='none'">
+        </div>
         <div class="body"><span class="em">🚗</span><h3>Automotive</h3><p>Klassieke auto's &amp; oldtimers. Weber, Solex, Stromberg, Pierburg, Zenith en meer.</p><span class="go">Bekijk automotive →</span></div>
       </a>
       <a class="type-card" href="motorfiets.html">
-        <div class="ph"><img src="demo/moto-3.jpg" alt="Motorfiets carburateur" onerror="this.parentNode.style.background='linear-gradient(160deg,#3a6e52,#1f4632)'"></div>
+        <div class="ph">
+          <img class="slide on" src="demo/moto-1.jpg" alt="Motorfiets carburateur" onerror="this.style.display='none'">
+          <img class="slide" src="demo/moto-2.jpg" alt="" onerror="this.style.display='none'">
+          <img class="slide" src="demo/moto-3.jpg" alt="" onerror="this.style.display='none'">
+          <img class="slide" src="demo/moto-5.jpg" alt="" onerror="this.style.display='none'">
+          <img class="slide" src="demo/moto-6.jpg" alt="" onerror="this.style.display='none'">
+          <img class="slide" src="demo/moto-7.jpg" alt="" onerror="this.style.display='none'">
+        </div>
         <div class="body"><span class="em">🏍️</span><h3>Motorfiets</h3><p>Mikuni, Keihin en meer. Losse carbs of breng je complete motorfiets, wij doen 't werk.</p><span class="go">Bekijk motorfiets →</span></div>
       </a>
       <a class="type-card" href="marine.html">
-        <div class="ph"><img src="demo/marine-1.jpg" alt="Marine carburateur" onerror="this.parentNode.style.background='linear-gradient(160deg,#3a6e52,#1f4632)'"></div>
+        <div class="ph">
+          <img class="slide on" src="demo/marine-1.jpg" alt="Marine carburateur" onerror="this.style.display='none'">
+        </div>
         <div class="body"><span class="em">⛵</span><h3>Boot &amp; Marine</h3><p>Buiten- en binnenboordmotoren weer betrouwbaar op het water. Ophalen en terugbrengen mogelijk.</p><span class="go">Bekijk marine →</span></div>
       </a>
     </div>
@@ -733,6 +751,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       i = (i + 1) % slides.length;
       slides[i].classList.add('on');
     }, 4500);
+  })();
+
+  // ====== Mini-carousels in de voertuig-kaarten (gesynchroniseerd) ======
+  (function(){
+    var phs = document.querySelectorAll('.type-card .ph');
+    if(!phs.length) return;
+    var tick = 0;
+    setInterval(function(){
+      tick++;
+      phs.forEach(function(ph){
+        var slides = ph.querySelectorAll('.slide');
+        if(slides.length < 2) return;
+        slides.forEach(function(s){ s.classList.remove('on'); });
+        slides[tick % slides.length].classList.add('on');
+      });
+    }, 3000);
   })();
 
   // ====== Lightbox voor review-foto's (popup op de pagina, weg te klikken) ======
