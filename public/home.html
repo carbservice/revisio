@@ -80,6 +80,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   .hero2 h1 em{font-style:normal;color:var(--goud-licht)}
   .hero2 .lead{font-size:19px;color:rgba(255,255,255,.9);max-width:490px;margin-bottom:30px}
   .hero2 .cta{display:flex;gap:14px;flex-wrap:wrap}
+  .hero2 .hero-note{margin-top:16px;font-size:13.5px;color:rgba(255,255,255,.78)}
   .hero2 .stats{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(180deg,transparent,rgba(11,28,20,.9));padding:26px 0 22px}
   .hero2 .stats .row{display:flex;gap:46px;flex-wrap:wrap}
   .hero2 .stats b{font-family:'Fraunces',serif;font-size:22px;display:block;color:#fff;font-weight:600}
@@ -273,7 +274,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   /* FLOATING WHATSAPP (linksonder, zodat de chatbot rechtsonder vrij blijft) */
   .wa{position:fixed;left:18px;bottom:18px;z-index:60;display:inline-flex;align-items:center;gap:9px;background:#25d366;color:#fff;font-weight:700;font-size:14.5px;border-radius:999px;padding:13px 18px;text-decoration:none;box-shadow:0 10px 26px rgba(0,0,0,.25);transition:transform .15s}
   .wa:hover{transform:translateY(-2px)}
-  @media(max-width:600px){.wa span{display:none}.wa{padding:14px;border-radius:50%}}
+  @media(max-width:760px){.wa{display:none}}
+  /* sticky offerte-knop op mobiel (midden-onder, hoeken vrij voor chat) */
+  .sticky-cta{display:none}
+  @media(max-width:760px){.sticky-cta{display:block;position:fixed;left:50%;transform:translateX(-50%);bottom:16px;z-index:58}
+    .sticky-cta a{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--goud),#a07d1f);color:#fff;font-weight:800;font-size:15px;border-radius:999px;padding:14px 24px;text-decoration:none;box-shadow:0 12px 28px rgba(0,0,0,.34)}}
 
   /* LIGHTBOX voor review-foto's (popup op de pagina) */
   .lb{position:fixed;inset:0;z-index:200;background:rgba(16,42,31,.9);display:none;align-items:center;justify-content:center;padding:24px;cursor:zoom-out}
@@ -315,13 +320,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <a href="#aanvraag" class="btn btn-goud">Vraag gratis offerte →</a>
         <a href="#checker" class="btn btn-wit">🔍 Doe de klachtencheck</a>
       </div>
+      <div class="hero-note">Gratis &amp; vrijblijvend · reactie meestal binnen één werkdag</div>
     </div>
   </div>
   <div class="stats">
     <div class="wrap">
       <div class="row">
+        <div><b>★ 4,9</b><span>op Google</span></div>
         <div><b>650+</b><span>revisies uitgevoerd</span></div>
-        <div><b>Vakmanschap</b><span>met originele onderdelen</span></div>
         <div><b>Live</b><span>volg je revisie via Revisio</span></div>
       </div>
     </div>
@@ -490,6 +496,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <span class="eyebrow" style="color:var(--goud-licht)">Gratis &amp; vrijblijvend</span>
     <h2 style="margin-top:12px">Vraag je offerte aan</h2>
     <p>Vul dit in, je hoort meestal binnen één werkdag wat we voor je kunnen doen.</p>
+    <div style="color:var(--goud-licht);font-weight:700;font-size:14.5px;margin-bottom:8px">★★★★★ &nbsp;4,9 op Google · 650+ revisies uitgevoerd</div>
 
     <form class="formcard" id="aanvraagForm" onsubmit="return verstuur(event)">
       <div class="q">1. Wat heb je?</div>
@@ -534,15 +541,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="q" style="margin-top:24px">4. Je gegevens</div>
       <div class="grid2">
         <label>Voornaam *<input id="f_voornaam" type="text" required></label>
-        <label>Achternaam *<input id="f_achternaam" type="text" required></label>
-        <label>Telefoonnummer *<input id="f_telefoon" type="tel" placeholder="06..." required></label>
+        <label>Achternaam<input id="f_achternaam" type="text"></label>
+        <label>Telefoon · handig om je te bellen<input id="f_telefoon" type="tel" placeholder="06..."></label>
         <label>E-mailadres *<input id="f_email" type="email" required></label>
       </div>
 
       <label>Carburateur, merk / type / serienummer / tagnummer<input id="f_carburateur" type="text" placeholder="Zit er nog een oormerk aan de carburateur?"></label>
       <div class="form-note" style="text-align:left;margin-top:6px">Lees alleen het merk, type en de tagnummers af die direct op de carburateur staan, die kloppen het meest betrouwbaar.</div>
 
-      <label>Kenteken<input id="f_kenteken" type="text" placeholder="bijv. AB-12-CD" onblur="checkKenteken()"></label>
+      <label>Kenteken * · we lezen je voertuig automatisch uit<input id="f_kenteken" type="text" placeholder="bijv. AB-12-CD" onblur="checkKenteken()"></label>
       <div class="form-note" id="voertuiginfo" style="display:none;text-align:left;margin-top:6px;color:var(--groen);font-weight:700"></div>
 
       <label>Welke klachten heb je? *<textarea id="klachtveld" rows="3" required placeholder="Beschrijf kort wat het voertuig doet, of klik ze hierboven aan in de checker..."></textarea></label>
@@ -597,6 +604,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </footer>
 
 <a class="wa" href="https://wa.me/31653864208" target="_blank" rel="noopener" aria-label="WhatsApp"><span>WhatsApp ons</span>💬</a>
+
+<!-- Sticky offerte-knop op mobiel -->
+<div class="sticky-cta"><a href="#aanvraag">Vraag gratis offerte →</a></div>
 
 <!-- Elfsight AI Chatbot, Carbie -->
 <div class="elfsight-app-937db81a-8d01-4681-9e9b-bdf135097542" data-elfsight-app-lazy></div>
@@ -778,7 +788,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   async function verstuur(e){
     e.preventDefault();
     var val = function(id){ var el=document.getElementById(id); return el ? el.value.trim() : ''; };
-    if(!val('f_voornaam') || !val('f_achternaam') || !val('f_telefoon') || !val('f_email') || !val('klachtveld')){ alert('Vul je voornaam, achternaam, telefoonnummer, e-mailadres en je klacht in.'); return false; }
+    if(!val('f_voornaam') || !val('f_email') || !val('klachtveld')){ alert('Vul minimaal je voornaam, e-mailadres en je klacht in.'); return false; }
     if(!val('f_kenteken')){
       if(!confirm("Je hebt geen kenteken ingevuld. Wij lezen kentekens automatisch uit, dat scheelt jou werk. Geen kenteken? Klik OK om te versturen, anders Annuleren om 'm alsnog in te vullen.")){ return false; }
     }
