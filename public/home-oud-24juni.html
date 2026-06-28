@@ -10,8 +10,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <!-- End Google Tag Manager -->
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Carbservice · Carburateur revisie voor auto, motor &amp; boot</title>
-<meta name="description" content="Specialist in carburateurrevisie voor klassieke auto's, motorfietsen en boten. Ultrasoon gereinigd, A-kwaliteit onderdelen, op fabrieksinstelling. Volg je revisie live mee. Vraag gratis je offerte aan.">
+<title>Carbservice · Specialist in carburateur revisie</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -39,55 +38,37 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   /* TOPBAR */
   .topbar{position:sticky;top:0;z-index:50;background:rgba(244,246,241,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--rand)}
   .topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
-  .logo{font-family:'Fraunces',serif;font-weight:700;font-size:22px;color:var(--groen);letter-spacing:.02em;text-decoration:none}
+  .logo{font-family:'Fraunces',serif;font-weight:700;font-size:22px;color:var(--groen);letter-spacing:.02em}
   .logo span{color:var(--goud)}
   .topnav{display:flex;align-items:center;gap:24px;font-size:14.5px;font-weight:600}
   .topnav a{text-decoration:none;color:var(--grijs)}
   .topnav a:hover{color:var(--groen)}
   .topphone{font-weight:700;color:var(--groen)}
-  @media(max-width:860px){.topnav a:not(.btn){display:none}}
+  @media(max-width:760px){.topnav a:not(.btn){display:none}}
 
   /* HERO */
   .hero{position:relative;overflow:hidden;background:linear-gradient(140deg,#27593f 0%,#1a3c2e 52%,#102a1f 100%);color:#fff}
-  .hero::after{content:"";position:absolute;top:-120px;right:-90px;width:460px;height:460px;background:radial-gradient(circle,rgba(184,150,46,.22),transparent 68%);border-radius:50%}
-  .hero .wrap{position:relative;display:grid;grid-template-columns:1.08fr .92fr;gap:48px;align-items:center;padding:72px 22px}
+  .hero::after{content:"";position:absolute;top:-120px;right:-90px;width:420px;height:420px;background:radial-gradient(circle,rgba(184,150,46,.22),transparent 68%);border-radius:50%}
+  .hero .wrap{position:relative;display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center;padding:74px 22px}
   .hero h1{font-size:clamp(34px,5vw,56px);font-weight:700}
   .hero h1 em{font-style:normal;color:var(--goud-licht)}
-  .hero p.lead{font-size:18.5px;color:rgba(255,255,255,.85);margin:22px 0 26px;max-width:520px}
-  .hero-types{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:22px}
-  .hero-type{display:inline-flex;align-items:center;gap:9px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.18);color:#fff;font-weight:700;font-size:15px;border-radius:14px;padding:13px 18px;cursor:pointer;transition:all .15s;font-family:inherit}
-  .hero-type:hover{background:rgba(255,255,255,.16);border-color:var(--goud-licht);transform:translateY(-2px)}
-  .hero-type .em{font-size:20px}
-  .hero-sub{font-size:14px;color:rgba(255,255,255,.7)}
-  .hero-sub a{color:var(--goud-licht);font-weight:700;text-decoration:none}
-  .hero-trust{display:flex;gap:24px;margin-top:30px;flex-wrap:wrap}
+  .hero p.lead{font-size:18.5px;color:rgba(255,255,255,.85);margin:22px 0 30px;max-width:520px}
+  .hero-cta{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .hero-trust{display:flex;gap:22px;margin-top:34px;flex-wrap:wrap}
   .hero-trust div{font-size:13.5px;color:rgba(255,255,255,.8)}
   .hero-trust b{display:block;font-family:'Fraunces',serif;font-size:24px;color:#fff;font-weight:600}
-  .hero-photo{aspect-ratio:4/3;border-radius:20px;background:linear-gradient(160deg,#3a6e52,#1f4632);border:1px solid rgba(255,255,255,.12);box-shadow:0 30px 60px rgba(0,0,0,.3);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+  .hero-photo{aspect-ratio:4/3;border-radius:20px;background:linear-gradient(160deg,#3a6e52,#1f4632);border:1px solid rgba(255,255,255,.12);box-shadow:0 30px 60px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5);font-size:14px;position:relative;overflow:hidden}
+  .hero-photo span{position:relative;z-index:2;text-align:center}
   .hero-badge{position:absolute;top:16px;left:16px;z-index:3;background:var(--goud);color:#fff;font-size:12px;font-weight:800;padding:6px 12px;border-radius:999px;letter-spacing:.04em}
   .hero-photo .slide{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1s ease;z-index:1}
   .hero-photo .slide.on{opacity:1}
   .hero-photo .ph{position:relative;z-index:0;color:rgba(255,255,255,.45);font-size:13px}
-  @media(max-width:860px){.hero .wrap{grid-template-columns:1fr;padding:48px 22px}.hero-photo{order:-1}}
+  @media(max-width:860px){.hero .wrap{grid-template-columns:1fr;padding:54px 22px}.hero-photo{order:-1}}
 
-  section{padding:72px 0}
+  section{padding:74px 0}
   .sec-head{text-align:center;max-width:680px;margin:0 auto 44px}
   .sec-head h2{font-size:clamp(28px,3.6vw,40px);margin:12px 0 14px;color:var(--groen)}
   .sec-head p{color:var(--grijs);font-size:17px}
-
-  /* TYPE-KAARTEN */
-  .types{background:var(--groen-zacht);border-bottom:1px solid var(--rand)}
-  .types-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-  .type-card{position:relative;display:block;background:#fff;border:1px solid var(--rand);border-radius:20px;overflow:hidden;text-decoration:none;color:var(--tekst);box-shadow:var(--schaduw-l);transition:transform .15s,box-shadow .15s}
-  .type-card:hover{transform:translateY(-5px);box-shadow:var(--schaduw)}
-  .type-card .ph{aspect-ratio:16/10;background:linear-gradient(160deg,#3a6e52,#1f4632);position:relative;overflow:hidden}
-  .type-card .ph img{width:100%;height:100%;object-fit:cover;display:block}
-  .type-card .body{padding:20px 22px 24px}
-  .type-card .em{font-size:30px;display:block;margin-bottom:6px}
-  .type-card h3{font-size:21px;color:var(--groen);margin-bottom:6px}
-  .type-card p{font-size:14px;color:var(--grijs);margin-bottom:14px}
-  .type-card .go{font-weight:700;color:var(--goud);font-size:14.5px}
-  @media(max-width:780px){.types-grid{grid-template-columns:1fr}}
 
   /* SYMPTOM CHECKER */
   .checker{background:linear-gradient(180deg,#fff 0%,var(--groen-zacht) 100%);border-top:1px solid var(--rand);border-bottom:1px solid var(--rand)}
@@ -116,32 +97,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     .chip{font-size:11.5px;padding:6px 11px;gap:5px}
     .chip .dot{width:13px;height:13px;font-size:9px}
     .chip .warn{font-size:10px}
-    .verdict h3{font-size:19px}
+    .verdict{position:sticky;bottom:0;background:#fff;margin:18px -14px 0;padding:12px 14px 14px;border-top:1px solid var(--rand);border-radius:0;box-shadow:0 -6px 18px rgba(26,60,46,.12);z-index:20}
+    .verdict .meter{margin:0 auto 9px}
+    .verdict h3{font-size:18px;margin-bottom:4px}
+    .verdict p{display:none}
+    .verdict .btn{padding:11px 22px;font-size:14.5px}
+    .urgent{font-size:12.5px;padding:10px 12px;margin-bottom:11px}
   }
 
-  /* KIJK MEE OP DE WERKBANK (Revisio) */
-  .werkbank{background:linear-gradient(140deg,#27593f 0%,#1a3c2e 60%,#102a1f 100%);color:#fff;position:relative;overflow:hidden}
-  .werkbank::after{content:"";position:absolute;bottom:-140px;left:-100px;width:440px;height:440px;background:radial-gradient(circle,rgba(184,150,46,.18),transparent 68%);border-radius:50%}
-  .wb-grid{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
-  .wb-grid h2{font-size:clamp(28px,3.4vw,40px);color:#fff;margin-bottom:16px}
-  .wb-grid h2 em{font-style:normal;color:var(--goud-licht)}
-  .wb-grid .lead{color:rgba(255,255,255,.85);font-size:17px;margin-bottom:22px;max-width:480px}
-  .wb-points{display:grid;gap:13px;margin-bottom:26px}
-  .wb-points div{display:flex;gap:11px;align-items:flex-start;font-size:15.5px;color:rgba(255,255,255,.9)}
-  .wb-points .v{color:var(--goud-licht);font-weight:800;flex:none}
-  .wb-card{background:#fff;border-radius:20px;box-shadow:0 30px 60px rgba(0,0,0,.34);padding:18px;color:var(--tekst)}
-  .wb-card .top{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--rand);padding-bottom:12px;margin-bottom:6px}
-  .wb-card .top .badge{background:var(--groen-licht);color:var(--groen);font-weight:800;font-size:11px;padding:4px 10px;border-radius:999px;letter-spacing:.04em}
-  .wb-card .top b{font-family:'Fraunces',serif;color:var(--groen);font-size:16px}
-  .wb-step{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid #f0efe9}
-  .wb-step:last-child{border-bottom:none}
-  .wb-step .ic{width:30px;height:30px;border-radius:9px;background:var(--groen);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex:none}
-  .wb-step.pending .ic{background:var(--groen-zacht);color:var(--grijs)}
-  .wb-step .tx{flex:1}
-  .wb-step .tx b{display:block;font-size:14.5px;color:var(--tekst)}
-  .wb-step .tx span{font-size:12.5px;color:var(--grijs)}
-  .wb-step .thumb{width:38px;height:38px;border-radius:8px;object-fit:cover;flex:none;border:1px solid var(--rand)}
-  @media(max-width:860px){.wb-grid{grid-template-columns:1fr;gap:32px}}
+  /* STAKES / urgentie */
+  .stakes{display:flex;gap:22px;align-items:center;background:linear-gradient(135deg,#fff 0%,var(--goud-licht) 100%);border:1px solid #e9d9a8;border-left:5px solid var(--goud);border-radius:18px;padding:26px 30px;box-shadow:var(--schaduw-l)}
+  .stakes .ic{font-size:42px;flex:none}
+  .stakes h3{font-size:21px;color:var(--groen);margin-bottom:6px}
+  .stakes p{color:var(--tekst);font-size:15px;max-width:780px}
+  @media(max-width:600px){.stakes{flex-direction:column;text-align:center}}
 
   /* PROCES */
   .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px}
@@ -166,17 +135,22 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   .merk-row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:8px}
   .merk{background:#fff;border:1px solid var(--rand);border-radius:999px;padding:9px 18px;font-weight:700;font-size:14.5px;color:var(--groen);box-shadow:var(--schaduw-l)}
 
-  /* REVIEWS */
-  .reviews{background:var(--groen-zacht)}
+  /* PRIJS */
+  .prijs{background:var(--groen-zacht)}
+  .prijs-card{background:#fff;border:1px solid var(--rand);border-radius:24px;box-shadow:var(--schaduw);max-width:560px;margin:0 auto;padding:40px;text-align:center}
+  .prijs-card .bedrag{font-family:'Fraunces',serif;font-size:58px;font-weight:700;color:var(--groen);line-height:1}
+  .prijs-card .bedrag small{font-size:20px;color:var(--grijs);font-weight:500}
+  .prijs-list{text-align:left;max-width:330px;margin:24px auto 28px;display:grid;gap:10px}
+  .prijs-list div{display:flex;gap:10px;font-size:15px;color:var(--tekst)}
+  .prijs-list .v{color:var(--groen);font-weight:800}
 
-  /* AANVRAAG */
+  /* CTA */
   .finalcta{background:linear-gradient(140deg,#27593f,#1a3c2e);color:#fff;text-align:center}
   .finalcta h2{font-size:clamp(28px,3.6vw,42px);margin-bottom:14px}
   .finalcta p{color:rgba(255,255,255,.85);font-size:18px;max-width:560px;margin:0 auto 24px}
   .formcard{background:#fff;border-radius:22px;box-shadow:0 24px 60px rgba(0,0,0,.28);padding:32px;text-align:left;color:var(--tekst);margin-top:10px}
   .formcard .q{font-family:'Fraunces',serif;font-size:18px;color:var(--groen);font-weight:600;margin-bottom:13px}
   .keuze{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px}
-  .keuze3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:8px}
   .keuze-opt{display:flex;gap:12px;align-items:flex-start;border:1.5px solid var(--rand);border-radius:14px;padding:15px;cursor:pointer;transition:all .15s}
   .keuze-opt:has(input:checked){border-color:var(--groen);background:var(--groen-zacht);box-shadow:0 0 0 3px rgba(26,60,46,.07)}
   .keuze-opt input{margin-top:3px;accent-color:var(--groen);width:18px;height:18px;flex:none}
@@ -192,18 +166,36 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   .bedankt .ic{font-size:46px}
   .bedankt h3{color:var(--groen);font-size:24px;margin:8px 0 6px}
   .bedankt p{color:var(--grijs);max-width:420px;margin:0 auto}
-  @media(max-width:620px){.keuze,.keuze3,.grid2{grid-template-columns:1fr}}
+  @media(max-width:620px){.keuze,.grid2{grid-template-columns:1fr}}
 
   footer{background:#13261c;color:rgba(255,255,255,.72);padding:48px 0;font-size:14.5px}
   footer .cols{display:flex;flex-wrap:wrap;gap:40px;justify-content:space-between}
   footer b{color:#fff;display:block;margin-bottom:10px;font-family:'Fraunces',serif;font-size:17px}
   footer a{color:var(--goud-licht);text-decoration:none}
-  footer .socials{display:flex;gap:14px;margin-top:12px;font-size:13.5px}
 
-  /* FLOATING WHATSAPP (linksonder, zodat de chatbot rechtsonder vrij blijft) */
-  .wa{position:fixed;left:18px;bottom:18px;z-index:60;display:inline-flex;align-items:center;gap:9px;background:#25d366;color:#fff;font-weight:700;font-size:14.5px;border-radius:999px;padding:13px 18px;text-decoration:none;box-shadow:0 10px 26px rgba(0,0,0,.25);transition:transform .15s}
-  .wa:hover{transform:translateY(-2px)}
-  @media(max-width:600px){.wa span{display:none}.wa{padding:14px;border-radius:50%}}
+  .mock-note{background:#fff8e6;border-bottom:1px solid #ecdca0;color:#7a5c12;font-size:13px;text-align:center;padding:8px 22px;font-weight:600}
+
+  /* DIENSTEN KAARTEN */
+  .kaart-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .kaart{display:flex;flex-direction:column;background:#fff;border:1px solid var(--rand);border-radius:24px;box-shadow:var(--schaduw);padding:34px 30px;transition:transform .15s}
+  .kaart:hover{transform:translateY(-4px)}
+  .kaart-foto{width:100%;height:175px;object-fit:cover;border-radius:14px;margin-bottom:20px;display:block;border:1px solid var(--rand)}
+  .kaart h3{font-size:23px;color:var(--groen);margin-bottom:18px}
+  .check-list{display:grid;gap:11px;margin-bottom:24px}
+  .check-list div{display:flex;gap:11px;font-size:15px;color:var(--tekst);align-items:flex-start}
+  .check-list .v{color:var(--groen);font-weight:800;flex:none}
+  .kaart .prijs-regel{font-family:'Fraunces',serif;font-size:34px;font-weight:700;color:var(--groen);line-height:1.1;margin-top:auto}
+  .kaart .prijs-regel small{font-size:17px;color:var(--grijs);font-weight:500}
+  .kaart .prijs-sub{color:var(--grijs);font-size:13px;margin:6px 0 22px}
+  .kaart .btn{width:100%;justify-content:center}
+  @media(max-width:880px){.kaart-grid{grid-template-columns:1fr}}
+
+  /* FAQ */
+  .faq{max-width:760px;margin:0 auto;display:grid;gap:12px}
+  .faq details{background:#fff;border:1px solid var(--rand);border-radius:14px;padding:4px 20px;box-shadow:var(--schaduw-l)}
+  .faq summary{cursor:pointer;font-weight:700;color:var(--groen);padding:14px 0;list-style:none}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq p{color:var(--grijs);font-size:15px;padding:0 0 16px}
 </style>
 </head>
 <body>
@@ -212,14 +204,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
 
+
 <header class="topbar">
   <div class="wrap">
-    <a href="#top" class="logo"><img src="logo-wit.png" alt="Carbservice" style="height:34px;display:block;filter:brightness(0)" onerror="this.outerHTML='CARB<span>SERVICE</span>'"></a>
+    <a href="#" class="logo"><img src="logo-wit.png" alt="Carbservice" style="height:34px;display:block;filter:brightness(0)" onerror="this.outerHTML='CARB<span>SERVICE</span>'"></a>
     <nav class="topnav">
       <a href="#diensten">Diensten</a>
-      <a href="#werkbank">Volg je revisie</a>
-      <a href="#proces">Werkwijze</a>
-      <a href="https://revisio-umber.vercel.app/shop" target="_blank" rel="noopener">Shop</a>
+      <a href="#reviews">Reviews</a>
+      <a href="#faq">Veelgestelde vragen</a>
+      <a href="https://www.carbservice.nl/" target="_blank" rel="noopener">Shop</a>
+      <a href="https://revisio-umber.vercel.app/volg" target="_blank" rel="noopener" style="font-weight:700;color:var(--groen)">Volg je revisie</a>
       <a class="topphone" href="tel:+31653864208">📞 +31 6 53864208</a>
       <a href="#aanvraag" class="btn btn-goud" style="padding:11px 20px;font-size:14px">Offerte aanvragen</a>
     </nav>
@@ -227,122 +221,93 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </header>
 
 <!-- HERO -->
-<section class="hero" id="top" style="padding:0">
+<section class="hero" style="padding:0">
   <div class="wrap">
     <div>
-      <span class="eyebrow">Carburateurspecialist · Auto · Motor · Boot</span>
-      <h1 style="margin-top:14px">Jouw carburateur weer <em>als nieuw</em>.</h1>
-      <p class="lead">Hapert, stottert, lekt, rookt of zuipt je klassieker, motor of boot? Negen van de tien rijproblemen komen door de carburateur. Wij maken 'm tot in detail weer perfect, en je volgt het hele proces live mee.</p>
-      <div class="hero-types">
-        <button type="button" class="hero-type" onclick="kies('automotive')"><span class="em">🚗</span> Auto</button>
-        <button type="button" class="hero-type" onclick="kies('motorfiets')"><span class="em">🏍️</span> Motorfiets</button>
-        <button type="button" class="hero-type" onclick="kies('marine')"><span class="em">⛵</span> Boot</button>
+      <span class="eyebrow">Carburateur revisie · Auto, motor en boot</span>
+      <h1 style="margin-top:14px">Je carburateur weer <em>als nieuw</em></h1>
+      <p class="lead">Carbservice is gespecialiseerd in carburateurrevisie voor auto, motor en boot. Met ultrasoonreiniging, A-kwaliteit onderdelen en een afstelling op fabrieksinstelling loopt jouw voertuig weer zoals het hoort.</p>
+      <div class="hero-cta">
+        <a href="#diensten" class="btn btn-goud">Bekijk onze diensten →</a>
+        <a href="#aanvraag" class="btn btn-licht">Vraag offerte aan</a>
       </div>
-      <div class="hero-sub">Kies waar je voor komt, of <a href="#checker">doe eerst de klachtencheck →</a></div>
       <div class="hero-trust">
         <div><b>650+</b>revisies uitgevoerd</div>
         <div><b>A-kwaliteit</b>onderdelen</div>
-        <div><b>Live</b>volg je je revisie</div>
+        <div><b>Alle</b>bekende merken</div>
       </div>
     </div>
     <div class="hero-photo">
-      <span class="hero-badge">ONZE WERKBANK</span>
-      <img class="slide on" src="demo/werkbank-1.jpg" alt="Carburateur op de werkbank" onerror="this.style.display='none'">
-      <img class="slide" src="demo/moto-1.jpg" alt="Motorfiets carburateurs" onerror="this.style.display='none'">
-      <img class="slide" src="demo/marine-1.jpg" alt="Marine carburateur" onerror="this.style.display='none'">
-      <img class="slide" src="demo/auto-1.jpg" alt="Auto carburateur gereviseerd" onerror="this.style.display='none'">
-      <img class="slide" src="demo/moto-2.jpg" alt="Motor carburateur revisie" onerror="this.style.display='none'">
-      <img class="slide" src="demo/werkbank-2.jpg" alt="Weber DCOE revisie" onerror="this.style.display='none'">
+      <span class="hero-badge">VAKWERK</span>
+      <img class="slide on" src="demo/klaar-2.jpg" alt="Gereviseerde carburateur" onerror="this.style.display='none'">
+      <img class="slide" src="demo/klaar-1.jpg" alt="Gereviseerde carburateur" onerror="this.style.display='none'">
+      <img class="slide" src="demo/klaar-3.jpg" alt="Gereviseerde carburateur" onerror="this.style.display='none'">
       <span class="ph">Carbservice</span>
     </div>
   </div>
 </section>
 
-<!-- TYPE-KAARTEN / DIENSTEN -->
-<section class="types" id="diensten">
+<!-- DIENSTEN -->
+<section class="diensten" id="diensten" style="background:linear-gradient(180deg,#fff 0%,var(--groen-zacht) 100%);border-bottom:1px solid var(--rand)">
   <div class="wrap">
     <div class="sec-head">
-      <span class="eyebrow">Waar kunnen we je mee helpen?</span>
-      <h2>Kies jouw voertuig</h2>
-      <p>Voor elk type hetzelfde vakwerk: ultrasoon gereinigd, A-kwaliteit onderdelen, exact op fabrieksinstelling afgesteld.</p>
+      <span class="eyebrow">Onze diensten</span>
+      <h2>Kies je voertuigtype</h2>
+      <p>Auto, motor of boot, voor elk type carburateur dezelfde vakkundige aanpak. Klik door naar je categorie en doe de gratis klachtencheck.</p>
     </div>
-    <div class="types-grid">
-      <a class="type-card" href="automotive.html">
-        <div class="ph"><img src="demo/werkbank-3.jpg" alt="Automotive carburateur" onerror="this.parentNode.style.background='linear-gradient(160deg,#3a6e52,#1f4632)'"></div>
-        <div class="body"><span class="em">🚗</span><h3>Automotive</h3><p>Klassieke auto's &amp; oldtimers. Weber, Solex, Stromberg, Pierburg, Zenith en meer.</p><span class="go">Bekijk automotive →</span></div>
-      </a>
-      <a class="type-card" href="motorfiets.html">
-        <div class="ph"><img src="demo/moto-3.jpg" alt="Motorfiets carburateur" onerror="this.parentNode.style.background='linear-gradient(160deg,#3a6e52,#1f4632)'"></div>
-        <div class="body"><span class="em">🏍️</span><h3>Motorfiets</h3><p>Mikuni, Keihin en meer. Losse carbs of breng je complete motorfiets, wij doen 't werk.</p><span class="go">Bekijk motorfiets →</span></div>
-      </a>
-      <a class="type-card" href="marine.html">
-        <div class="ph"><img src="demo/marine-1.jpg" alt="Marine carburateur" onerror="this.parentNode.style.background='linear-gradient(160deg,#3a6e52,#1f4632)'"></div>
-        <div class="body"><span class="em">⛵</span><h3>Boot &amp; Marine</h3><p>Buiten- en binnenboordmotoren weer betrouwbaar op het water. Ophalen en terugbrengen mogelijk.</p><span class="go">Bekijk marine →</span></div>
-      </a>
-    </div>
-  </div>
-</section>
+    <div class="kaart-grid">
 
-<!-- SYMPTOM CHECKER -->
-<section class="checker" id="checker">
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="eyebrow">Herken je dit?</span>
-      <h2>Vink aan wat jouw voertuig doet</h2>
-      <p>Klik op de klachten die je herkent. Wij vertellen je direct of een revisie de oplossing is.</p>
-    </div>
-    <div class="checker-card">
-      <div class="chips" id="chips"></div>
-      <div class="verdict">
-        <div class="urgent" id="urgent"><span class="bx">🔥</span><span><b>Direct laten nakijken.</b> Een benzinelekkage, sterke benzinegeur of overlopende vlotterkamer is <b>brandgevaarlijk</b>. Wacht hier niet mee.</span></div>
-        <div class="meter"><i id="meterbar"></i></div>
-        <h3 id="vTitel">Selecteer hierboven je klachten</h3>
-        <p id="vTekst">Hoe meer je herkent, hoe groter de kans dat de carburateur toe is aan een revisie.</p>
-        <a href="#aanvraag" class="btn btn-goud" id="vBtn" style="display:none">Vraag een gratis offerte aan →</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- KIJK MEE OP DE WERKBANK (Revisio) -->
-<section class="werkbank" id="werkbank">
-  <div class="wrap">
-    <div class="wb-grid">
-      <div>
-        <span class="eyebrow" style="color:var(--goud-licht)">Uniek bij Carbservice</span>
-        <h2 style="margin-top:12px">Kijk mee <em>op de werkbank</em></h2>
-        <p class="lead">Geen black box. Je krijgt een persoonlijke link en volgt jouw revisie stap voor stap, mét foto's recht van de werkbank. Je ziet precies wat er met je carburateur gebeurt.</p>
-        <div class="wb-points">
-          <div><span class="v">✓</span> Foto's bij binnenkomst, tijdens en na de revisie</div>
-          <div><span class="v">✓</span> Live status: ontvangen → gereinigd → afgesteld → klaar</div>
-          <div><span class="v">✓</span> Alles vastgelegd, jij weet wat je betaalt en waarvoor</div>
+      <!-- Automotive -->
+      <div class="kaart">
+        <img class="kaart-foto" src="demo/klaar-1.jpg" alt="Automotive carburateur" onerror="this.style.display='none'">
+        <h3>Automotive</h3>
+        <div class="check-list">
+          <div><span class="v">✓</span> Opsturen of langsbrengen</div>
+          <div><span class="v">✓</span> Inspectie en diagnose</div>
+          <div><span class="v">✓</span> Grondige reiniging</div>
+          <div><span class="v">✓</span> Revisiekits</div>
+          <div><span class="v">✓</span> Kalibratie en afstelling</div>
+          <div><span class="v">✓</span> Eindcontrole</div>
         </div>
-        <a href="https://revisio-umber.vercel.app/volg" target="_blank" rel="noopener" class="btn btn-goud">Zo ziet dat eruit →</a>
+        <div class="prijs-regel">Vanaf €165</div>
+        <div class="prijs-sub">v.a. prijs, zonder onderdelen</div>
+        <a href="https://automotive.carbservice.nl" class="btn btn-goud">Doe de klachtencheck →</a>
       </div>
-      <div class="wb-card">
-        <div class="top"><span class="badge">LIVE</span> <b>Jouw revisie · order 2026-0566</b></div>
-        <div class="wb-step"><div class="ic">✓</div><div class="tx"><b>Ontvangen</b><span>Carburateur binnen &amp; gefotografeerd</span></div><img class="thumb" src="demo/auto-1.jpg" alt="" onerror="this.style.display='none'"></div>
-        <div class="wb-step"><div class="ic">✓</div><div class="tx"><b>Ultrasoon gereinigd</b><span>Tot diep in elk kanaaltje schoon</span></div><img class="thumb" src="demo/werkbank-2.jpg" alt="" onerror="this.style.display='none'"></div>
-        <div class="wb-step"><div class="ic">✓</div><div class="tx"><b>Hersteld &amp; afgesteld</b><span>A-kwaliteit onderdelen, fabrieksinstelling</span></div><img class="thumb" src="demo/auto-3.jpg" alt="" onerror="this.style.display='none'"></div>
-        <div class="wb-step pending"><div class="ic">○</div><div class="tx"><b>Klaar &amp; onderweg</b><span>Eindcontrole en retour naar jou</span></div></div>
-      </div>
-    </div>
-  </div>
-</section>
 
-<!-- PROCES -->
-<section id="proces">
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="eyebrow">Onze werkwijze</span>
-      <h2>Van klacht naar perfect lopende motor</h2>
-      <p>Een vaste, transparante aanpak. Je weet precies wat er met jouw carburateur gebeurt.</p>
-    </div>
-    <div class="steps">
-      <div class="step"><div class="num">1</div><h3>Vraag je offerte aan</h3><p>Vul het formulier in. We lezen je kenteken automatisch uit en sturen snel een vrijblijvende offerte.</p></div>
-      <div class="step"><div class="num">2</div><h3>Opsturen of langsbrengen</h3><p>Zelf opsturen, langsbrengen, of via een installatiepartner bij jou in de buurt.</p></div>
-      <div class="step"><div class="num">3</div><h3>Wij reviseren (volg live)</h3><p>Inspectie, ultrasoonreiniging, herstel en afstelling. Jij volgt elke stap met foto's.</p></div>
-      <div class="step"><div class="num">4</div><h3>Terug &amp; rijden</h3><p>Na de eindcontrole gaat 'ie terug. Je voertuig loopt weer zoals het hoort.</p></div>
+      <!-- Motorfiets -->
+      <div class="kaart">
+        <img class="kaart-foto" src="demo/klaar-2.jpg" alt="Motorfiets carburateur" onerror="this.style.display='none'">
+        <h3>Motorfiets</h3>
+        <div class="check-list">
+          <div><span class="v">✓</span> Opsturen of langsbrengen</div>
+          <div><span class="v">✓</span> Inspectie en diagnose</div>
+          <div><span class="v">✓</span> Grondige reiniging</div>
+          <div><span class="v">✓</span> Revisiekits</div>
+          <div><span class="v">✓</span> Kalibratie en afstelling</div>
+          <div><span class="v">✓</span> Eindcontrole</div>
+        </div>
+        <div class="prijs-regel">Vanaf €85</div>
+        <div class="prijs-sub">v.a. prijs, zonder onderdelen</div>
+        <a href="https://motorfiets.carbservice.nl" class="btn btn-goud">Doe de klachtencheck →</a>
+      </div>
+
+      <!-- Marine -->
+      <div class="kaart">
+        <img class="kaart-foto" src="demo/klaar-3.jpg" alt="Marine carburateur" onerror="this.style.display='none'">
+        <h3>Marine</h3>
+        <div class="check-list">
+          <div><span class="v">✓</span> Opsturen of langsbrengen</div>
+          <div><span class="v">✓</span> Inspectie en diagnose</div>
+          <div><span class="v">✓</span> Grondige reiniging</div>
+          <div><span class="v">✓</span> Revisiekits</div>
+          <div><span class="v">✓</span> Kalibratie en afstelling</div>
+          <div><span class="v">✓</span> Eindcontrole</div>
+        </div>
+        <div class="prijs-regel">Vanaf €100</div>
+        <div class="prijs-sub">v.a. prijs, zonder onderdelen</div>
+        <a href="https://boot.carbservice.nl" class="btn btn-goud">Doe de klachtencheck →</a>
+      </div>
+
     </div>
   </div>
 </section>
@@ -364,33 +329,56 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </section>
 
-<!-- MERKEN -->
-<section class="merken" id="merken">
+<!-- REVIEWS -->
+<section id="reviews">
   <div class="wrap">
-    <div class="sec-head" style="margin-bottom:26px">
-      <span class="eyebrow">Alle bekende merken</span>
-      <h2>Welke carburateur heb jij?</h2>
-      <p>Grote kans dat we 'm kennen, en al tientallen keren hebben gereviseerd.</p>
+    <div class="sec-head">
+      <span class="eyebrow">Reviews</span>
+      <h2>Wat klanten zeggen</h2>
+      <p>Beoordelingen van klanten die hun carburateur door Carbservice lieten reviseren.</p>
     </div>
-    <div class="merk-row">
-      <div class="merk">Weber</div><div class="merk">Stromberg</div><div class="merk">Solex</div>
-      <div class="merk">Pierburg</div><div class="merk">Zenith</div><div class="merk">Dell'Orto</div>
-      <div class="merk">Carter</div><div class="merk">Rochester</div><div class="merk">Holley</div>
-      <div class="merk">Edelbrock</div><div class="merk">Hitachi</div><div class="merk">Mikuni</div>
-      <div class="merk">Keihin</div><div class="merk">S.U.</div><div class="merk">Nikki</div>
-    </div>
+    <div class="elfsight-app-2a64b3c0-358f-4774-9607-6249f21718b0" data-elfsight-app-lazy></div>
   </div>
 </section>
 
-<!-- REVIEWS (echte Google-reviews via Elfsight) -->
-<section class="reviews" id="reviews">
+<!-- FAQ -->
+<section id="faq" style="background:var(--groen-zacht)">
   <div class="wrap">
     <div class="sec-head">
-      <span class="eyebrow">Wat klanten zeggen</span>
-      <h2>Echte mensen, echte resultaten</h2>
-      <p>Klassiekereigenaren, motorrijders en booteigenaren door heel Nederland.</p>
+      <span class="eyebrow">Goed om te weten</span>
+      <h2>Veelgestelde vragen</h2>
+      <p>De antwoorden op de vragen die we het vaakst krijgen.</p>
     </div>
-    <div class="elfsight-app-2a64b3c0-358f-4774-9607-6249f21718b0" data-elfsight-app-lazy></div>
+    <div class="faq">
+      <details>
+        <summary>Wat kost een carburateurrevisie?</summary>
+        <p>Vanaf 165 euro voor auto, 85 euro voor motor en 100 euro voor marine, exclusief onderdelen. Je krijgt altijd eerst een vrijblijvende offerte.</p>
+      </details>
+      <details>
+        <summary>Hoe lang duurt een revisie?</summary>
+        <p>Gemiddeld 1 tot 2 weken, afhankelijk van drukte en de benodigde onderdelen. Heb je haast? Spoed is bespreekbaar.</p>
+      </details>
+      <details>
+        <summary>Moet ik de carburateur zelf demonteren?</summary>
+        <p>Je mag 'm opsturen of langsbrengen. Kun je niet sleutelen? We werken met installatiepartners, en voor boten komt onze marinemonteur naar je toe.</p>
+      </details>
+      <details>
+        <summary>Werken jullie aan alle merken?</summary>
+        <p>Ja, van Weber, Solex, Pierburg en Dell'Orto tot Mikuni, Keihin en marinecarburateurs. Grote kans dat we 'm kennen en al vaker hebben gereviseerd.</p>
+      </details>
+      <details>
+        <summary>Wat houdt een revisie precies in?</summary>
+        <p>Inspectie en diagnose, ultrasoonreiniging, het vervangen van versleten delen met A-kwaliteit onderdelen, kalibratie op de originele fabrieksinstelling, en een uitgebreide eindcontrole.</p>
+      </details>
+      <details>
+        <summary>Hoe vraag ik een offerte aan?</summary>
+        <p>Vul het formulier in met je gegevens, eventueel een paar foto's en je kenteken. Je hoort meestal binnen een werkdag wat we voor je kunnen doen.</p>
+      </details>
+      <details>
+        <summary>Kan ik mijn revisie volgen?</summary>
+        <p>Ja. Via 'Volg je revisie' bovenaan zie je de status van je carburateur.</p>
+      </details>
+    </div>
   </div>
 </section>
 
@@ -402,14 +390,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <p>Vul dit in, je hoort meestal binnen één werkdag wat we voor je kunnen doen.</p>
 
     <form class="formcard" id="aanvraagForm" onsubmit="return verstuur(event)">
-      <div class="q">1. Wat heb je?</div>
-      <div class="keuze3">
-        <label class="keuze-opt"><input type="radio" name="voertuigtype" value="automotive" checked><div><b>🚗 Auto</b></div></label>
-        <label class="keuze-opt"><input type="radio" name="voertuigtype" value="motorfiets"><div><b>🏍️ Motor</b></div></label>
-        <label class="keuze-opt"><input type="radio" name="voertuigtype" value="marine"><div><b>⛵ Boot</b></div></label>
-      </div>
-
-      <div class="q" style="margin-top:24px">2. Hoe wil je het aanpakken?</div>
+      <div class="q">1. Hoe wil je het aanpakken?</div>
       <div class="keuze">
         <label class="keuze-opt">
           <input type="radio" name="route" value="zelf" checked onchange="togglePartner()">
@@ -417,12 +398,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </label>
         <label class="keuze-opt">
           <input type="radio" name="route" value="partner" onchange="togglePartner()">
-          <div><b>📍 Ik wil een installatiepartner</b><span>Liever laten uit/inbouwen en afstellen bij een garage.</span></div>
+          <div><b>📍 Ik wil een installatiepartner</b><span>Ik laat het liever uit/inbouwen/afstellen bij een professionele garage.</span></div>
         </label>
       </div>
       <div class="partner-note" id="partnerNote">📍 Top! We hebben installatiepartners door heel Nederland. Na je aanvraag koppelen we je aan de dichtstbijzijnde bij jou in de buurt.</div>
 
-      <div class="q" style="margin-top:24px">3. Voor wie is het?</div>
+      <div class="q" style="margin-top:24px">2. Voor wie is het?</div>
       <div class="keuze">
         <label class="keuze-opt">
           <input type="radio" name="klanttype" value="particulier" checked onchange="toggleZakelijk()">
@@ -439,9 +420,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <label>KVK-nummer<input id="f_kvk" type="text" placeholder="8 cijfers"></label>
         </div>
         <label>BTW-nummer<input id="f_btw" type="text" placeholder="NL...B01"></label>
+        <div class="form-note" style="text-align:left;margin-top:6px">Met deze gegevens maken we automatisch een zakelijke klant aan in onze administratie.</div>
       </div>
 
-      <div class="q" style="margin-top:24px">4. Je gegevens</div>
+      <div class="q" style="margin-top:24px">3. Je gegevens</div>
       <div class="grid2">
         <label>Voornaam *<input id="f_voornaam" type="text" required></label>
         <label>Achternaam *<input id="f_achternaam" type="text" required></label>
@@ -450,15 +432,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
 
       <label>Carburateur, merk / type / serienummer / tagnummer<input id="f_carburateur" type="text" placeholder="Zit er nog een oormerk aan de carburateur?"></label>
-      <div class="form-note" style="text-align:left;margin-top:6px">Lees alleen het merk, type en de tagnummers af die direct op de carburateur staan, die kloppen het meest betrouwbaar.</div>
+      <div class="form-note" style="text-align:left;margin-top:6px">Veel carburateurs zijn in de loop der tijd vervangen en komen niet meer overeen met het handboek. Vul daarom alleen het merk, type en de tagnummers in die je direct van de carburateurbehuizing afleest.</div>
 
       <label>Kenteken<input id="f_kenteken" type="text" placeholder="bijv. AB-12-CD" onblur="checkKenteken()"></label>
       <div class="form-note" id="voertuiginfo" style="display:none;text-align:left;margin-top:6px;color:var(--groen);font-weight:700"></div>
-
-      <label>Welke klachten heb je? *<textarea id="klachtveld" rows="3" required placeholder="Beschrijf kort wat het voertuig doet, of klik ze hierboven aan in de checker..."></textarea></label>
+      <label>Welke klachten heb je? *<textarea id="klachtveld" rows="3" required placeholder="Beschrijf kort wat het voertuig doet..."></textarea></label>
 
       <label>Foto's van je carburateur (optioneel, max 10)<input id="f_fotos" type="file" accept="image/*" multiple onchange="kiesFotos(event)" style="padding:10px 12px"></label>
-      <div class="form-note" style="text-align:left;margin-top:6px">Een foto van het typeplaatje of de carburateur helpt ons enorm. We verkleinen ze automatisch.</div>
+      <div class="form-note" style="text-align:left;margin-top:6px">Een foto van het typeplaatje of de carburateur helpt ons enorm bij een goede inschatting. We verkleinen ze automatisch.</div>
       <div id="fotoPreview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
 
       <button type="submit" class="btn btn-goud" style="width:100%;justify-content:center;font-size:16px;margin-top:22px">Verstuur mijn aanvraag →</button>
@@ -477,60 +458,53 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <footer>
   <div class="wrap cols">
-    <div style="max-width:300px">
+    <div style="max-width:280px">
       <img src="logo-wit.png" alt="Carbservice" style="height:30px;display:block;margin-bottom:12px" onerror="this.outerHTML='CARBSERVICE'">
       <p>Wij houden jouw klassieker, motor of boot betrouwbaar op de weg en het water, met carburateurrevisies van topkwaliteit.</p>
-      <div class="socials">
-        <a href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram</a>
-        <a href="https://www.tiktok.com/" target="_blank" rel="noopener">TikTok</a>
-        <a href="https://revisio-umber.vercel.app/shop" target="_blank" rel="noopener">Shop</a>
-      </div>
     </div>
     <div><b>Contact</b>
       📞 <a href="tel:+31653864208">+31 6 53864208</a><br>
-      ✉️ <a href="mailto:info@carbservice.nl">info@carbservice.nl</a><br>
-      📍 Huizerweg 49, 1401 GH Bussum
+      📍 Huizerweg 49, 1401 GH Bussum, Nederland<br>
     </div>
     <div><b>Gegevens</b>
-      KvK: 91457068<br>BTW: NL004894059B78<br>
-      <a href="#aanvraag">Offerte aanvragen</a> · <a href="https://revisio-umber.vercel.app/volg" target="_blank" rel="noopener">Volg je revisie</a>
+      Handelsregister (KvK): 91457068<br>Rekeningnummer: Carburateur Service, NL04INGB0103514856<br>BTW: NL004894059B78
     </div>
   </div>
 </footer>
 
-<a class="wa" href="https://wa.me/31653864208" target="_blank" rel="noopener" aria-label="WhatsApp"><span>WhatsApp ons</span>💬</a>
-
-<!-- Elfsight AI Chatbot, Carbie -->
-<div class="elfsight-app-937db81a-8d01-4681-9e9b-bdf135097542" data-elfsight-app-lazy></div>
-
 <script>
-  // ====== Klachten-checker ======
   var SYMPTOMEN = [
     {t:"Onregelmatig stationair"},{t:"Stottert bij gasgeven"},{t:"Hoog brandstofverbruik"},
     {t:"Startproblemen"},{t:"Motor slaat af"},{t:"Sterke benzinegeur",danger:true},
     {t:"Zichtbare lekkage",danger:true},{t:"Horten en stoten"},{t:"Zwarte rook uit uitlaat"},
     {t:"Weinig vermogen"},{t:"Overlopende vlotterkamer",danger:true},
-    {t:"Loopt hoog stationair"},{t:"Rijdt zeer onzuinig"},{t:"Stond lang stil"}
+    {t:"CO-meting te hoog"},{t:"Luchtschroef afstellen heeft geen effect meer"},
+    {t:"Loopt zeer hoog stationair"},{t:"Rijdt zeer onzuinig"}
   ];
   var chips = document.getElementById('chips');
   var gekozen = new Set();
   var laatsteAuto = "";
-  SYMPTOMEN.forEach(function(s){
-    var el = document.createElement('div');
-    el.className = 'chip' + (s.danger ? ' danger' : '');
-    el.innerHTML = '<span class="dot">✓</span>' + s.t + (s.danger ? ' <span class="warn">🔥</span>' : '');
-    el.onclick = function(){
-      if(gekozen.has(s.t)){gekozen.delete(s.t);el.classList.remove('on');}
-      else{gekozen.add(s.t);el.classList.add('on');}
-      update();
-    };
-    chips.appendChild(el);
-  });
+  if (chips) {
+    SYMPTOMEN.forEach(function(s){
+      var el = document.createElement('div');
+      el.className = 'chip' + (s.danger ? ' danger' : '');
+      el.innerHTML = '<span class="dot">✓</span>' + s.t + (s.danger ? ' <span class="warn">🔥</span>' : '');
+      el.onclick = function(){
+        if(gekozen.has(s.t)){gekozen.delete(s.t);el.classList.remove('on');}
+        else{gekozen.add(s.t);el.classList.add('on');}
+        update();
+        var v=document.querySelector('.verdict');
+        if(v){ var rc=v.getBoundingClientRect(); if(rc.top>window.innerHeight-90){ v.scrollIntoView({behavior:'smooth',block:'center'}); } }
+      };
+      chips.appendChild(el);
+    });
+  }
   function update(){
     var n = gekozen.size;
     var danger = SYMPTOMEN.some(function(s){return s.danger && gekozen.has(s.t);});
     document.getElementById('meterbar').style.width = Math.min(100,(n/4)*100) + '%';
     document.getElementById('urgent').style.display = danger ? 'flex' : 'none';
+    // Klachten live overnemen in het formulier (stopt zodra je zelf iets typt)
     var veld = document.getElementById('klachtveld');
     if(veld.value === laatsteAuto || veld.value === ""){
       laatsteAuto = Array.from(gekozen).join(', ');
@@ -556,26 +530,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
   }
 
-  // ====== Voertuigtype kiezen vanuit de hero ======
-  function kies(seg){
-    var r = document.querySelector('input[name="voertuigtype"][value="'+seg+'"]');
-    if(r) r.checked = true;
-    document.getElementById('checker').scrollIntoView({behavior:'smooth', block:'start'});
-  }
-
-  // Installatiepartner-melding + zakelijke velden
+  // Installatiepartner-melding tonen/verbergen
   function togglePartner(){
     var partner = document.querySelector('input[name="route"]:checked').value === 'partner';
     document.getElementById('partnerNote').style.display = partner ? 'block' : 'none';
   }
+  // Bedrijfsvelden tonen zodra iemand 'zakelijk' kiest
   function toggleZakelijk(){
     var zakelijk = document.querySelector('input[name="klanttype"]:checked').value === 'zakelijk';
     document.getElementById('zakelijkVelden').style.display = zakelijk ? 'block' : 'none';
   }
-
   // ====== Koppeling met de Revisio-backend ======
   var BACKEND = "https://revisio-umber.vercel.app/api/aanvraag";
+  var KENTEKEN_VELD = true;
 
+  // Bron onthouden: bij binnenkomst gclid/utm/fbclid opslaan, zodat de bron
+  // bewaard blijft ook als iemand eerst rondklikt voor 'ie het formulier invult.
   (function(){
     try{
       var p = new URLSearchParams(window.location.search);
@@ -589,7 +559,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   })();
   function getTracking(){ try{ return JSON.parse(localStorage.getItem('cb_tracking')||'{}'); }catch(e){ return {}; } }
 
-  // Foto's in de browser verkleinen en als data-URL meesturen
+  // ====== Foto's: in de browser verkleinen en als data-URL meesturen ======
   var gekozenFotos = [];
   function compress(file, maxDim, quality){
     return new Promise(function(resolve){
@@ -648,23 +618,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     e.preventDefault();
     var val = function(id){ var el=document.getElementById(id); return el ? el.value.trim() : ''; };
     if(!val('f_voornaam') || !val('f_achternaam') || !val('f_telefoon') || !val('f_email') || !val('klachtveld')){ alert('Vul je voornaam, achternaam, telefoonnummer, e-mailadres en je klacht in.'); return false; }
-    if(!val('f_kenteken')){
-      if(!confirm("Je hebt geen kenteken ingevuld. Wij lezen kentekens automatisch uit, dat scheelt jou werk. Geen kenteken? Klik OK om te versturen, anders Annuleren om 'm alsnog in te vullen.")){ return false; }
+    if(typeof KENTEKEN_VELD !== 'undefined' && KENTEKEN_VELD && !val('f_kenteken')){
+      if(!confirm("Je hebt geen kenteken ingevuld. Wij lezen kentekens automatisch uit, dat scheelt jou werk. Heb je geen kenteken? Geen probleem, klik op OK om te versturen. Anders klik Annuleren om 'm alsnog in te vullen.")){ return false; }
     }
     var btn = document.querySelector('#aanvraagForm button[type="submit"]');
     if(btn){ btn.disabled=true; btn.textContent='Versturen…'; }
-    var seg = (document.querySelector('input[name="voertuigtype"]:checked')||{}).value || 'homepage';
     var payload = {
       route: document.querySelector('input[name="route"]:checked').value,
       zakelijk: document.querySelector('input[name="klanttype"]:checked').value === 'zakelijk',
       bedrijfsnaam: val('f_bedrijfsnaam'), kvk: val('f_kvk'), btw: val('f_btw'),
       voornaam: val('f_voornaam'), achternaam: val('f_achternaam'), telefoon: val('f_telefoon'), email: val('f_email'),
       carburateur: val('f_carburateur'), kenteken: val('f_kenteken'), klachten: val('klachtveld'),
-      segment: seg,
+      segment: 'home',
       fotos: gekozenFotos, tracking: getTracking(), website: ''
     };
     try{ await fetch(BACKEND, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) }); }
-    catch(err){ /* nooit blokkeren */ }
+    catch(err){ /* nooit blokkeren: klant ziet altijd het bedankt-scherm */ }
     document.getElementById('aanvraagForm').style.display='none';
     var dank=document.getElementById('bedankt'); dank.style.display='block';
     dank.scrollIntoView({behavior:'smooth', block:'center'});
@@ -672,7 +641,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     return false;
   }
 
-  // Hero-foto slideshow
+  // Hero-foto slideshow: crossfade tussen Klaar-1.jpg en Klaar-2.jpg
   (function(){
     var slides = document.querySelectorAll('.hero-photo .slide');
     if(slides.length < 2) return;
@@ -684,5 +653,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }, 4500);
   })();
 </script>
+
+<!-- Elfsight AI Chatbot, Carbie -->
+<div class="elfsight-app-937db81a-8d01-4681-9e9b-bdf135097542" data-elfsight-app-lazy></div>
+
 </body>
 </html>
