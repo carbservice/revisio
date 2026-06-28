@@ -170,6 +170,22 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   .wb-step .tx span{font-size:12.5px;color:var(--grijs)}
   .wb-step .thumb{width:38px;height:38px;border-radius:8px;object-fit:cover;flex:none;border:1px solid var(--rand)}
   @media(max-width:860px){.wb-grid{grid-template-columns:1fr;gap:32px}}
+  /* mini live-preview van de volg-omgeving */
+  .wb-frame{display:block;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,.34);text-decoration:none}
+  .wb-bar{display:flex;align-items:center;gap:9px;padding:10px 14px;background:#eef1ec;border-bottom:1px solid var(--rand)}
+  .wb-bar .dots{display:flex;gap:5px}
+  .wb-bar .dots i{width:10px;height:10px;border-radius:50%;background:#cdd3cb}
+  .wb-bar .url{flex:1;background:#fff;border-radius:8px;font-size:11.5px;color:var(--grijs);padding:5px 10px;text-align:center;font-weight:600}
+  .wb-view{position:relative;height:440px;overflow:hidden;background:var(--bg)}
+  .wb-view iframe{width:166.66%;height:166.66%;border:0;transform:scale(.6);transform-origin:top left}
+  .wb-view .veil{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:center;padding:16px;background:linear-gradient(180deg,transparent 58%,rgba(11,28,20,.5));cursor:pointer;opacity:0;transition:opacity .2s}
+  .wb-frame:hover .wb-view .veil{opacity:1}
+  .wb-view .veil span{background:#fff;color:var(--groen);font-weight:700;font-size:13.5px;border-radius:999px;padding:9px 16px;box-shadow:0 6px 16px rgba(0,0,0,.25)}
+  @media(max-width:600px){.wb-view{height:380px}}
+  /* glow-lampje bij de eyebrow */
+  .glow-eyebrow{display:inline-flex;align-items:center;gap:9px}
+  .glow-eyebrow .lamp{width:9px;height:9px;border-radius:50%;background:var(--goud-licht);box-shadow:0 0 8px 1px rgba(233,205,138,.9);animation:lamppuls 1.8s ease-out infinite}
+  @keyframes lamppuls{0%{box-shadow:0 0 0 0 rgba(233,205,138,.8),0 0 8px 1px rgba(233,205,138,.9)}70%{box-shadow:0 0 0 11px rgba(233,205,138,0),0 0 8px 1px rgba(233,205,138,.9)}100%{box-shadow:0 0 0 0 rgba(233,205,138,0),0 0 8px 1px rgba(233,205,138,.9)}}
 
   /* PROCES */
   .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px}
@@ -369,7 +385,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="wrap">
     <div class="wb-grid">
       <div>
-        <span class="eyebrow" style="color:var(--goud-licht)">Uniek bij Carbservice</span>
+        <span class="eyebrow glow-eyebrow" style="color:var(--goud-licht)"><span class="lamp"></span>Uniek bij Carbservice</span>
         <h2 style="margin-top:12px">Kijk mee <em>op de werkbank</em></h2>
         <p class="lead">Geen black box. Je krijgt een persoonlijke link en volgt jouw revisie stap voor stap, mét foto's recht van de werkbank. Je ziet precies wat er met je carburateur gebeurt.</p>
         <div class="wb-points">
@@ -377,15 +393,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <div><span class="v">✓</span> Live status: ontvangen → gereinigd → afgesteld → klaar</div>
           <div><span class="v">✓</span> Alles vastgelegd, jij weet wat je betaalt en waarvoor</div>
         </div>
-        <a href="https://revisio-umber.vercel.app/volg" target="_blank" rel="noopener" class="btn btn-goud">Zo ziet dat eruit →</a>
+        <a href="https://revisio-umber.vercel.app/demo" target="_blank" rel="noopener" class="btn btn-goud">Bekijk de live demo →</a>
       </div>
-      <div class="wb-card">
-        <div class="top"><span class="badge">LIVE</span> <b>Jouw revisie · order 2026-0566</b></div>
-        <div class="wb-step"><div class="ic">✓</div><div class="tx"><b>Ontvangen</b><span>Carburateur binnen &amp; gefotografeerd</span></div><img class="thumb" src="demo/auto-1.jpg" alt="" onerror="this.style.display='none'"></div>
-        <div class="wb-step"><div class="ic">✓</div><div class="tx"><b>Ultrasoon gereinigd</b><span>Tot diep in elk kanaaltje schoon</span></div><img class="thumb" src="demo/werkbank-2.jpg" alt="" onerror="this.style.display='none'"></div>
-        <div class="wb-step"><div class="ic">✓</div><div class="tx"><b>Hersteld &amp; afgesteld</b><span>A-kwaliteit onderdelen, fabrieksinstelling</span></div><img class="thumb" src="demo/auto-3.jpg" alt="" onerror="this.style.display='none'"></div>
-        <div class="wb-step pending"><div class="ic">○</div><div class="tx"><b>Klaar &amp; onderweg</b><span>Eindcontrole en retour naar jou</span></div></div>
-      </div>
+      <a class="wb-frame" href="https://revisio-umber.vercel.app/demo" target="_blank" rel="noopener" aria-label="Bekijk de demo van het volgsysteem">
+        <div class="wb-bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">carbservice.nl/volg</span></div>
+        <div class="wb-view">
+          <iframe src="https://revisio-umber.vercel.app/demo" title="Voorbeeld: volg je revisie live" loading="lazy" scrolling="no"></iframe>
+          <span class="veil"><span>Bekijk de live demo →</span></span>
+        </div>
+      </a>
     </div>
   </div>
 </section>
