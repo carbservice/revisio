@@ -87,7 +87,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   .hero2 .stats span{font-size:13.5px;color:rgba(255,255,255,.82)}
   @media(max-width:700px){
     .hero2{min-height:90vh;background:linear-gradient(180deg,rgba(11,28,20,.55) 0%,rgba(11,28,20,.92) 78%), url('demo/werkbank-1.jpg') center/cover no-repeat}
-    .hero2 .stats .row{gap:22px}
+    .hero2 .stats .row{flex-direction:column;gap:9px;align-items:flex-start}
+    .hero2 .stats .row div{display:flex;align-items:baseline;gap:8px}
+    .hero2 .stats b{font-size:19px}
   }
 
   section{padding:72px 0}
