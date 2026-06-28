@@ -34,17 +34,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   .btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(26,60,46,.32)}
   .btn-goud{background:linear-gradient(135deg,var(--goud) 0%,#a07d1f 100%);box-shadow:0 8px 22px rgba(184,150,46,.32)}
   .btn-licht{background:#fff;color:var(--groen);border:1.5px solid var(--rand);box-shadow:none}
+  .btn-wit{background:#fff;color:var(--groen);box-shadow:0 8px 22px rgba(0,0,0,.22)}
   .eyebrow{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--goud)}
 
-  /* TOPBAR */
-  .topbar{position:sticky;top:0;z-index:50;background:rgba(244,246,241,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--rand)}
-  .topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
-  .logo{font-family:'Fraunces',serif;font-weight:700;font-size:22px;color:var(--groen);letter-spacing:.02em;text-decoration:none}
-  .logo span{color:var(--goud)}
+  /* TOPBAR (transparant, wit logo, over het hero-beeld) */
+  .topbar{position:absolute;top:30px;left:0;right:0;z-index:20}
+  .topbar .wrap{display:flex;align-items:center;justify-content:space-between}
+  .logo{font-family:'Fraunces',serif;font-weight:700;font-size:22px;color:#fff;letter-spacing:.02em;text-decoration:none}
+  .logo span{color:var(--goud-licht)}
   .topnav{display:flex;align-items:center;gap:24px;font-size:14.5px;font-weight:600}
-  .topnav a{text-decoration:none;color:var(--grijs)}
-  .topnav a:hover{color:var(--groen)}
-  .topphone{font-weight:700;color:var(--groen)}
+  .topnav a{text-decoration:none;color:rgba(255,255,255,.92)}
+  .topnav a:hover{color:#fff}
+  .topphone{font-weight:700}
   @media(max-width:860px){.topnav a:not(.btn){display:none}}
 
   /* HERO */
@@ -69,6 +70,24 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   .hero-photo .slide.on{opacity:1}
   .hero-photo .ph{position:relative;z-index:0;color:rgba(255,255,255,.45);font-size:13px}
   @media(max-width:860px){.hero .wrap{grid-template-columns:1fr;padding:48px 22px}.hero-photo{order:-1}}
+
+  /* EDITORIAL HERO */
+  .hero2{position:relative;min-height:92vh;display:flex;align-items:center;color:#fff;overflow:hidden;
+    background:linear-gradient(90deg,rgba(11,28,20,.95) 0%,rgba(11,28,20,.72) 44%,rgba(11,28,20,.30) 100%), url('demo/werkbank-1.jpg') center/cover no-repeat}
+  .hero2 .inner{max-width:600px;padding:90px 0}
+  .hero2 .eyebrow{color:var(--goud-licht)}
+  .hero2 h1{font-size:clamp(42px,6.2vw,72px);font-weight:700;margin:16px 0 20px;line-height:1.04}
+  .hero2 h1 em{font-style:normal;color:var(--goud-licht)}
+  .hero2 .lead{font-size:19px;color:rgba(255,255,255,.9);max-width:490px;margin-bottom:30px}
+  .hero2 .cta{display:flex;gap:14px;flex-wrap:wrap}
+  .hero2 .stats{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(180deg,transparent,rgba(11,28,20,.9));padding:26px 0 22px}
+  .hero2 .stats .row{display:flex;gap:46px;flex-wrap:wrap}
+  .hero2 .stats b{font-family:'Fraunces',serif;font-size:22px;display:block;color:#fff;font-weight:600}
+  .hero2 .stats span{font-size:13.5px;color:rgba(255,255,255,.82)}
+  @media(max-width:700px){
+    .hero2{min-height:90vh;background:linear-gradient(180deg,rgba(11,28,20,.55) 0%,rgba(11,28,20,.92) 78%), url('demo/werkbank-1.jpg') center/cover no-repeat}
+    .hero2 .stats .row{gap:22px}
+  }
 
   section{padding:72px 0}
   .sec-head{text-align:center;max-width:680px;margin:0 auto 44px}
@@ -239,7 +258,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <header class="topbar">
   <div class="wrap">
-    <a href="#top" class="logo"><img src="logo-wit.png" alt="Carbservice" style="height:34px;display:block;filter:brightness(0)" onerror="this.outerHTML='CARB<span>SERVICE</span>'"></a>
+    <a href="#top" class="logo"><img src="logo-wit.png" alt="Carbservice" style="height:36px;display:block" onerror="this.outerHTML='CARB<span>SERVICE</span>'"></a>
     <nav class="topnav">
       <a href="#diensten">Diensten</a>
       <a href="#werkbank">Volg je revisie</a>
@@ -252,33 +271,25 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </header>
 
 <!-- HERO -->
-<section class="hero" id="top" style="padding:0">
+<section class="hero2" id="top">
   <div class="wrap">
-    <div>
+    <div class="inner">
       <span class="eyebrow">Carburateurspecialist · Auto · Motor · Boot</span>
-      <h1 style="margin-top:14px">Jouw carburateur weer <em>als nieuw</em>.</h1>
-      <p class="lead">Niets zo fijn als je klassieker, motor of boot horen lopen zoals het hoort: soepel, gretig en betrouwbaar. Wij reviseren je carburateur met vakmanschap en oog voor detail weer tot in topconditie, zodat jij onbezorgd geniet van elke rit. En je volgt het hele proces live mee, recht van de werkbank.</p>
-      <div class="hero-types">
-        <button type="button" class="hero-type" onclick="kies('automotive')"><span class="em">🚗</span> Auto</button>
-        <button type="button" class="hero-type" onclick="kies('motorfiets')"><span class="em">🏍️</span> Motorfiets</button>
-        <button type="button" class="hero-type" onclick="kies('marine')"><span class="em">⛵</span> Boot</button>
-      </div>
-      <div class="hero-sub" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:4px"><span>Kies waar je voor komt, of</span><a href="#checker" class="btn btn-goud" style="padding:12px 22px;font-size:14.5px">🔍 Doe de gratis klachtencheck →</a></div>
-      <div class="hero-trust">
-        <div><b>650+</b>revisies uitgevoerd</div>
-        <div><b>A-kwaliteit</b>onderdelen</div>
-        <div><b>Live</b>volg je je revisie</div>
+      <h1>Jouw carburateur weer <em>als nieuw</em>.</h1>
+      <p class="lead">Echt vakmanschap, originele onderdelen en een betrouwbare revisie mét garantie. En je volgt je hele revisie live mee via onze eigen Revisio-pagina.</p>
+      <div class="cta">
+        <a href="#aanvraag" class="btn btn-goud">Vraag gratis offerte →</a>
+        <a href="#checker" class="btn btn-wit">🔍 Doe de klachtencheck</a>
       </div>
     </div>
-    <div class="hero-photo">
-      <span class="hero-badge">ONZE WERKBANK</span>
-      <img class="slide on" src="demo/werkbank-1.jpg" alt="Carburateur op de werkbank" onerror="this.style.display='none'">
-      <img class="slide" src="demo/moto-1.jpg" alt="Motorfiets carburateurs" onerror="this.style.display='none'">
-      <img class="slide" src="demo/marine-1.jpg" alt="Marine carburateur" onerror="this.style.display='none'">
-      <img class="slide" src="demo/auto-1.jpg" alt="Auto carburateur gereviseerd" onerror="this.style.display='none'">
-      <img class="slide" src="demo/moto-2.jpg" alt="Motor carburateur revisie" onerror="this.style.display='none'">
-      <img class="slide" src="demo/werkbank-2.jpg" alt="Weber DCOE revisie" onerror="this.style.display='none'">
-      <span class="ph">Carbservice</span>
+  </div>
+  <div class="stats">
+    <div class="wrap">
+      <div class="row">
+        <div><b>650+</b><span>revisies uitgevoerd</span></div>
+        <div><b>Mét garantie</b><span>en originele onderdelen</span></div>
+        <div><b>Live</b><span>volg je revisie via Revisio</span></div>
+      </div>
     </div>
   </div>
 </section>
