@@ -778,7 +778,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var d = await r.json(); var x = d && d[0];
       if(x){
         var bj=(x.datum_eerste_toelating||'').slice(0,4);
-        box.textContent='✓ '+[[x.merk,x.handelsbenaming].filter(Boolean).join(' '),bj,x.cilinderinhoud?x.cilinderinhoud+' cc':''].filter(Boolean).join(' · ')+', klopt dit?';
+        box.textContent='✓ Dan is dit het voertuig: '+[[x.merk,x.handelsbenaming].filter(Boolean).join(' '),bj,x.cilinderinhoud?x.cilinderinhoud+' cc':''].filter(Boolean).join(' · ');
         box.style.display='block';
       }
     }catch(e){}
