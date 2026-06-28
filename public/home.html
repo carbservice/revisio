@@ -186,8 +186,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   @media(max-width:600px){.wb-view{height:380px}}
   /* glow-lampje bij de eyebrow */
   .glow-eyebrow{display:inline-flex;align-items:center;gap:9px}
-  .glow-eyebrow .lamp{width:9px;height:9px;border-radius:50%;background:var(--goud-licht);box-shadow:0 0 8px 1px rgba(233,205,138,.9);animation:lamppuls 1.8s ease-out infinite}
-  @keyframes lamppuls{0%{box-shadow:0 0 0 0 rgba(233,205,138,.8),0 0 8px 1px rgba(233,205,138,.9)}70%{box-shadow:0 0 0 11px rgba(233,205,138,0),0 0 8px 1px rgba(233,205,138,.9)}100%{box-shadow:0 0 0 0 rgba(233,205,138,0),0 0 8px 1px rgba(233,205,138,.9)}}
+  .glow-eyebrow .lamp{width:9px;height:9px;border-radius:50%;background:#ff4d3d;box-shadow:0 0 8px 1px rgba(255,77,61,.9);animation:lamppuls 1.6s ease-out infinite}
+  @keyframes lamppuls{0%{box-shadow:0 0 0 0 rgba(255,77,61,.85),0 0 8px 1px rgba(255,77,61,.9)}70%{box-shadow:0 0 0 11px rgba(255,77,61,0),0 0 8px 1px rgba(255,77,61,.9)}100%{box-shadow:0 0 0 0 rgba(255,77,61,0),0 0 8px 1px rgba(255,77,61,.9)}}
+  .glow-eyebrow .nieuw{color:#ff6a5a;font-weight:800;text-shadow:0 0 10px rgba(255,77,61,.8);animation:nieuwglow 1.6s ease-in-out infinite}
+  @keyframes nieuwglow{0%,100%{text-shadow:0 0 6px rgba(255,77,61,.45)}50%{text-shadow:0 0 15px rgba(255,77,61,1)}}
 
   /* PROCES */
   .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px}
@@ -206,11 +208,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   .usp-item .ic{font-size:26px;margin-bottom:12px}
   .usp-item h3{font-size:17px;margin-bottom:6px}
   .usp-item p{font-size:14px;color:rgba(255,255,255,.78)}
+  .usp-row{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
+  .usp-c{display:flex;align-items:center;gap:11px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:14px 20px;font-size:15px;font-weight:700}
+  .usp-c .ic{font-size:22px}
+  @media(max-width:600px){.usp-c{width:100%;justify-content:flex-start}}
 
-  /* MERKEN */
-  .merken{text-align:center}
-  .merk-row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:8px}
-  .merk{background:#fff;border:1px solid var(--rand);border-radius:999px;padding:9px 18px;font-weight:700;font-size:14.5px;color:var(--groen);box-shadow:var(--schaduw-l)}
+  /* MERKEN-STRIP (net boven de footer, voor merkherkenning) */
+  .merkstrip{background:var(--groen-zacht);border-top:1px solid var(--rand);padding:38px 0}
+  .merkstrip .lab{display:block;text-align:center;margin-bottom:12px}
+  .merkstrip-row{text-align:center;font-family:'Fraunces',Georgia,serif;font-size:clamp(16px,2.1vw,20px);color:var(--groen);font-weight:500;line-height:1.85;max-width:900px;margin:0 auto}
 
   /* REVIEWS */
   .reviews{background:var(--groen-zacht)}
@@ -387,7 +393,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="wrap">
     <div class="wb-grid">
       <div>
-        <span class="eyebrow glow-eyebrow" style="color:var(--goud-licht)"><span class="lamp"></span>Uniek bij Carbservice</span>
+        <span class="eyebrow glow-eyebrow" style="color:var(--goud-licht)"><span class="lamp"></span><span class="nieuw">NIEUW</span> Uniek bij Carbservice</span>
         <h2 style="margin-top:12px">Kijk mee <em>op de werkbank</em></h2>
         <p class="lead">Geen black box. Je krijgt een persoonlijke link en volgt jouw revisie stap voor stap, mét foto's recht van de werkbank. Je ziet precies wat er met je carburateur gebeurt.</p>
         <div class="wb-points">
@@ -425,40 +431,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </section>
 
-<!-- USP -->
-<section class="usp">
+<!-- USP (compact) -->
+<section class="usp" style="padding:50px 0">
   <div class="wrap">
-    <div class="sec-head">
+    <div class="sec-head" style="margin-bottom:28px">
       <span class="eyebrow" style="color:var(--goud-licht)">Waarom Carbservice</span>
       <h2>Vakwerk waar je op kunt bouwen</h2>
-      <p>We doen carburateurs, en niets anders. Die focus zie je terug in het resultaat.</p>
     </div>
-    <div class="usp-grid">
-      <div class="usp-item"><div class="ic">🔬</div><h3>Ultrasoonreiniging</h3><p>Tot diep in elk kanaaltje schoon, daar waar een borstel niet komt.</p></div>
-      <div class="usp-item"><div class="ic">⚙️</div><h3>A-kwaliteit onderdelen</h3><p>Alleen revisiekits en delen die we zelf vertrouwen.</p></div>
-      <div class="usp-item"><div class="ic">📸</div><h3>Volledig gedocumenteerd</h3><p>Foto's en metingen bij binnenkomst, jij ziet wat er is gedaan.</p></div>
-      <div class="usp-item"><div class="ic">📐</div><h3>Op fabrieksinstelling</h3><p>Exact afgesteld volgens de originele specificaties.</p></div>
+    <div class="usp-row">
+      <div class="usp-c"><span class="ic">🔬</span>Ultrasoon gereinigd</div>
+      <div class="usp-c"><span class="ic">⚙️</span>Originele onderdelen</div>
+      <div class="usp-c"><span class="ic">📸</span>Volledig gedocumenteerd</div>
+      <div class="usp-c"><span class="ic">📐</span>Op fabrieksinstelling</div>
     </div>
   </div>
 </section>
 
-<!-- MERKEN -->
-<section class="merken" id="merken">
-  <div class="wrap">
-    <div class="sec-head" style="margin-bottom:26px">
-      <span class="eyebrow">Alle bekende merken</span>
-      <h2>Welke carburateur heb jij?</h2>
-      <p>Grote kans dat we 'm kennen, en al tientallen keren hebben gereviseerd.</p>
-    </div>
-    <div class="merk-row">
-      <div class="merk">Weber</div><div class="merk">Stromberg</div><div class="merk">Solex</div>
-      <div class="merk">Pierburg</div><div class="merk">Zenith</div><div class="merk">Dell'Orto</div>
-      <div class="merk">Carter</div><div class="merk">Rochester</div><div class="merk">Holley</div>
-      <div class="merk">Edelbrock</div><div class="merk">Hitachi</div><div class="merk">Mikuni</div>
-      <div class="merk">Keihin</div><div class="merk">S.U.</div><div class="merk">Nikki</div>
-    </div>
-  </div>
-</section>
+<!-- MERKEN verplaatst naar een tekst-strip net boven de footer -->
 
 <!-- REVIEWS (echte Google-reviews via Elfsight) -->
 <section class="reviews" id="reviews">
@@ -569,6 +558,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
 
     <p style="margin-top:20px;font-size:14px">of bel direct: <a href="tel:+31653864208" style="color:#fff;font-weight:700">+31 6 53864208</a></p>
+  </div>
+</section>
+
+<!-- MERKEN-STRIP (merkherkenning, net boven de footer) -->
+<section class="merkstrip">
+  <div class="wrap">
+    <span class="eyebrow lab">Wij reviseren onder andere</span>
+    <div class="merkstrip-row">Weber · Stromberg · Solex · Pierburg · Zenith · Dell'Orto · Carter · Rochester · Holley · Edelbrock · Hitachi · Mikuni · Keihin · S.U. · Nikki</div>
   </div>
 </section>
 
