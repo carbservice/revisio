@@ -11,7 +11,7 @@ import { supabase } from "@/lib/supabase";
 import { GROEN, GRIJS, RAND, BG, TEKST, ROOD, KAART_SCHADUW } from "@/lib/theme";
 import { useInactiviteitsUitlog, wisInactiviteit } from "@/app/components/useInactiviteit";
 
-type Status = "laden" | "uit" | "geen-toegang" | "ok";
+type Status = "laden" | "uit" | "geen-toegang" | "fout" | "ok";
 
 // Stelt de ingelogde gebruiker beschikbaar aan de beschermde pagina-inhoud.
 // requireAdmin = alleen admin; requireBeheer = admin of manager.
@@ -36,16 +36,27 @@ export default function AuthGate({ requireAdmin = false, requireBeheer = false, 
   const [code, setCode] = useState("");
   const router = useRouter();
 
+  // Zoekt het personeelslid op. Een TIJDELIJKE leesfout (netwerk/lock) mag NOOIT
+  // tot uitloggen leiden: dat was precies de glitch waarbij je na het intypen van
+  // de code terugkaatste naar het loginscherm. Daarom een paar keer proberen, en
+  // bij een blijvende fout de sessie laten staan (retry-scherm i.p.v. login).
   async function check(authEmail: string | undefined | null) {
     if (!authEmail) { setStatus("uit"); return; }
-    const adres = authEmail.toLowerCase();
-    const { data, error } = await supabase.from("app_gebruikers").select("naam, rol, actief, email").ilike("email", adres).limit(1);
-    const g = data && data[0];
-    const match = g && typeof g.email === "string" && g.email.toLowerCase() === adres;
-    if (error || !match || !g!.actief) { await supabase.auth.signOut(); setStatus("uit"); return; }
+    const adres = authEmail.trim().toLowerCase();
+    let g: { naam: string; rol: string; actief: boolean; email: string } | null = null;
+    let leesFout = true;
+    for (let poging = 0; poging < 3; poging++) {
+      const { data, error } = await supabase.from("app_gebruikers").select("naam, rol, actief, email").ilike("email", adres).limit(1);
+      if (!error) { g = (data && data[0]) || null; leesFout = false; break; }
+      await new Promise((r) => setTimeout(r, 400 * (poging + 1)));
+    }
+    if (leesFout) { setStatus("fout"); return; }
+    const match = g && typeof g.email === "string" && g.email.trim().toLowerCase() === adres;
+    if (!match) { await supabase.auth.signOut(); setStatus("uit"); return; }
+    if (!g!.actief) { setStatus("geen-toegang"); return; }
     const adm = g!.rol === "admin";
     const man = g!.rol === "manager";
-    setNaam(g!.naam as string);
+    setNaam(g!.naam);
     setIsAdmin(adm);
     setIsManager(man);
     if (requireAdmin && !adm) { setStatus("geen-toegang"); return; }
@@ -53,14 +64,24 @@ export default function AuthGate({ requireAdmin = false, requireBeheer = false, 
     setStatus("ok");
   }
 
+  // Handmatig opnieuw proberen na een leesfout (de sessie is nog geldig).
+  async function herproberen() {
+    setStatus("laden");
+    const { data } = await supabase.auth.getSession();
+    check(data.session?.user?.email);
+  }
+
   useEffect(() => {
     let levend = true;
-    (async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!levend) return;
-      await check(data.session?.user?.email);
-    })();
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => { check(session?.user?.email); });
+    // We luisteren via onAuthStateChange; die vuurt bij het laden meteen ook een
+    // INITIAL_SESSION (bestaande sessie), dus een aparte getSession is overbodig.
+    // BELANGRIJK: binnen deze callback nooit een andere supabase-call awaiten —
+    // dat botst met de auth-lock (deadlock), de oorzaak van het terugkaatsen naar
+    // login. Daarom check() in een setTimeout, buiten de callback om.
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      const email = session?.user?.email;
+      setTimeout(() => { if (levend) check(email); }, 0);
+    });
     return () => { levend = false; sub.subscription.unsubscribe(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -101,6 +122,17 @@ export default function AuthGate({ requireAdmin = false, requireBeheer = false, 
   const kaart: CSSProperties = { background: "#fff", border: `1px solid ${RAND}`, borderRadius: 18, padding: 28, maxWidth: 380, width: "100%", boxShadow: KAART_SCHADUW };
 
   if (status === "laden") return <main style={wrap}><p style={{ color: GRIJS }}>Laden...</p></main>;
+
+  if (status === "fout") return (
+    <main style={wrap}>
+      <div style={kaart}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", color: GROEN, marginBottom: 6 }}>Revisio · Dashboard</div>
+        <h1 style={{ fontSize: 20, fontWeight: 800, color: GROEN, margin: "0 0 10px" }}>Even geen verbinding</h1>
+        <p style={{ fontSize: 14, lineHeight: 1.5, color: TEKST }}>Je bent nog ingelogd, maar we konden je gegevens even niet ophalen. Probeer het opnieuw, je hoeft niet opnieuw in te loggen.</p>
+        <button onClick={herproberen} style={{ width: "100%", marginTop: 16, background: GROEN, color: "#fff", border: "none", borderRadius: 12, padding: "13px", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>Opnieuw proberen</button>
+      </div>
+    </main>
+  );
 
   if (status === "geen-toegang") return (
     <main style={wrap}>

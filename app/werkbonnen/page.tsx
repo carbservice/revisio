@@ -1277,18 +1277,27 @@ export default function WerkplaatsPagina() {
   // Geen match of niet actief: meteen weer uitloggen en toegang weigeren.
   async function koppelGebruiker(authEmail: string | undefined | null) {
     if (!authEmail) { setIngelogd(null); setIsAdmin(false); setIsManager(false); return; }
-    const adres = authEmail.toLowerCase();
-    const { data, error } = await supabase.from("app_gebruikers").select("id, naam, rol, actief, email").ilike("email", adres).limit(1);
-    const g = data && data[0];
-    const match = g && typeof g.email === "string" && g.email.toLowerCase() === adres;
-    if (error || !match || !g!.actief) {
-      setFout(error ? "Er ging iets mis, probeer het nog eens." : "Dit e-mailadres heeft geen toegang. Vraag de beheerder om je toe te voegen.");
+    const adres = authEmail.trim().toLowerCase();
+    // Een TIJDELIJKE leesfout mag niet tot uitloggen leiden (anders kaats je na
+    // het intypen van de code terug naar login). Een paar keer proberen; bij een
+    // blijvende fout de sessie laten staan en alleen een melding tonen.
+    let g: { id: string; naam: string; rol: string; actief: boolean; email: string } | null = null;
+    let leesFout = true;
+    for (let poging = 0; poging < 3; poging++) {
+      const { data, error } = await supabase.from("app_gebruikers").select("id, naam, rol, actief, email").ilike("email", adres).limit(1);
+      if (!error) { g = (data && data[0]) || null; leesFout = false; break; }
+      await new Promise((r) => setTimeout(r, 400 * (poging + 1)));
+    }
+    if (leesFout) { setFout("Even geen verbinding. Probeer het zo nog eens, je hoeft niet opnieuw in te loggen."); return; }
+    const match = g && typeof g.email === "string" && g.email.trim().toLowerCase() === adres;
+    if (!match || !g!.actief) {
+      setFout("Dit e-mailadres heeft geen toegang. Vraag de beheerder om je toe te voegen.");
       await supabase.auth.signOut();
       setIngelogd(null); setIsAdmin(false); setIsManager(false);
       return;
     }
     setFout("");
-    setIngelogd({ id: g!.id as string, naam: g!.naam as string });
+    setIngelogd({ id: g!.id, naam: g!.naam });
     setIsAdmin(g!.rol === "admin");
     setIsManager(g!.rol === "manager");
   }
@@ -1297,14 +1306,16 @@ export default function WerkplaatsPagina() {
   // De magic-link-redirect komt ook via onAuthStateChange binnen.
   useEffect(() => {
     let levend = true;
-    (async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!levend) return;
-      await koppelGebruiker(data.session?.user?.email);
-      setKlaar(true);
-    })();
+    // onAuthStateChange vuurt bij het laden meteen ook een INITIAL_SESSION, dus
+    // een aparte getSession is overbodig. BELANGRIJK: binnen deze callback nooit
+    // een andere supabase-call awaiten (auth-lock-deadlock, de oorzaak van het
+    // terugkaatsen naar login); daarom koppelGebruiker in een setTimeout.
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      koppelGebruiker(session?.user?.email);
+      const email = session?.user?.email;
+      setTimeout(() => {
+        if (!levend) return;
+        koppelGebruiker(email).finally(() => { if (levend) setKlaar(true); });
+      }, 0);
     });
     return () => { levend = false; sub.subscription.unsubscribe(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
