@@ -219,6 +219,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   .wa{position:fixed;left:18px;bottom:18px;z-index:60;display:inline-flex;align-items:center;gap:9px;background:#25d366;color:#fff;font-weight:700;font-size:14.5px;border-radius:999px;padding:13px 18px;text-decoration:none;box-shadow:0 10px 26px rgba(0,0,0,.25);transition:transform .15s}
   .wa:hover{transform:translateY(-2px)}
   @media(max-width:600px){.wa span{display:none}.wa{padding:14px;border-radius:50%}}
+
+  /* LIGHTBOX voor review-foto's (popup op de pagina) */
+  .lb{position:fixed;inset:0;z-index:200;background:rgba(16,42,31,.9);display:none;align-items:center;justify-content:center;padding:24px;cursor:zoom-out}
+  .lb.on{display:flex}
+  .lb .inner{text-align:center;max-width:100%}
+  .lb img{max-width:min(92vw,720px);max-height:76vh;border-radius:14px;box-shadow:0 30px 70px rgba(0,0,0,.5);display:block;margin:0 auto}
+  .lb .cap{margin-top:14px;color:#fff;font-weight:700;font-size:15.5px}
+  .lb .x{position:absolute;top:18px;right:22px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:20px;width:42px;height:42px;border-radius:50%;cursor:pointer;line-height:1}
 </style>
 </head>
 <body>
@@ -537,6 +545,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- Elfsight AI Chatbot, Carbie -->
 <div class="elfsight-app-937db81a-8d01-4681-9e9b-bdf135097542" data-elfsight-app-lazy></div>
 
+<!-- Lightbox voor review-foto's -->
+<div class="lb" id="lb" onclick="closeLB()">
+  <button class="x" type="button" aria-label="Sluiten">✕</button>
+  <div class="inner">
+    <img id="lbImg" src="" alt="Review-foto">
+    <div class="cap" id="lbCap"></div>
+  </div>
+</div>
+
 <script>
   // ====== Klachten-checker ======
   var SYMPTOMEN = [
@@ -717,6 +734,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       slides[i].classList.add('on');
     }, 4500);
   })();
+
+  // ====== Lightbox voor review-foto's (popup op de pagina, weg te klikken) ======
+  (function(){
+    var lb = document.getElementById('lb');
+    if(!lb) return;
+    document.querySelectorAll('.review-card .fotos a').forEach(function(a){
+      a.addEventListener('click', function(e){
+        e.preventDefault();
+        var card = a.closest('.review-card');
+        var who = card && card.querySelector('.who');
+        var naam = who ? who.textContent.replace(/^[\s—-]+/, '').trim() : '';
+        var img = a.querySelector('img');
+        document.getElementById('lbImg').src = (img && img.src) || a.getAttribute('href');
+        document.getElementById('lbCap').textContent = naam ? ('Foto van ' + naam) : '';
+        lb.classList.add('on');
+      });
+    });
+    document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeLB(); });
+  })();
+  function closeLB(){ var lb = document.getElementById('lb'); if(lb){ lb.classList.remove('on'); document.getElementById('lbImg').src = ''; } }
 </script>
 </body>
 </html>
