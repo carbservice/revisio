@@ -629,7 +629,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     var n = sel.length;
     var hasRood = sel.some(function(t){ return NIV[t] === 'rood'; });
     var hasOranje = sel.some(function(t){ return NIV[t] === 'oranje'; });
-    var lvl = hasRood ? 'rood' : (hasOranje ? 'oranje' : (n > 0 ? 'geel' : null));
+    var geelCount = sel.filter(function(t){ return NIV[t] === 'geel'; }).length;
+    // 2 of meer lichte (gele) klachten samen = al een duidelijk patroon -> oranje
+    var lvl = hasRood ? 'rood' : ((hasOranje || geelCount >= 2) ? 'oranje' : (n > 0 ? 'geel' : null));
     document.getElementById('urgent').style.display = hasRood ? 'flex' : 'none';
     // Klachten live overnemen in het formulier (stopt zodra je zelf typt)
     var veld = document.getElementById('klachtveld');
