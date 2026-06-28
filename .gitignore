@@ -40,3 +40,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 carbhub/_werk_inat/
+
+# temp & werkbestanden (losse scripts/logs van eenmalige acties)
+*.log
+_*.mjs
+_*.cjs
