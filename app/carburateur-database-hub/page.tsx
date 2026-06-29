@@ -143,8 +143,11 @@ function Hub() {
       const lijst = bouwKennbladen(carbs.data || [], tags.data || [], toep.data || [], uitv.data || [], ond.data || []);
       setKennbladen(lijst);
       setLaden(false);
-      const id = new URLSearchParams(window.location.search).get("id");
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get("id");
       if (id && lijst.some((c) => c.id === id)) setOpenId(id);
+      const q = params.get("q");
+      if (q) setZoek(q);
     })();
   }, []);
 

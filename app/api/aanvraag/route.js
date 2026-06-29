@@ -8,9 +8,11 @@
 // Geen login (publiek), wel een honeypot tegen bots. Alles faalt "zacht": een
 // aanvraag mag nooit verloren gaan, ook als Moneybird of mail even hapert.
 
+import { after } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { haalVoertuig } from "@/lib/rdw";
 import { mb, MB_ADMIN as ADMIN, MB_TOKEN as TOKEN } from "@/lib/moneybird";
+import { zoekHub } from "@/lib/hubmatch";
 
 export const dynamic = "force-dynamic";
 
@@ -290,6 +292,20 @@ export async function POST(req) {
   await stuurMelding(d, kenmerk, offerteNr);
   const offerteLink = offerteId && ADMIN ? `https://moneybird.com/${ADMIN}/estimates/${offerteId}` : null;
   await stuurWhatsapp(d, kenmerk, offerteLink, bronLabel(bron, d.tracking));
+
+  // 5) HUB-MATCH (intern, NA de respons via after(): de klant wacht hier NIET op).
+  //    Match de opgegeven carburateur (tagnummer of merk/type) tegen de Hub en
+  //    zet bij een treffer een opvallende notitie op de concept-offerte.
+  after(async () => {
+    try {
+      if (!offerteId || !d.carburateur) return;
+      const hub = zoekHub(d.carburateur);
+      if (!hub) return;
+      const link = `${SITE_URL}/carburateur-database-hub?q=${encodeURIComponent(d.carburateur)}`;
+      const note = `🎯 HUB-MATCH! "${d.carburateur}" staat in de Carburateur Hub:\n${hub.titel}\nOpen het blad: ${link}`;
+      await mb(`estimates/${offerteId}/notes.json`, "POST", { note: { todo: false, note } });
+    } catch (e) { /* hub-match mag nooit iets breken */ }
+  });
 
   return json({ ok: true, voertuig: kenmerk, offerte: offerteNr, fotos: fotoInfo ? fotoInfo.aantal : 0, mbFout });
 }
