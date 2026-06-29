@@ -77,30 +77,35 @@ async function checkKenteken() {
   } catch (e) {}
 }
 
-// Versturen MET laadbalk: toont de foto-upload (echte %) en daarna een
-// "verwerken"-fase terwijl de backend RDW/Moneybird/WhatsApp afhandelt.
+// Versturen MET voortgang IN de verzendknop: de knop vult zich (foto-upload %),
+// daarna een "verwerken"-fase terwijl de backend RDW/Moneybird/WhatsApp afhandelt.
 // Faalt zacht: een aanvraag mag nooit blokkeren op de UI.
 function cbPost(payload) {
   return new Promise(function (resolve) {
     var btn = document.querySelector('#aanvraagForm button[type="submit"]');
-    var bar = document.createElement('div');
-    bar.style.cssText = 'position:fixed;top:0;left:0;height:4px;width:8%;background:linear-gradient(90deg,#b8962e,#e9cd8a);z-index:99999;transition:width .25s ease;box-shadow:0 0 8px rgba(184,150,46,.6)';
-    document.body.appendChild(bar);
-    var verwerkt = false, tick = null, w = 8;
-    function zet(p) { w = p; bar.style.width = w.toFixed(1) + '%'; }
+    var fill = null, label = null;
+    if (btn) {
+      var txt = btn.textContent || 'Versturen…';
+      btn.style.position = 'relative';
+      btn.style.overflow = 'hidden';
+      btn.innerHTML =
+        '<span class="cb-fill" style="position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(255,255,255,.30);transition:width .3s ease;z-index:0"></span>' +
+        '<span class="cb-label" style="position:relative;z-index:1">' + txt + '</span>';
+      fill = btn.querySelector('.cb-fill');
+      label = btn.querySelector('.cb-label');
+    }
+    var verwerkt = false, tick = null, w = 6;
+    function zet(p) { w = p; if (fill) fill.style.width = w.toFixed(1) + '%'; }
+    function setLabel(t) { if (label) label.textContent = t; }
     function verwerkFase() {
       if (verwerkt) return; verwerkt = true;
-      if (btn) btn.textContent = 'Aanvraag verwerken…';
+      setLabel('Aanvraag verwerken…');
       if (w < 90) zet(90);
-      // Trickle: kruip langzaam richting 97% zodat de balk blijft bewegen terwijl de server werkt.
-      tick = setInterval(function () { zet(w + (97 - w) * 0.12); }, 350);
+      // Trickle: kruip langzaam richting 97% zodat de knop blijft vullen terwijl de server werkt.
+      tick = setInterval(function () { zet(w + (97 - w) * 0.12); }, 300);
     }
-    function klaar() {
-      if (tick) clearInterval(tick);
-      bar.style.width = '100%';
-      setTimeout(function () { if (bar.parentNode) bar.parentNode.removeChild(bar); }, 450);
-      resolve();
-    }
+    function klaar() { if (tick) clearInterval(tick); zet(100); resolve(); }
+    zet(w);
     try {
       var xhr = new XMLHttpRequest();
       xhr.open('POST', BACKEND);
