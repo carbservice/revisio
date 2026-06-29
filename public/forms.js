@@ -86,9 +86,21 @@ function cbPost(payload) {
     var bar = document.createElement('div');
     bar.style.cssText = 'position:fixed;top:0;left:0;height:4px;width:8%;background:linear-gradient(90deg,#b8962e,#e9cd8a);z-index:99999;transition:width .25s ease;box-shadow:0 0 8px rgba(184,150,46,.6)';
     document.body.appendChild(bar);
-    var verwerkt = false;
-    function verwerkFase() { if (verwerkt) return; verwerkt = true; bar.style.width = '92%'; if (btn) btn.textContent = 'Aanvraag verwerken…'; }
-    function klaar() { bar.style.width = '100%'; setTimeout(function () { if (bar.parentNode) bar.parentNode.removeChild(bar); }, 450); resolve(); }
+    var verwerkt = false, tick = null, w = 8;
+    function zet(p) { w = p; bar.style.width = w.toFixed(1) + '%'; }
+    function verwerkFase() {
+      if (verwerkt) return; verwerkt = true;
+      if (btn) btn.textContent = 'Aanvraag verwerken…';
+      if (w < 90) zet(90);
+      // Trickle: kruip langzaam richting 97% zodat de balk blijft bewegen terwijl de server werkt.
+      tick = setInterval(function () { zet(w + (97 - w) * 0.12); }, 350);
+    }
+    function klaar() {
+      if (tick) clearInterval(tick);
+      bar.style.width = '100%';
+      setTimeout(function () { if (bar.parentNode) bar.parentNode.removeChild(bar); }, 450);
+      resolve();
+    }
     try {
       var xhr = new XMLHttpRequest();
       xhr.open('POST', BACKEND);
@@ -97,7 +109,7 @@ function cbPost(payload) {
         xhr.upload.onprogress = function (e) {
           if (e.lengthComputable) {
             var pct = 10 + Math.round(e.loaded / e.total * 80);
-            bar.style.width = pct + '%';
+            zet(pct);
             if (pct >= 88) verwerkFase();
           }
         };
