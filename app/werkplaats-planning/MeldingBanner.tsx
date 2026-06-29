@@ -42,23 +42,41 @@ export default function MeldingBanner() {
 
   if (!code || items.length === 0) return null;
 
+  // Bij openen van de kaart: ook als gelezen markeren.
   async function gelezen(id: string) {
     await supabase.from("melding").update({ gelezen: true }).eq("id", id);
+  }
+  // "Gelezen"-knop: meteen uit de lijst + in de database op gelezen zetten.
+  async function markeer(id: string) {
+    setItems((xs) => xs.filter((x) => x.id !== id));
+    await supabase.from("melding").update({ gelezen: true }).eq("id", id);
+  }
+  // Alles in één klik wegwerken.
+  async function allesGelezen() {
+    const c = code;
+    setItems([]);
+    if (c) await supabase.from("melding").update({ gelezen: true }).eq("ontvanger", c).eq("gelezen", false);
   }
 
   return (
     <div style={kaart}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-        <span style={{ fontSize: 16 }}>🔔</span>
-        <span style={{ fontSize: 13.5, fontWeight: 800, color: GROEN }}>Je hebt {items.length} {items.length === 1 ? "melding" : "meldingen"}</span>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 16 }}>🔔</span>
+          <span style={{ fontSize: 13.5, fontWeight: 800, color: GROEN }}>Je hebt {items.length} {items.length === 1 ? "melding" : "meldingen"}</span>
+        </div>
+        <button onClick={allesGelezen} style={allesBtn}>✓ Alles gelezen</button>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
         {items.map((m) => (
-          <Link key={m.id} href={m.kaart_id ? `/werkplaats-planning/${m.kaart_id}` : "/werkplaats-planning"} onClick={() => gelezen(m.id)} style={rij}>
+          <div key={m.id} style={rij}>
             <span style={{ width: 7, height: 7, borderRadius: "50%", background: ROOD, flexShrink: 0 }} />
-            <span style={{ flex: 1, fontSize: 13, color: TEKST }}>{m.tekst}</span>
-            <span style={{ fontSize: 11.5, color: GROEN, fontWeight: 700, flexShrink: 0 }}>Openen →</span>
-          </Link>
+            <Link href={m.kaart_id ? `/werkplaats-planning/${m.kaart_id}` : "/werkplaats-planning"} onClick={() => gelezen(m.id)} style={{ flex: 1, display: "flex", alignItems: "center", gap: 9, textDecoration: "none", minWidth: 0 }}>
+              <span style={{ flex: 1, fontSize: 13, color: TEKST, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.tekst}</span>
+              <span style={{ fontSize: 11.5, color: GROEN, fontWeight: 700, flexShrink: 0 }}>Openen →</span>
+            </Link>
+            <button onClick={() => markeer(m.id)} style={gelezenBtn}>Gelezen</button>
+          </div>
         ))}
       </div>
     </div>
@@ -66,4 +84,6 @@ export default function MeldingBanner() {
 }
 
 const kaart: CSSProperties = { background: "#fff", border: `1px solid ${RAND}`, borderRadius: 14, padding: "14px 16px", marginBottom: 22, boxShadow: KAART_SCHADUW };
-const rij: CSSProperties = { display: "flex", alignItems: "center", gap: 9, textDecoration: "none", padding: "7px 6px", borderRadius: 8 };
+const rij: CSSProperties = { display: "flex", alignItems: "center", gap: 9, padding: "7px 6px", borderRadius: 8 };
+const allesBtn: CSSProperties = { flexShrink: 0, background: "transparent", color: GROEN, border: `1px solid ${RAND}`, borderRadius: 999, padding: "5px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" };
+const gelezenBtn: CSSProperties = { flexShrink: 0, background: "#e7f0ea", color: GROEN, border: "none", borderRadius: 999, padding: "6px 12px", fontSize: 11.5, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" };
