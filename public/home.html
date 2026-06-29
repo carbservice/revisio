@@ -295,6 +295,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   .lb .cap{margin-top:14px;color:#fff;font-weight:700;font-size:15.5px}
   .lb .x{position:absolute;top:18px;right:22px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:20px;width:42px;height:42px;border-radius:50%;cursor:pointer;line-height:1}
 </style>
+<script src="/track.js" defer></script>
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
@@ -827,7 +828,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       voornaam: val('f_voornaam'), achternaam: val('f_achternaam'), telefoon: val('f_telefoon'), email: val('f_email'),
       carburateur: val('f_carburateur'), kenteken: val('f_kenteken'), klachten: val('klachtveld'),
       segment: seg,
-      fotos: gekozenFotos, tracking: getTracking(), website: ''
+      fotos: gekozenFotos, tracking: Object.assign({}, getTracking(), { journey: (typeof cbJourney === 'function' ? cbJourney() : null) }), website: ''
     };
     try{ await fetch(BACKEND, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) }); }
     catch(err){ /* nooit blokkeren */ }

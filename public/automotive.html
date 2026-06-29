@@ -174,6 +174,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   .mock-note{background:#fff8e6;border-bottom:1px solid #ecdca0;color:#7a5c12;font-size:13px;text-align:center;padding:8px 22px;font-weight:600}
 </style>
+<script src="/track.js" defer></script>
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
@@ -603,7 +604,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       voornaam: val('f_voornaam'), achternaam: val('f_achternaam'), telefoon: val('f_telefoon'), email: val('f_email'),
       carburateur: val('f_carburateur'), kenteken: val('f_kenteken'), klachten: val('klachtveld'),
       segment: 'automotive',
-      fotos: gekozenFotos, tracking: getTracking(), website: ''
+      fotos: gekozenFotos, tracking: Object.assign({}, getTracking(), { journey: (typeof cbJourney === 'function' ? cbJourney() : null) }), website: ''
     };
     try{ await fetch(BACKEND, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) }); }
     catch(err){ /* nooit blokkeren: klant ziet altijd het bedankt-scherm */ }

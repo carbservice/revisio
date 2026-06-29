@@ -128,6 +128,17 @@ function segmentLabel(seg) {
   return m[seg] || seg || "onbekend";
 }
 
+// Klant-reis (bron + bezochte pagina's) leesbaar voor in de offerte-notitie.
+function journeyTekst(tracking) {
+  const j = tracking && tracking.journey;
+  if (!j) return null;
+  const regels = [];
+  if (j.source && j.source.landing) regels.push(`Landingspagina: ${j.source.landing}`);
+  if (j.source && j.source.referrer) regels.push(`Vorige site: ${j.source.referrer}`);
+  if (Array.isArray(j.trail) && j.trail.length) regels.push(`Klik-spoor (${j.trail.length} pagina's): ${j.trail.map((x) => x.p).join(" -> ")}`);
+  return regels.length ? regels.join("\n") : null;
+}
+
 // Foto's van de klant: opslaan in Supabase Storage onder een onraadbaar token,
 // en de galerij-link als INTERNE notitie op de concept-offerte zetten (Lukas ziet
 // 'm in Moneybird; niet aan de klant-offerte gehangen, niet meegestuurd).
@@ -259,6 +270,7 @@ export async function POST(req) {
           const aanvraagNotitie = [
             `Bron van deze aanvraag: ${bronLabel(bron, d.tracking)}`,
             d.segment ? `Aangevraagd via: ${segmentLabel(d.segment)}` : null,
+            journeyTekst(d.tracking),
           ].filter(Boolean).join("\n");
           await mb(`estimates/${offerteId}/notes.json`, "POST", { note: { todo: false, note: aanvraagNotitie } });
         } catch (e) {}
