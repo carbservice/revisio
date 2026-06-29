@@ -76,13 +76,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   .chip{display:inline-flex;align-items:center;gap:8px;background:var(--groen-zacht);border:1.5px solid var(--rand);color:var(--tekst);font-size:14.5px;font-weight:600;padding:11px 16px;border-radius:999px;cursor:pointer;transition:all .15s;user-select:none}
   .chip:hover{border-color:var(--groen)}
   .chip .dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--grijs);display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:#fff;transition:all .15s}
-  .chip.on{background:var(--groen);color:#fff;border-color:var(--groen)}
-  .chip.on .dot{background:var(--goud);border-color:var(--goud)}
+  .chip.on{color:#fff}
+  .chip.on .dot{background:#fff;border-color:#fff}
   .chip .warn{font-size:12px}
-  .chip.danger{border-color:#e3a99b;background:#fbeae5}
-  .chip.danger .dot{border-color:var(--rood)}
-  .chip.danger.on{background:var(--rood);color:#fff;border-color:var(--rood)}
-  .chip.danger.on .dot{background:#fff;border-color:#fff;color:var(--rood)}
+  .chip.niv-geel.on{background:#e0a82e;border-color:#e0a82e;color:#3a2e08}
+  .chip.niv-geel.on .dot{color:#3a2e08}
+  .chip.niv-oranje.on{background:#dd8a1c;border-color:#dd8a1c}
+  .chip.niv-oranje.on .dot{color:#dd8a1c}
+  .chip.niv-rood.on{background:#c8412e;border-color:#c8412e}
+  .chip.niv-rood.on .dot{color:#c8412e}
+  .legenda{text-align:center;font-size:12.5px;color:var(--grijs);margin:-2px 0 16px;font-weight:600}
   .urgent{background:#fbeae5;border:1.5px solid #e3a99b;color:var(--rood);border-radius:14px;padding:14px 18px;margin:0 auto 18px;max-width:600px;font-weight:600;font-size:15px;display:none;gap:11px;align-items:center;text-align:left;line-height:1.45}
   .urgent .bx{font-size:22px}
   .verdict{margin-top:26px;text-align:center;border-top:1px dashed var(--rand);padding-top:24px}
@@ -237,6 +240,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <p>Klik op de klachten die je herkent. Wij vertellen je direct of een revisie de oplossing is.</p>
     </div>
     <div class="checker-card">
+      <div class="legenda">🟡 licht signaal &nbsp;·&nbsp; 🟠 serieus &nbsp;·&nbsp; 🔴 direct (brandgevaar)</div>
       <div class="chips" id="chips"></div>
       <div class="verdict">
         <div class="urgent" id="urgent"><span class="bx">🔥</span><span><b>Direct laten nakijken.</b> Een benzinelekkage, sterke benzinegeur of overlopende vlotterkamer is <b>brandgevaarlijk</b>. Wacht hier niet mee, dit hoort meteen nagekeken te worden.</span></div>
@@ -451,20 +455,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <script>
   var SYMPTOMEN = [
-    {t:"Onregelmatig stationair"},{t:"Stottert bij gasgeven"},{t:"Hoog brandstofverbruik"},
-    {t:"Startproblemen"},{t:"Motor slaat af"},{t:"Sterke benzinegeur",danger:true},
-    {t:"Zichtbare lekkage",danger:true},{t:"Horten en stoten"},{t:"Zwarte rook uit uitlaat"},
-    {t:"Weinig vermogen"},{t:"Overlopende vlotterkamer",danger:true},
-    {t:"CO-meting te hoog"},{t:"Luchtschroef afstellen heeft geen effect meer"},
-    {t:"Loopt zeer hoog stationair"},{t:"Rijdt zeer onzuinig"}
+    {t:"Onregelmatig stationair", niv:"geel"},{t:"Stottert bij gasgeven", niv:"oranje"},{t:"Hoog brandstofverbruik", niv:"geel"},
+    {t:"Startproblemen", niv:"oranje"},{t:"Motor slaat af", niv:"oranje"},{t:"Sterke benzinegeur", niv:"rood"},
+    {t:"Zichtbare lekkage", niv:"rood"},{t:"Horten en stoten", niv:"oranje"},{t:"Zwarte rook uit uitlaat", niv:"oranje"},
+    {t:"Weinig vermogen", niv:"oranje"},{t:"Overlopende vlotterkamer", niv:"rood"},
+    {t:"CO-meting te hoog", niv:"geel"},{t:"Luchtschroef afstellen heeft geen effect meer", niv:"oranje"},
+    {t:"Loopt zeer hoog stationair", niv:"geel"},{t:"Rijdt zeer onzuinig", niv:"geel"}
   ];
+  var NIV = {}; SYMPTOMEN.forEach(function(s){ NIV[s.t] = s.niv; });
   var chips = document.getElementById('chips');
   var gekozen = new Set();
   var laatsteAuto = "";
   SYMPTOMEN.forEach(function(s){
     var el = document.createElement('div');
-    el.className = 'chip' + (s.danger ? ' danger' : '');
-    el.innerHTML = '<span class="dot">✓</span>' + s.t + (s.danger ? ' <span class="warn">🔥</span>' : '');
+    el.className = 'chip niv-' + s.niv;
+    el.innerHTML = '<span class="dot">✓</span>' + s.t + (s.niv === 'rood' ? ' <span class="warn">🔥</span>' : '');
     el.onclick = function(){
       if(gekozen.has(s.t)){gekozen.delete(s.t);el.classList.remove('on');}
       else{gekozen.add(s.t);el.classList.add('on');}
@@ -475,34 +480,46 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     chips.appendChild(el);
   });
   function update(){
-    var n = gekozen.size;
-    var danger = SYMPTOMEN.some(function(s){return s.danger && gekozen.has(s.t);});
-    document.getElementById('meterbar').style.width = Math.min(100,(n/4)*100) + '%';
-    document.getElementById('urgent').style.display = danger ? 'flex' : 'none';
+    var sel = Array.from(gekozen);
+    var n = sel.length;
+    var hasRood = sel.some(function(t){ return NIV[t] === 'rood'; });
+    var hasOranje = sel.some(function(t){ return NIV[t] === 'oranje'; });
+    var geelCount = sel.filter(function(t){ return NIV[t] === 'geel'; }).length;
+    var lvl = hasRood ? 'rood' : ((hasOranje || geelCount >= 2) ? 'oranje' : (n > 0 ? 'geel' : null));
+    document.getElementById('urgent').style.display = hasRood ? 'flex' : 'none';
     // Klachten live overnemen in het formulier (stopt zodra je zelf iets typt)
     var veld = document.getElementById('klachtveld');
-    if(veld.value === laatsteAuto || veld.value === ""){
-      laatsteAuto = Array.from(gekozen).join(', ');
-      veld.value = laatsteAuto;
-    }
+    if(veld.value === laatsteAuto || veld.value === ""){ laatsteAuto = sel.join(', '); veld.value = laatsteAuto; }
+    var bar = document.getElementById('meterbar');
     var t = document.getElementById('vTitel'), p = document.getElementById('vTekst'), b = document.getElementById('vBtn');
-    if(n===0){
+    if(!lvl){
+      bar.style.width = '0';
+      t.style.color = 'var(--groen)';
       t.textContent = "Selecteer hierboven je klachten";
-      p.textContent = "Hoe meer je herkent, hoe groter de kans dat de carburateur toe is aan een revisie.";
+      p.textContent = "Hoe meer je herkent, hoe duidelijker we kunnen zeggen of een revisie de oplossing is.";
       b.style.display = 'none';
-    } else if(danger){
-      t.textContent = "Direct toe aan een revisie";
-      p.textContent = "Je gaf een brandgevaarlijke klacht aan. Laat dit niet liggen. Wij kijken 'm snel na en lossen het vakkundig op, mét eindcontrole.";
-      b.style.display = 'inline-flex';
-    } else if(n<=2){
-      t.textContent = n + " klacht" + (n>1?"en":"") + " herkend";
-      p.textContent = "Dit kan al wijzen op vervuiling of slijtage in de carburateur. Vaak goed op te lossen met een revisie, voordat het erger wordt.";
-      b.style.display = 'inline-flex';
-    } else {
-      t.textContent = n + " klachten herkend, duidelijk signaal";
-      p.textContent = "Dit wijst sterk op een versleten of vervuilde carburateur. Hoog tijd voor een revisie. Wij maken 'm weer als nieuw, mét eindcontrole.";
-      b.style.display = 'inline-flex';
+      return;
     }
+    var WIJZER = { geel:42, oranje:72, rood:100 };
+    var METER = { geel:'#e0a82e', oranje:'#dd8a1c', rood:'#c8412e' };
+    var KLEUR = { geel:'#9a7400', oranje:'#c2740d', rood:'#a23b2e' };
+    bar.style.width = WIJZER[lvl] + '%';
+    bar.style.background = METER[lvl];
+    t.style.color = KLEUR[lvl];
+    if(lvl === 'rood'){
+      t.textContent = "⚠️ Direct laten nakijken, brandgevaar";
+      p.textContent = "Een benzinelekkage, sterke benzinegeur of overlopende vlotterkamer is brandgevaarlijk. Een revisie is direct nodig, wacht hier niet mee.";
+      b.textContent = "Laat 'm direct nakijken →";
+    } else if(lvl === 'oranje'){
+      t.textContent = "Duidelijk signaal, revisie aangeraden";
+      p.textContent = "Dit wijst sterk op een vervuilde of versleten carburateur. Laat 'm op tijd reviseren, voordat het erger (en duurder) wordt.";
+      b.textContent = "Vraag een gratis offerte aan →";
+    } else {
+      t.textContent = "Licht signaal opgemerkt";
+      p.textContent = "Een vroege indicatie dat de carburateur aandacht vraagt. Vaak nog eenvoudig op te lossen, het ideale moment voor een revisie.";
+      b.textContent = "Vraag een gratis offerte aan →";
+    }
+    b.style.display = 'inline-flex';
   }
 
   // Installatiepartner-melding tonen/verbergen
