@@ -73,6 +73,12 @@ article.post a{color:var(--groen);font-weight:700}
 .bcarousel .slide{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .9s ease}
 .bcarousel .slide.on{opacity:1}
 .bcarousel .badge{position:absolute;top:14px;left:14px;background:var(--goud);color:#fff;font-size:11.5px;font-weight:800;padding:5px 11px;border-radius:999px;letter-spacing:.04em;z-index:2}
+/* Lightbox: foto's openen in beeld (niet in een nieuw tabblad) */
+.hero-img,.bcarousel img{cursor:zoom-in}
+.blb{display:none;position:fixed;inset:0;z-index:9999;background:rgba(10,20,15,.93);align-items:center;justify-content:center;padding:24px}
+.blb.on{display:flex}
+.blb img{max-width:94vw;max-height:90vh;border-radius:10px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.blb-x{position:absolute;top:16px;right:24px;color:#fff;font-size:42px;line-height:1;cursor:pointer;font-weight:300}
 .cta{background:linear-gradient(140deg,#27593f,#1a3c2e);color:#fff;text-align:center;padding:48px 0;margin-top:40px}
 .cta h2{font-size:clamp(24px,3.4vw,34px);color:#fff;margin-bottom:10px}
 .cta p{color:rgba(255,255,255,.85);font-size:16.5px;max-width:520px;margin:0 auto 20px}
