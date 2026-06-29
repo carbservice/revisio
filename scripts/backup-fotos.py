@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-# Back-up van de Supabase Storage-buckets (foto's + tekeningen).
-# Loopt recursief door de mappen, downloadt elk bestand en zet het in
-# ./foto-backup/<bucket>/<pad>. De GitHub Action bewaart die map als artifact.
-# Gebruikt de service-role-sleutel (omzeilt RLS) uit de omgeving.
+# Back-up van de Supabase Storage-buckets (foto's + tekeningen) naar ./foto-backup.
+# INCREMENTEEL: downloadt alleen bestanden die nog NIET in Backblaze B2 staan
+# (lijst meegegeven via env B2_BESTAAND, gemaakt met 'rclone lsf'), zodat we niet
+# elke dag alles opnieuw downloaden -> scheelt Supabase-egress (belangrijk op de
+# gratis tier). De GitHub Action kopieert ./foto-backup daarna met 'rclone copy'
+# naar B2. Gebruikt de service-role-sleutel (omzeilt RLS) uit de omgeving.
 
 import json
 import os
@@ -15,6 +17,14 @@ URL = os.environ["SUPABASE_URL"].rstrip("/")
 KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
 BUCKETS = ["werkbon-fotos", "carburateur-blueprints", "support-boekjes"]
 OUT = pathlib.Path("foto-backup")
+
+# Reeds in B2 aanwezige bestanden (relatief pad "<bucket>/<pad>") om over te slaan.
+BESTAAND = set()
+_lijstpad = os.environ.get("B2_BESTAAND")
+if _lijstpad and os.path.exists(_lijstpad):
+    with open(_lijstpad, encoding="utf-8") as f:
+        BESTAAND = {r.strip() for r in f if r.strip()}
+    print(f"Al in B2: {len(BESTAAND)} bestanden (worden overgeslagen)")
 
 
 def api_post(path, data):
@@ -55,29 +65,39 @@ def download(bucket, pad, doel):
 
 
 def loop(bucket, prefix=""):
-    aantal = 0
+    gezien = gedown = 0
     for it in lijst(bucket, prefix):
         naam = it.get("name")
         if not naam or naam == ".emptyFolderPlaceholder":
             continue
         pad = f"{prefix}{naam}"
         if it.get("id") is None:  # map -> recursie
-            aantal += loop(bucket, pad + "/")
+            g, d = loop(bucket, pad + "/")
+            gezien += g
+            gedown += d
         else:
+            gezien += 1
+            rel = f"{bucket}/{pad}"
+            if rel in BESTAAND:
+                continue  # staat al in B2 -> niet opnieuw downloaden
             try:
                 download(bucket, pad, OUT / bucket / pad)
-                aantal += 1
+                gedown += 1
             except Exception as e:  # noqa: BLE001
                 print(f"  FOUT bij {bucket}/{pad}: {e}", file=sys.stderr)
-    return aantal
+    return gezien, gedown
 
 
-totaal = 0
+totaal_gezien = totaal_down = 0
 for b in BUCKETS:
-    n = loop(b)
-    print(f"{b}: {n} bestanden")
-    totaal += n
-print(f"TOTAAL: {totaal} bestanden")
-if totaal == 0:
-    print("WAARSCHUWING: 0 bestanden gedownload (klopt dat?)", file=sys.stderr)
+    g, d = loop(b)
+    print(f"{b}: {d} nieuw / {g} totaal")
+    totaal_gezien += g
+    totaal_down += d
+print(f"TOTAAL: {totaal_down} nieuw gedownload, {totaal_gezien} bestaan in Supabase")
+
+# 0 nieuwe bestanden is normaal (niks veranderd). Alleen alarmeren als Supabase
+# helemaal niets teruggeeft -> dat duidt op een fout (verkeerde sleutel/URL).
+if totaal_gezien == 0:
+    print("WAARSCHUWING: 0 bestanden in Supabase gevonden (mogelijk een fout)", file=sys.stderr)
     sys.exit(1)

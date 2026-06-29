@@ -1,13 +1,16 @@
 name: Foto back-up naar Backblaze B2
 
-# Haalt wekelijks alle foto's/tekeningen uit de Supabase-buckets en kopieert
-# ze naar Backblaze B2. We gebruiken 'rclone copy' (niet sync): bestaande
-# bestanden worden overgeslagen, nieuwe toegevoegd, en NOOIT iets verwijderd.
-# Zo blijft een per ongeluk in Supabase gewiste foto in de back-up staan.
+# Kopieert de foto's/tekeningen uit de Supabase-buckets naar Backblaze B2.
+# INCREMENTEEL: we lijsten eerst wat er al in B2 staat en downloaden uit
+# Supabase ALLEEN de bestanden die nog niet in de back-up zitten. Zo blijft de
+# Supabase-egress laag, ook bij een dagelijkse run (belangrijk op de gratis tier).
+# We gebruiken 'rclone copy' (niet sync): bestaande bestanden worden overgeslagen,
+# nieuwe toegevoegd, en NOOIT iets verwijderd. Zo blijft een per ongeluk in
+# Supabase gewiste foto in de back-up staan.
 
 on:
   schedule:
-    - cron: "0 3 * * 0" # elke zondag 03:00 UTC
+    - cron: "0 3 * * *" # elke dag 03:00 UTC
   workflow_dispatch: {} # handmatig starten kan ook
 
 jobs:
@@ -16,19 +19,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Foto's uit Supabase downloaden
-        env:
-          SUPABASE_URL: https://ntcbrqoesjlgiawmkdsa.supabase.co
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: python3 scripts/backup-fotos.py
-
-      - name: Grootte tonen
-        run: du -sh foto-backup || true
-
       - name: rclone installeren
         run: |
           sudo -v
           curl -fsSL https://rclone.org/install.sh | sudo bash
+
+      - name: Bestaande B2-bestanden lijsten (voor incrementeel)
+        env:
+          RCLONE_CONFIG_B2_TYPE: b2
+          RCLONE_CONFIG_B2_ACCOUNT: ${{ secrets.B2_KEY_ID }}
+          RCLONE_CONFIG_B2_KEY: ${{ secrets.B2_APP_KEY }}
+        run: rclone lsf "b2:revisio-foto-backup" -R --files-only > b2-bestaand.txt || true
+
+      - name: Alleen NIEUWE foto's uit Supabase downloaden
+        env:
+          SUPABASE_URL: https://ntcbrqoesjlgiawmkdsa.supabase.co
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          B2_BESTAAND: b2-bestaand.txt
+        run: python3 scripts/backup-fotos.py
+
+      - name: Grootte tonen
+        run: du -sh foto-backup 2>/dev/null || echo "geen nieuwe bestanden"
 
       - name: Kopieren naar Backblaze B2
         env:
@@ -36,5 +47,9 @@ jobs:
           RCLONE_CONFIG_B2_ACCOUNT: ${{ secrets.B2_KEY_ID }}
           RCLONE_CONFIG_B2_KEY: ${{ secrets.B2_APP_KEY }}
         run: |
-          rclone copy foto-backup "b2:revisio-foto-backup" --transfers 8 --fast-list -v
-          echo "Back-up naar B2 klaar."
+          if [ -d foto-backup ]; then
+            rclone copy foto-backup "b2:revisio-foto-backup" --transfers 8 --fast-list -v
+            echo "Back-up naar B2 klaar."
+          else
+            echo "Geen nieuwe foto's, niks te kopieren."
+          fi
