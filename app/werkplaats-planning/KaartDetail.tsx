@@ -235,6 +235,25 @@ export default function KaartDetail({
   function kies(waarde: string) { setChat((prev) => prev.replace(/@([\w-]*)$/, `@${waarde} `)); }
   function kiesItem(waarde: string) { setNieuwItem((prev) => prev.replace(/@([\w-]*)$/, `@${waarde} `)); }
 
+  // URL's in vrije tekst klikbaar maken (https://… of www.…).
+  function linkifyUrls(str: string, keyBase: string): ReactNode[] {
+    const re = /(https?:\/\/[^\s<]+|www\.[^\s<]+)/g;
+    const out: ReactNode[] = [];
+    let last = 0, m: RegExpExecArray | null, i = 0;
+    while ((m = re.exec(str)) !== null) {
+      if (m.index > last) out.push(str.slice(last, m.index));
+      let url = m[0], trail = "";
+      const mt = url.match(/[).,;:!?]+$/);
+      if (mt) { trail = mt[0]; url = url.slice(0, -trail.length); }
+      const href = url.startsWith("http") ? url : "https://" + url;
+      out.push(<a key={`${keyBase}u${i}`} href={href} target="_blank" rel="noopener noreferrer" style={{ color: GROEN, fontWeight: 600, textDecoration: "underline", wordBreak: "break-all" }}>{url}</a>);
+      if (trail) out.push(trail);
+      last = m.index + m[0].length; i++;
+    }
+    if (last < str.length) out.push(str.slice(last));
+    return out;
+  }
+
   // Tekst met @2026-XXXX (klus -> link) en @Naam (collega -> gemarkeerd).
   function renderTekst(tekst: string): ReactNode[] {
     const namen = TEAM.map((l) => l.naam).sort((a, b) => b.length - a.length).map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
@@ -242,7 +261,7 @@ export default function KaartDetail({
     const out: ReactNode[] = [];
     let last = 0, m: RegExpExecArray | null, i = 0;
     while ((m = re.exec(tekst)) !== null) {
-      if (m.index > last) out.push(tekst.slice(last, m.index));
+      if (m.index > last) out.push(...linkifyUrls(tekst.slice(last, m.index), `a${i}`));
       const val = m[1];
       if (/^\d{4}-/.test(val)) {
         const k = (klusIndex || []).find((x) => x.nummer === val);
@@ -261,7 +280,7 @@ export default function KaartDetail({
       }
       last = m.index + m[0].length; i++;
     }
-    if (last < tekst.length) out.push(tekst.slice(last));
+    if (last < tekst.length) out.push(...linkifyUrls(tekst.slice(last), "end"));
     return out;
   }
 
