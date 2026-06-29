@@ -36,6 +36,7 @@ header.kop .meta b{color:var(--goud-licht)}
 article.post{padding:40px 0 10px}
 article.post .hero-img{width:100%;border-radius:18px;border:1px solid var(--rand);box-shadow:var(--schaduw);margin-bottom:28px;display:block}
 article.post p{font-size:17px;line-height:1.75;color:var(--tekst);margin:0 0 18px}
+article.post p.intro{font-size:18.5px;line-height:1.65;color:var(--grijs);margin:0 0 20px}
 article.post h2{font-size:24px;color:var(--groen);margin:32px 0 12px}
 article.post h3{font-size:19px;color:var(--groen);margin:24px 0 8px}
 article.post ul{margin:0 0 18px 22px}
