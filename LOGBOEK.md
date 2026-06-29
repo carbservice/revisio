@@ -292,3 +292,43 @@
 - Dagelijkse auto-sync (cron) voor omzet/leads/spend; nu nog momentopnames.
 - Betere, voertuig-specifieke foto's op de landingspagina's.
 - planning-schema.sql eenmalig in Supabase draaien; service-role-key roteren + rol-test.
+
+## Dag 11 · 29-30 juni 2026 (de aanvraag-machine + fundament)
+**Van losse pagina's naar één strakke conversie-machine, plus de basis op orde.**
+
+### Homepage + navigatie
+- Volwaardige nav (Diensten · Blog · FAQ · Volg je revisie · Shop · Offerte) + **hamburger-menu** op mobiel + Blog/FAQ/Privacy in de footer.
+
+### Blog afgemaakt
+- **47 artikelen** gemigreerd (eigen herhoste foto's, BlogPosting-schema), index met **filters** (type + 10 merken), **7 artikelen met YouTube-Short** (incl. verbussen). Blog-foto's openen nu in een **lightbox** i.p.v. nieuw tabblad. Solex-blog: USP "zeldzame fabrieksdocumentatie & jetting".
+
+### Aanvraagformulier gecentraliseerd (forms.js)
+- Alle formulier-logica (versturen, tracking, foto-upload) in één gedeeld `public/forms.js` → 4 pagina's, **één bron**. Laadbalk verhuisd naar **IN de verzendknop** (vult zich tijdens upload + "aanvraag verwerken"-fase met trickle).
+- Linkje bij het klachtveld → springt naar de **klachten-checker** (die het veld automatisch invult).
+
+### Klachten-checkers gelijkgetrokken
+- Auto/motor/boot-landingspagina's nu ook **3-niveaus geel/oranje/rood** met legenda (zoals de homepage), brandgevaar-chips neutraal tot aangeklikt.
+
+### Bezoekers-spoor per lead
+- `track.js` op elke pagina houdt **bron + klik-spoor** bij; meegestuurd met de aanvraag → leesbaar in de Moneybird-offertenotitie.
+
+### Hub-match bij aanvragen
+- Nieuwe `lib/hubmatch.js`: matcht de opgegeven carburateur (tagnummer of type, bv. "Solex PDSI") tegen de kennbladen + DVG-crossref. Bij een treffer een **"🎯 HUB-MATCH!"-notitie** op de offerte (link `?q=` naar de Hub). Draait via **`after()`** ná de respons, zodat de klant er niet op wacht.
+
+### Planning
+- URL's in de kaart-chat worden nu **klikbare hyperlinks** (`linkifyUrls`).
+
+### Privacy / consent uitgezocht
+- Eigen `privacy.html` (algemeen + compliant) + footer-links. Cookie-banner = **iubenda via GTM** (de "Cookiebanner"-tag) → besluit: **houden** (gratis, correct, Consent Mode v2). Vercel-popje is een domein-kwestie, weg na cutover.
+
+### Back-up zuiniger
+- Foto-back-up naar Backblaze B2 nu **dagelijks + incrementeel** (alleen nieuwe bestanden t.o.v. B2) i.p.v. wekelijks-alles → veilig binnen de gratis Supabase-egress.
+
+### Domein-cutover (Mijndomein)
+- Mijndomein bevestigt: domein verhuizen + e-mail (info@/lukas@) voortzetten via **IMAPsync** + zelf DNS beheren + **zero-downtime via "verhuis later"**. Kosten ± €95/jaar ex btw. Besluit: deze week **LIVE via snelle Strikingly-DNS-route**, daarna pas de transfer.
+
+### Klein
+- Meldingen-centrum (/start): **"Alles gelezen"** + per-melding "Gelezen"-knop. Marine-formulier placeholder → "Yamaha 9.9 of Volvo Penta B12".
+
+### Open / volgende
+- WhatsApp-knop + social op de site · Google **Ads-conversie-tag** (Stephan) · **iubenda-config** afmaken (met Stephan) · **EPP-code** bij Strikingly opvragen voor de domeintransfer.
