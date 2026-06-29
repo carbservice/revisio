@@ -38,15 +38,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   .eyebrow{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--goud)}
 
   /* TOPBAR (transparant, wit logo, over het hero-beeld) */
-  .topbar{position:absolute;top:30px;left:0;right:0;z-index:20}
-  .topbar .wrap{display:flex;align-items:center;justify-content:space-between}
+  .topbar{position:absolute;top:26px;left:0;right:0;z-index:30}
+  .topbar .wrap{display:flex;align-items:center;justify-content:space-between;gap:14px}
   .logo{font-family:'Fraunces',serif;font-weight:700;font-size:22px;color:#fff;letter-spacing:.02em;text-decoration:none}
   .logo span{color:var(--goud-licht)}
-  .topnav{display:flex;align-items:center;gap:24px;font-size:14.5px;font-weight:600}
+  .topnav{display:flex;align-items:center;gap:22px;font-size:14.5px;font-weight:600}
   .topnav a{text-decoration:none;color:rgba(255,255,255,.92)}
   .topnav a:hover{color:#fff}
   .topphone{font-weight:700}
-  @media(max-width:860px){.topnav a:not(.btn){display:none}}
+  .hamb{display:none;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.32);color:#fff;font-size:20px;width:44px;height:42px;border-radius:10px;cursor:pointer;line-height:1}
+  .mobmenu{display:none;position:absolute;top:74px;left:16px;right:16px;background:rgba(16,42,31,.97);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:10px;box-shadow:0 22px 50px rgba(0,0,0,.42);z-index:40}
+  .mobmenu.open{display:flex;flex-direction:column}
+  .mobmenu a{color:#fff;text-decoration:none;font-weight:700;font-size:16px;padding:13px 15px;border-radius:10px}
+  .mobmenu a:hover{background:rgba(255,255,255,.08)}
+  @media(max-width:860px){.topnav a:not(.btn){display:none}.hamb{display:inline-flex;align-items:center;justify-content:center}}
 
   /* HERO */
   .hero{position:relative;overflow:hidden;background:linear-gradient(140deg,#27593f 0%,#1a3c2e 52%,#102a1f 100%);color:#fff}
@@ -302,12 +307,25 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <a href="#top" class="logo"><img src="logo-wit.png" alt="Carburateur Service Nederland" style="height:36px;display:block" onerror="this.outerHTML='CARB<span>SERVICE</span>'"></a>
     <nav class="topnav">
       <a href="#diensten">Diensten</a>
+      <a href="blog.html">Blog</a>
+      <a href="faq.html">FAQ</a>
       <a href="#werkbank">Volg je revisie</a>
-      <a href="#proces">Werkwijze</a>
       <a href="https://revisio-umber.vercel.app/shop" target="_blank" rel="noopener">Shop</a>
-      <a class="topphone" href="tel:+31653864208">📞 +31 6 53864208</a>
-      <a href="#aanvraag" class="btn btn-goud" style="padding:11px 20px;font-size:14px">Offerte aanvragen</a>
+      <a class="topphone" href="tel:+31653864208">📞 06 53864208</a>
+      <a href="#aanvraag" class="btn btn-goud" style="padding:11px 20px;font-size:14px">Offerte</a>
+      <button class="hamb" type="button" aria-label="Menu" onclick="document.getElementById('mobmenu').classList.toggle('open')">☰</button>
     </nav>
+  </div>
+  <div class="mobmenu" id="mobmenu">
+    <a href="#diensten" onclick="sluitMenu()">Diensten</a>
+    <a href="#checker" onclick="sluitMenu()">Klachtencheck</a>
+    <a href="blog.html">Blog</a>
+    <a href="faq.html">FAQ</a>
+    <a href="#werkbank" onclick="sluitMenu()">Volg je revisie</a>
+    <a href="#proces" onclick="sluitMenu()">Werkwijze</a>
+    <a href="https://revisio-umber.vercel.app/shop" target="_blank" rel="noopener">Shop</a>
+    <a href="tel:+31653864208">📞 06 53864208</a>
+    <a href="#aanvraag" onclick="sluitMenu()">Offerte aanvragen</a>
   </div>
 </header>
 
@@ -602,7 +620,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
     <div><b>Gegevens</b>
       KvK: 91457068<br>BTW: NL004894059B78<br>
-      <a href="#aanvraag">Offerte aanvragen</a> · <a href="https://revisio-umber.vercel.app/volg" target="_blank" rel="noopener">Volg je revisie</a>
+      <a href="#aanvraag">Offerte aanvragen</a> · <a href="blog.html">Blog</a> · <a href="faq.html">FAQ</a> · <a href="https://revisio-umber.vercel.app/volg" target="_blank" rel="noopener">Volg je revisie</a>
     </div>
   </div>
 </footer>
@@ -625,6 +643,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </div>
 
 <script>
+  // Mobiel menu sluiten (na klik op een anker-link)
+  function sluitMenu(){ var m = document.getElementById('mobmenu'); if(m) m.classList.remove('open'); }
+
   // ====== Klachten-checker (3 niveaus: geel / oranje / rood) ======
   var SYMPTOMEN = [
     {t:"Onregelmatig stationair", niv:"geel"},
