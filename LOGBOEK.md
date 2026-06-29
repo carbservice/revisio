@@ -302,6 +302,9 @@
 ### Blog afgemaakt
 - **47 artikelen** gemigreerd (eigen herhoste foto's, BlogPosting-schema), index met **filters** (type + 10 merken), **7 artikelen met YouTube-Short** (incl. verbussen). Blog-foto's openen nu in een **lightbox** i.p.v. nieuw tabblad. Solex-blog: USP "zeldzame fabrieksdocumentatie & jetting".
 
+### Blog-foto's hersteld (high-res) — einde van de dag
+- Ontdekt dat de geïmporteerde blog-foto's **mega korrelig/spikkelig** waren: de migratie pakte de Strikingly-Cloudinary-URL's met **`q_1`** (kwaliteit 1!). Opgelost door **exact dezelfde foto's opnieuw op te halen** met `w_1600,c_limit,q_85,f_jpg` (geen nieuwe bron nodig). Voorbeeld: `boot/1` van 497×453/26 KB → **1536×2048/258 KB**. Blog ging van 6,8 MB → **25 MB** (echte kwaliteit). 30 posts (79 foto's) ververst; mikuni + SU waren al OK (JS-geladen). Junk-graphics (107×45 banners + 300×300 logo's) uit galerijen verwijderd; membraan-post toont nu z'n video. Script: `refetch-blogfotos.py` (scratchpad).
+
 ### Aanvraagformulier gecentraliseerd (forms.js)
 - Alle formulier-logica (versturen, tracking, foto-upload) in één gedeeld `public/forms.js` → 4 pagina's, **één bron**. Laadbalk verhuisd naar **IN de verzendknop** (vult zich tijdens upload + "aanvraag verwerken"-fase met trickle).
 - Linkje bij het klachtveld → springt naar de **klachten-checker** (die het veld automatisch invult).
