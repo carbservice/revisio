@@ -73,11 +73,21 @@ export default function AuthGate({ requireAdmin = false, requireBeheer = false, 
 
   useEffect(() => {
     let levend = true;
-    // We luisteren via onAuthStateChange; die vuurt bij het laden meteen ook een
-    // INITIAL_SESSION (bestaande sessie), dus een aparte getSession is overbodig.
-    // BELANGRIJK: binnen deze callback nooit een andere supabase-call awaiten —
-    // dat botst met de auth-lock (deadlock), de oorzaak van het terugkaatsen naar
-    // login. Daarom check() in een setTimeout, buiten de callback om.
+    // Bij het laden de bestaande sessie ophalen. BELANGRIJK voor de magic link:
+    // die landt op /start met de sessie in de URL (#access_token / ?code), wat
+    // supabase-js async verwerkt. Tonen we dan meteen "uitgelogd", dan kaats je
+    // terug naar login terwijl je net inlogt. Daarom: alleen het loginscherm
+    // tonen als er GEEN sessie is EN er GEEN auth-token in de URL staat; anders
+    // wachten tot onAuthStateChange (SIGNED_IN) binnenkomt.
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!levend) return;
+      if (data.session?.user?.email) { check(data.session.user.email); return; }
+      const urlHeeftAuth = /[#&?](access_token|code|error|token_hash)=/.test(window.location.href);
+      if (!urlHeeftAuth) check(null);
+    })();
+    // Geen supabase-call awaiten BINNEN deze callback (auth-lock-deadlock);
+    // daarom check() in een setTimeout, buiten de callback om.
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       const email = session?.user?.email;
       setTimeout(() => { if (levend) check(email); }, 0);
