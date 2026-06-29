@@ -537,8 +537,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       segment: 'motorfiets',
       fotos: gekozenFotos, tracking: Object.assign({}, getTracking(), { journey: (typeof cbJourney === 'function' ? cbJourney() : null) }), website: ''
     };
-    try{ await fetch(BACKEND, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) }); }
-    catch(err){ /* nooit blokkeren: klant ziet altijd het bedankt-scherm */ }
+    await cbPost(payload);
     document.getElementById('aanvraagForm').style.display='none';
     var dank=document.getElementById('bedankt'); dank.style.display='block';
     dank.scrollIntoView({behavior:'smooth', block:'center'});

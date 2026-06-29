@@ -76,3 +76,36 @@ async function checkKenteken() {
     }
   } catch (e) {}
 }
+
+// Versturen MET laadbalk: toont de foto-upload (echte %) en daarna een
+// "verwerken"-fase terwijl de backend RDW/Moneybird/WhatsApp afhandelt.
+// Faalt zacht: een aanvraag mag nooit blokkeren op de UI.
+function cbPost(payload) {
+  return new Promise(function (resolve) {
+    var btn = document.querySelector('#aanvraagForm button[type="submit"]');
+    var bar = document.createElement('div');
+    bar.style.cssText = 'position:fixed;top:0;left:0;height:4px;width:8%;background:linear-gradient(90deg,#b8962e,#e9cd8a);z-index:99999;transition:width .25s ease;box-shadow:0 0 8px rgba(184,150,46,.6)';
+    document.body.appendChild(bar);
+    var verwerkt = false;
+    function verwerkFase() { if (verwerkt) return; verwerkt = true; bar.style.width = '92%'; if (btn) btn.textContent = 'Aanvraag verwerken…'; }
+    function klaar() { bar.style.width = '100%'; setTimeout(function () { if (bar.parentNode) bar.parentNode.removeChild(bar); }, 450); resolve(); }
+    try {
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', BACKEND);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      if (xhr.upload) {
+        xhr.upload.onprogress = function (e) {
+          if (e.lengthComputable) {
+            var pct = 10 + Math.round(e.loaded / e.total * 80);
+            bar.style.width = pct + '%';
+            if (pct >= 88) verwerkFase();
+          }
+        };
+        xhr.upload.onload = verwerkFase;
+      }
+      xhr.onreadystatechange = function () { if (xhr.readyState === 4) klaar(); };
+      xhr.onerror = function () { klaar(); };
+      xhr.send(JSON.stringify(payload));
+    } catch (err) { klaar(); }
+  });
+}
