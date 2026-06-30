@@ -11,7 +11,7 @@ import { supabase } from "@/lib/supabase";
 import { GROEN, GRIJS, RAND, BG, TEKST, ROOD, KAART_SCHADUW } from "@/lib/theme";
 import { useInactiviteitsUitlog, wisInactiviteit } from "@/app/components/useInactiviteit";
 
-type Status = "laden" | "uit" | "geen-toegang" | "fout" | "ok";
+type Status = "laden" | "uit" | "geen-toegang" | "fout" | "ok" | "onbekend";
 
 // Stelt de ingelogde gebruiker beschikbaar aan de beschermde pagina-inhoud.
 // requireAdmin = alleen admin; requireBeheer = admin of manager.
@@ -34,6 +34,7 @@ export default function AuthGate({ requireAdmin = false, requireBeheer = false, 
   const [fout, setFout] = useState("");
   const [verstuurd, setVerstuurd] = useState(false);
   const [code, setCode] = useState("");
+  const [foutAdres, setFoutAdres] = useState("");
   const router = useRouter();
 
   // Zoekt het personeelslid op. Een TIJDELIJKE leesfout (netwerk/lock) mag NOOIT
@@ -52,7 +53,10 @@ export default function AuthGate({ requireAdmin = false, requireBeheer = false, 
     }
     if (leesFout) { setStatus("fout"); return; }
     const match = g && typeof g.email === "string" && g.email.trim().toLowerCase() === adres;
-    if (!match) { await supabase.auth.signOut(); setStatus("uit"); return; }
+    // Ingelogd, maar dit adres staat niet in app_gebruikers. Vroeger kaatsten we
+    // dan stil terug naar het loginscherm ("code werkt niet"-gevoel); nu tonen we
+    // duidelijk WELK adres geen toegang heeft, zodat je het juiste adres pakt.
+    if (!match) { setFoutAdres(adres); await supabase.auth.signOut(); setStatus("onbekend"); return; }
     if (!g!.actief) { setStatus("geen-toegang"); return; }
     const adm = g!.rol === "admin";
     const man = g!.rol === "manager";
@@ -140,6 +144,17 @@ export default function AuthGate({ requireAdmin = false, requireBeheer = false, 
         <h1 style={{ fontSize: 20, fontWeight: 800, color: GROEN, margin: "0 0 10px" }}>Even geen verbinding</h1>
         <p style={{ fontSize: 14, lineHeight: 1.5, color: TEKST }}>Je bent nog ingelogd, maar we konden je gegevens even niet ophalen. Probeer het opnieuw, je hoeft niet opnieuw in te loggen.</p>
         <button onClick={herproberen} style={{ width: "100%", marginTop: 16, background: GROEN, color: "#fff", border: "none", borderRadius: 12, padding: "13px", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>Opnieuw proberen</button>
+      </div>
+    </main>
+  );
+
+  if (status === "onbekend") return (
+    <main style={wrap}>
+      <div style={kaart}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", color: GROEN, marginBottom: 6 }}>Revisio · Dashboard</div>
+        <h1 style={{ fontSize: 20, fontWeight: 800, color: GROEN, margin: "0 0 10px" }}>Dit adres heeft geen toegang</h1>
+        <p style={{ fontSize: 14, lineHeight: 1.5, color: TEKST }}>Je inlogcode klopte, maar <b>{foutAdres}</b> staat niet in het systeem. Log in met het e-mailadres dat voor jou is aangemaakt, of vraag een admin om dit adres toe te voegen.</p>
+        <button onClick={() => { setEmail(""); setCode(""); setVerstuurd(false); setFout(""); setFoutAdres(""); setStatus("uit"); }} style={{ width: "100%", marginTop: 16, background: GROEN, color: "#fff", border: "none", borderRadius: 12, padding: "13px", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>Ander e-mailadres proberen</button>
       </div>
     </main>
   );
