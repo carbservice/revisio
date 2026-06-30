@@ -15,6 +15,8 @@
   var st = document.createElement('style');
   st.textContent = [
     'header.topbar{display:none!important}header.kop .topbar{display:none!important}',
+    '.hero{padding-top:64px}',
+
     '#cbnav{position:absolute;top:0;left:0;right:0;z-index:60;font-family:Inter,system-ui,sans-serif;background:linear-gradient(180deg,rgba(0,0,0,.32),rgba(0,0,0,0))}',
     '#cbnav .in{max-width:1180px;margin:0 auto;padding:24px 22px;display:flex;align-items:center;justify-content:space-between;gap:14px}',
     '#cbnav a{text-decoration:none}',
