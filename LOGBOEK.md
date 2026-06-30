@@ -305,6 +305,11 @@
 ### Blog-foto's hersteld (high-res) — einde van de dag
 - Ontdekt dat de geïmporteerde blog-foto's **mega korrelig/spikkelig** waren: de migratie pakte de Strikingly-Cloudinary-URL's met **`q_1`** (kwaliteit 1!). Opgelost door **exact dezelfde foto's opnieuw op te halen** met `w_1600,c_limit,q_85,f_jpg` (geen nieuwe bron nodig). Voorbeeld: `boot/1` van 497×453/26 KB → **1536×2048/258 KB**. Blog ging van 6,8 MB → **25 MB** (echte kwaliteit). 30 posts (79 foto's) ververst; mikuni + SU waren al OK (JS-geladen). Junk-graphics (107×45 banners + 300×300 logo's) uit galerijen verwijderd; membraan-post toont nu z'n video. Script: `refetch-blogfotos.py` (scratchpad).
 
+### SEO + consistentie (achtergrondwerk 30/6)
+- **robots.txt** (AI-crawlers expliciet toegestaan: GPTBot, ClaudeBot, PerplexityBot, Google-Extended e.a.) + **sitemap.xml** (55 URL's: alle marketingpagina's + 47 blogposts), met sitemap-verwijzing naar carbservice.nl.
+- **Nav/footer gelijkgetrokken** op de dienstpagina's (automotive/motorfiets/marine/diensten): Blog + FAQ in de nav + "Meer"-kolom (Home/Diensten/Blog/FAQ/Privacy) in de footer.
+- **LocalBusiness-schema** (AutoRepair JSON-LD) op de homepage: naam, adres (Huizerweg 49, Bussum), telefoon, BTW, beschrijving, voor Google + AI.
+
 ### Aanvraagformulier gecentraliseerd (forms.js)
 - Alle formulier-logica (versturen, tracking, foto-upload) in één gedeeld `public/forms.js` → 4 pagina's, **één bron**. Laadbalk verhuisd naar **IN de verzendknop** (vult zich tijdens upload + "aanvraag verwerken"-fase met trickle).
 - Linkje bij het klachtveld → springt naar de **klachten-checker** (die het veld automatisch invult).
