@@ -309,6 +309,7 @@
 - **robots.txt** (AI-crawlers expliciet toegestaan: GPTBot, ClaudeBot, PerplexityBot, Google-Extended e.a.) + **sitemap.xml** (55 URL's: alle marketingpagina's + 47 blogposts), met sitemap-verwijzing naar carbservice.nl.
 - **Nav/footer gelijkgetrokken** op de dienstpagina's (automotive/motorfiets/marine/diensten): Blog + FAQ in de nav + "Meer"-kolom (Home/Diensten/Blog/FAQ/Privacy) in de footer.
 - **LocalBusiness-schema** (AutoRepair JSON-LD) op de homepage: naam, adres (Huizerweg 49, Bussum), telefoon, BTW, beschrijving, voor Google + AI.
+- **Uniforme navbalk overal** via gedeelde `public/nav.js`: verbergt de losse per-pagina topbars (home was transparant-wit, dienstpagina's solid-sticky-grijs, blog/faq transparant) en injecteert op élke pagina exact dezelfde transparante witte nav (Diensten/Blog/FAQ/Volg/Shop/telefoon/Offerte + hamburger mobiel). Single-source. Dienstpagina-hero's kregen `padding-top` om de verwijderde sticky balk te compenseren. ⚠️ nog visueel te verifiëren op de 3 paginatypes.
 
 ### Aanvraagformulier gecentraliseerd (forms.js)
 - Alle formulier-logica (versturen, tracking, foto-upload) in één gedeeld `public/forms.js` → 4 pagina's, **één bron**. Laadbalk verhuisd naar **IN de verzendknop** (vult zich tijdens upload + "aanvraag verwerken"-fase met trickle).
