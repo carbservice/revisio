@@ -46,7 +46,7 @@ export async function POST(req) {
         from: `YourPersonalPaparazzi <${user}>`,
         to: MAIL_NAAR,
         replyTo: d.email,
-        subject: `Nieuwe aanvraag via je fotografie-pagina · ${d.naam}`,
+        subject: "Nieuwe aanvraag · Bruiloft pagina",
         text: `Er is een nieuwe aanvraag binnengekomen:\n\n${regels}\n`,
       });
     } catch { /* mail niet kritiek */ }
