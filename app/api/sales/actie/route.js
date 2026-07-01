@@ -39,7 +39,7 @@ export async function POST(req) {
       ? `Gebeld${door ? ` door ${door}` : ""}${tekst ? `: ${tekst}` : ""} (via Revisio)`
       : (soort === "niet opgenomen")
       ? `Niet opgenomen${door ? ` door ${door}` : ""} (via Revisio)`
-      : `Notitie${door ? ` (${door})` : ""}: ${tekst || ""}`;
+      : `Revisio notitie${door ? ` (${door})` : ""}: ${tekst || ""}`;
     naarMoneybird = await moneybirdNotitie(lead.offerte_id, regel);
   }
   return Response.json({ ok: true, door, naarMoneybird });
