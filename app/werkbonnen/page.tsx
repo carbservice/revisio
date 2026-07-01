@@ -1135,7 +1135,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, isManager, onUitloggen }: { ingelogd
                   const waNr = waNummer(open.telefoon || "");
                   const klantVoor = (open.klant || "").trim().split(/\s+/)[0] || "";
                   const monteur = ingelogd?.naam || "het team";
-                  const waTekst = `Hi ${klantVoor},\n\nWe hebben een nieuw stukje software, vanaf nu kan je de voortgang live volgen met foto's op de werkbank, via deze link:\n${deelLink}\n\nDe einddatum is geautomatiseerd, kan nog wat uitlopen.\n\nBenieuwd wat je van deze software vindt, we horen graag je mening.\n\nFijne dag,\n${monteur}`;
+                  const waTekst = `Hi ${klantVoor},\n\nBetreft: ${open.nummer}\nWe hebben een nieuw stukje software, vanaf nu kan je de voortgang live volgen met foto's op de werkbank, via deze link:\n${deelLink}\n\nDe einddatum is geautomatiseerd, kan nog wat uitlopen.\n\nBenieuwd wat je van deze software vindt, we horen graag je mening.\n\nFijne dag,\n${monteur}`;
                   return (
                     <div style={{ display: "flex", gap: 6 }}>
                       <input readOnly value={deelLink} onFocus={(e) => e.target.select()} style={inp} />
