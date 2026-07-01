@@ -73,8 +73,7 @@ function Dashboard() {
   const [data, setData] = useState<Data | null>(null);
   const [laden, setLaden] = useState(true);
   const [mijn, setMijn] = useState(false);
-  const [toonAlle, setToonAlle] = useState(false);
-  const [gewonnenFilter, setGewonnenFilter] = useState(false);
+  const [tab, setTab] = useState<"open" | "nietop" | "gewonnen" | "afgerond">("open");
   const [zoek, setZoek] = useState("");
   const [flash, setFlash] = useState<Record<string, boolean>>({});      // groene "verzonden"-flash
   const [teVaak, setTeVaak] = useState<Record<string, boolean>>({});     // dedup-melding
@@ -172,17 +171,33 @@ function Dashboard() {
   const roasTotaal = roasInfo("totaal").roas;
 
   const zoekTerm = zoek.trim().toLowerCase();
-  const pijplijn = (data?.leads || []).filter((L) => {
-    const inPijp = gewonnenFilter ? L.status === "geaccepteerd" : (toonAlle || L.status === "geaccepteerd" || VERSTUURD.includes(L.offerte_state || ""));
+  // Tab-indeling: gewonnen (geaccepteerd) en afgerond (afgewezen) verlaten "Op te
+  // volgen"; "Niet opgenomen" = actieve leads waarvan de laatste actie een gemiste
+  // belpoging was (moeten opnieuw geprobeerd worden).
+  const nietOpN = (L: Lead) => (L.acties || []).filter((a) => a.soort === "niet opgenomen").length;
+  const laatstNietOp = (L: Lead) => (L.acties || [])[0]?.soort === "niet opgenomen";
+  const isActief = (L: Lead) => { const s = L.status || "nieuw"; return s !== "geaccepteerd" && s !== "afgewezen"; };
+  const inTab = (L: Lead) => {
+    const s = L.status || "nieuw";
+    if (tab === "gewonnen") return s === "geaccepteerd";
+    if (tab === "afgerond") return s === "afgewezen";
+    if (tab === "nietop") return isActief(L) && laatstNietOp(L);
+    return isActief(L); // "open" = alle openstaande
+  };
+  const alleLeads = data?.leads || [];
+  const pijplijn = alleLeads.filter((L) => {
     const vanMij = !mijn || L.eigenaar === mijnCode;
     const raakt = !zoekTerm || [L.naam, L.email, L.bedrijf, L.telefoon, L.carburateur, L.offerte_nummer].some((v) => (v || "").toLowerCase().includes(zoekTerm));
-    return inPijp && vanMij && raakt;
+    return inTab(L) && vanMij && raakt;
   }).sort((a, b) => {
     const pa = STATUS_PRIO[a.status || "nieuw"] ?? 2, pb = STATUS_PRIO[b.status || "nieuw"] ?? 2;
     if (pa !== pb) return pa - pb;            // op te volgen bovenaan, afgerond onderaan
     return (b.datum || "").localeCompare(a.datum || ""); // binnen een groep: nieuwste eerst
   });
-  const aantalGewonnen = (data?.leads || []).filter((L) => L.status === "geaccepteerd").length;
+  const aantalOpen = alleLeads.filter(isActief).length;
+  const aantalNietOp = alleLeads.filter((L) => isActief(L) && laatstNietOp(L)).length;
+  const aantalGewonnen = alleLeads.filter((L) => L.status === "geaccepteerd").length;
+  const aantalAfgerond = alleLeads.filter((L) => L.status === "afgewezen").length;
 
   return (
     <main style={wrap}>
@@ -362,11 +377,13 @@ function Dashboard() {
             {/* Pijplijn */}
             <div style={kaart}>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", marginBottom: 12 }}>
-                <div style={kop}>{gewonnenFilter ? "Gewonnen" : "Op te volgen"} ({pijplijn.length})</div>
+                <div style={kop}>Pijplijn ({pijplijn.length})</div>
                 <div style={{ display: "flex", gap: 6, marginLeft: "auto", flexWrap: "wrap" }}>
+                  <button onClick={() => setTab("open")} style={toggle(tab === "open")}>Op te volgen ({aantalOpen})</button>
+                  <button onClick={() => setTab("nietop")} style={toggle(tab === "nietop")}>📵 Niet opgenomen ({aantalNietOp})</button>
+                  <button onClick={() => setTab("gewonnen")} style={toggle(tab === "gewonnen")}>🏆 Gewonnen ({aantalGewonnen})</button>
+                  <button onClick={() => setTab("afgerond")} style={toggle(tab === "afgerond")}>Afgerond ({aantalAfgerond})</button>
                   <button onClick={() => setMijn((v) => !v)} style={toggle(mijn)}>Mijn opvolging</button>
-                  <button onClick={() => setToonAlle((v) => !v)} style={toggle(toonAlle)}>{toonAlle ? "Alle aanvragen" : "Op te volgen"}</button>
-                  <button onClick={() => setGewonnenFilter((v) => !v)} style={toggle(gewonnenFilter)}>🏆 Gewonnen ({aantalGewonnen})</button>
                 </div>
               </div>
               <div style={{ position: "relative", marginBottom: 12, border: `2px solid ${GROEN}`, borderRadius: 12, background: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
@@ -383,6 +400,11 @@ function Dashboard() {
                 {pijplijn.map((L) => {
                   const afgewezen = L.status === "afgewezen";
                   const gewonnen = L.status === "geaccepteerd";
+                  const _nietOp = nietOpN(L);
+                  const _st = L.status || "nieuw";
+                  const _heeftContact = (L.acties || []).some((a) => a.soort === "gebeld" || a.soort === "notitie");
+                  // Kleur-rand voor snelle triage.
+                  const randKleur = gewonnen ? GROEN : afgewezen ? "#adb5bd" : _st === "uitstellen" ? "#7048e8" : laatstNietOp(L) ? "#e0a82e" : (!_heeftContact ? "#1c7ed6" : "#8aa79b");
                   const _ruw = (L.bericht || "").trim();
                   const _delen = _ruw.split(" | ").map((s) => s.trim()).filter(Boolean);
                   let kenmerk = "", klacht = "";
@@ -397,7 +419,7 @@ function Dashboard() {
                     klacht = _ruw;
                   }
                   return (
-                    <div key={L.id} style={{ border: `${gewonnen ? 2 : 1}px solid ${gewonnen ? GROEN : afgewezen ? "#e0b3a8" : RAND}`, background: gewonnen ? GROEN_BG : afgewezen ? ROOD_BG : "#fff", borderRadius: 10, padding: "10px 12px", overflow: "hidden" }}>
+                    <div key={L.id} style={{ border: `${gewonnen ? 2 : 1}px solid ${gewonnen ? GROEN : afgewezen ? "#e0b3a8" : RAND}`, borderLeft: `5px solid ${randKleur}`, background: gewonnen ? GROEN_BG : afgewezen ? ROOD_BG : "#fff", borderRadius: 10, padding: "10px 12px", overflow: "hidden" }}>
                       {gewonnen && (
                         <div style={{ margin: "-10px -12px 8px", padding: "6px 12px 8px", background: "linear-gradient(90deg,#2f9e44,#37b24d,#2f9e44)" }}>
                           <div style={{ display: "flex", gap: 5, justifyContent: "center", marginBottom: 4, flexWrap: "wrap" }}>
@@ -413,6 +435,7 @@ function Dashboard() {
                           <span style={{ fontWeight: 800, color: TEKST }}>{L.naam || L.email}</span>
                           {L.bedrijf && <span style={{ color: GRIJS, fontSize: 13 }}> · {L.bedrijf}</span>}
                           <span style={{ ...pil, marginLeft: 8 }}>{bronLabel(L.bron)}</span>
+                          {_nietOp > 0 && !gewonnen && !afgewezen && <span style={{ ...pil, marginLeft: 6, background: _nietOp >= 3 ? ROOD_BG : "#fdf3d6", color: _nietOp >= 3 ? ROOD : "#8a6d10", fontWeight: 700 }}>📵 {_nietOp}× niet opgenomen{_nietOp >= 3 ? " · moeilijk bereikbaar" : ""}</span>}
                           {L.offerte_state === "draft" && L.offerte_url && <a href={L.offerte_url} target="_blank" rel="noreferrer" style={{ ...pil, background: GROEN, color: "#fff", fontWeight: 800, marginLeft: 6, textDecoration: "none" }}>🟢 Concept · direct opvolgen ↗</a>}
                           {L.offerte_nummer && L.offerte_url && <a href={L.offerte_url} target="_blank" rel="noreferrer" style={{ ...pil, background: "#e7f0ea", color: GROEN, marginLeft: 6, textDecoration: "none" }}>🧾 {L.offerte_nummer}{L.offerte_state ? ` · ${OFFERTE_LABEL[L.offerte_state] || L.offerte_state}` : ""}{L.offerte_bedrag ? ` · ${euro(Number(L.offerte_bedrag))}` : ""}</a>}
                         </div>
@@ -459,7 +482,7 @@ function Dashboard() {
                     </div>
                   );
                 })}
-                {pijplijn.length === 0 && <p style={{ color: GRIJS }}>Geen openstaande leads. Tip: schakel bovenin op "Alle aanvragen".</p>}
+                {pijplijn.length === 0 && <p style={{ color: GRIJS }}>{tab === "open" ? "Geen openstaande leads, mooi opgeruimd! 🎉" : tab === "nietop" ? "Niemand die je nu opnieuw hoeft te bellen." : tab === "gewonnen" ? "Nog geen gewonnen deals in beeld." : "Nog niets afgerond."}</p>}
               </div>
             </div>
           </>
