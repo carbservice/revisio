@@ -341,3 +341,20 @@
 
 ### Open / volgende
 - WhatsApp-knop + social op de site · Google **Ads-conversie-tag** (Stephan) · **iubenda-config** afmaken (met Stephan) · **EPP-code** bij Strikingly opvragen voor de domeintransfer.
+
+## Dag 12 · 1 juli 2026
+
+### Sales-CRM (/sales-marketing) · "Op te volgen" volwaardig gemaakt
+- **Actie-tijdlijn** per lead: Nieuw → Offerte (datum) → elke belpoging als eigen bolletje (datum + jaar + tijd) → terugbellen → Gewonnen.
+- **Verplichte notitie** vóór elke actieknop; kaart verdwijnt pas ná een notitie. Notitie gaat **automatisch naar de Moneybird-offerte** (Enter/wegklikken), naam `Auto Agent Revisio (Voornaam): ...`.
+- **"Open sinds"** telt nu vanaf Moneybird `sent_at` (echt verzendmoment), niet de conceptdatum; concept toont "nog niet verstuurd".
+- **Niet-opgenomen van vandaag** verbergt de lead tot morgen (blijft in tab Niet opgenomen). **Uitstellen** opent datumkiezer → terugbel-bolletje, springt op de dag bovenaan.
+- **Gewonnen** zet de Moneybird-offerte ook op geaccepteerd → klus valt in de **werkplaats-bak**. **Verloren** → Afgerond (bug opgelost waardoor afgewezen bleef staan).
+- **Dagteller** boven de pijplijn ("Vandaag X behandeld" + per medewerker). **Eigenaarschap**: eigenaar zodra je iets doet, nieuwe dag weer vrij. "Mijn opvolging" = alles waar je zelf op acteerde.
+- **Volledig kenmerk** op de kaart (Moneybird `reference`) + WhatsApp-knop met persoonlijk bericht + kort laadpopupje na acties.
+
+### Werkbon (/werkbonnen) · WhatsApp naar de klant
+- De volg-link heeft nu een **WhatsApp-knop** (i.p.v. Kopieer) die de klant zijn live voortgangs-link stuurt naar het Moneybird-telefoonnummer, met vaste standaardtekst.
+
+### Open / volgende
+- **Morgen: alles over de website** (cutover carbservice.nl, pagina's, subdirectories, shop, Ads doorlinken).
