@@ -507,7 +507,7 @@ function Dashboard() {
                               </div>
                             ))}
                           </div>
-                          <span className="lc-open">{afgewezen ? "afgerond" : `${_dagen} dagen open`}</span>
+                          <span className="lc-open">{afgewezen ? "afgerond" : `${_dagen} dagen open · aangevraagd ${new Date(L.datum).toLocaleDateString("nl-NL", { day: "numeric", month: "short", year: "numeric" })}`}</span>
                         </div>
                       )}
                       {volgende && <div className="lc-next"><span>🎯</span> {volgende}</div>}
