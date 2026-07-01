@@ -11,7 +11,7 @@
   :root{
     --groen:#1a3c2e; --groen2:#27593f; --goud:#b8962e; --goud-l:#e9cd8a;
     --tekst:#1c211d; --grijs:#6f7770; --rand:#e6e9e1; --bg:#eef1ea;
-    --heet:#e8590c; --warm:#c98a12; --koud:#5c7c8a; --gewonnen:#2f9e44;
+    --heet:#e8590c; --warm:#c98a12; --koud:#5c7c8a; --gewonnen:#2f9e44; --wa:#25d366;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Inter',system-ui,sans-serif;color:var(--tekst);
@@ -21,15 +21,14 @@
       var(--bg);
     min-height:100vh;-webkit-font-smoothing:antialiased;line-height:1.5}
   h1,h2,h3,.font-d{font-family:'Fraunces',Georgia,serif}
-  .wrap{max-width:760px;margin:0 auto;padding:34px 20px 80px}
+  .wrap{max-width:770px;margin:0 auto;padding:34px 20px 80px}
 
   .concept-tag{display:inline-flex;align-items:center;gap:8px;background:#111a15;color:#cfe6d8;
     font-size:11.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;padding:7px 14px;border-radius:999px;margin-bottom:18px}
   .concept-tag i{width:7px;height:7px;border-radius:50%;background:var(--goud-l);box-shadow:0 0 10px var(--goud-l)}
   .titel{font-size:30px;font-weight:700;color:var(--groen);letter-spacing:-.02em}
-  .subtitel{color:var(--grijs);font-size:15px;margin:6px 0 26px;max-width:560px}
+  .subtitel{color:var(--grijs);font-size:15px;margin:6px 0 26px;max-width:580px}
 
-  /* ---------- LEAD-KAART ---------- */
   .card{position:relative;background:#fff;border:1px solid var(--rand);border-radius:20px;
     box-shadow:0 14px 40px rgba(26,60,46,.10);margin-bottom:22px;overflow:hidden;
     transition:transform .18s ease, box-shadow .18s ease}
@@ -46,9 +45,10 @@
   .who{flex:1;min-width:0}
   .naam{font-size:19px;font-weight:700;color:var(--tekst);letter-spacing:-.01em}
   .bedrijf{color:var(--grijs);font-weight:600}
-  .meta-row{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-top:5px}
+  .meta-row{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-top:6px}
   .chip{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:#eef2ec;color:#5b665d}
   .chip.bron{background:#eaf1fb;color:#3b6aa0}
+  .chip.eig{background:#efeafb;color:#6a4fb0}
   .right-top{text-align:right;flex:none}
   .temp{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:800;letter-spacing:.06em;
     padding:5px 11px;border-radius:999px;text-transform:uppercase}
@@ -58,8 +58,10 @@
   .waarde{font-family:'Fraunces',serif;font-weight:700;font-size:23px;color:var(--goud);margin-top:8px;line-height:1}
   .waarde small{display:block;font-family:'Inter';font-size:10.5px;font-weight:700;letter-spacing:.1em;
     text-transform:uppercase;color:var(--grijs);margin-top:3px}
+  .mb-chip{display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:11px;font-weight:700;
+    padding:4px 9px;border-radius:999px;background:#e7f0ea;color:var(--groen);text-decoration:none;white-space:nowrap}
+  .mb-chip:hover{background:#d8e8de}
 
-  /* stage-pijplijn */
   .stages{display:flex;align-items:center;gap:0;padding:12px 24px 4px}
   .stage{display:flex;align-items:center;flex:1}
   .stage:last-child{flex:none}
@@ -76,9 +78,12 @@
   .body{padding:6px 24px 20px}
   .contact{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 4px}
   .tel{font-size:27px;font-weight:800;color:var(--groen);text-decoration:none;letter-spacing:.4px}
-  .bel-btn{margin-left:auto;display:inline-flex;align-items:center;gap:8px;
+  .bel-btn{display:inline-flex;align-items:center;gap:8px;
     background:linear-gradient(135deg,var(--goud),#a07d1f);color:#fff;font-weight:800;font-size:14.5px;
-    padding:11px 20px;border-radius:12px;border:none;cursor:pointer;box-shadow:0 8px 20px rgba(184,150,46,.35)}
+    padding:11px 20px;border-radius:12px;border:none;cursor:pointer;box-shadow:0 8px 20px rgba(184,150,46,.35);text-decoration:none}
+  .wa-btn{display:inline-flex;align-items:center;gap:7px;background:var(--wa);color:#fff;font-weight:800;font-size:14px;
+    padding:11px 16px;border-radius:12px;text-decoration:none;box-shadow:0 8px 20px rgba(37,211,102,.32)}
+  .push-r{margin-left:auto}
   .email{font-size:13px;color:var(--grijs);margin-bottom:12px}
 
   .info{background:linear-gradient(180deg,#fbf7ec,#fbf9f2);border:1px solid #efe2bf;border-radius:12px;padding:12px 14px;margin-bottom:14px}
@@ -87,7 +92,7 @@
   .info .kl{font-size:15px;font-weight:600;margin-top:5px}
 
   .acties-lab{font-size:10.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--grijs);margin-bottom:8px}
-  .acties{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+  .acties{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
   .act{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;padding:9px 13px;border-radius:11px;cursor:pointer;border:1.5px solid var(--rand);background:#fff;color:#4a544c;transition:all .14s}
   .act:hover{border-color:var(--groen);color:var(--groen);transform:translateY(-1px)}
   .act.pos:hover{border-color:var(--gewonnen);color:var(--gewonnen)}
@@ -95,25 +100,34 @@
   .act.win{background:linear-gradient(135deg,#2f9e44,#37b24d);color:#fff;border:none;box-shadow:0 8px 18px rgba(47,158,68,.3)}
   .act.win:hover{color:#fff;transform:translateY(-1px)}
 
+  /* Moneybird-actiebalk */
+  .mb-bar{display:flex;flex-wrap:wrap;gap:8px;padding:10px 12px;margin-bottom:14px;background:#f3f7f4;border:1px solid #dbe7df;border-radius:12px}
+  .mb-act{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;text-decoration:none;
+    padding:8px 13px;border-radius:10px;background:#fff;border:1.5px solid #cfe0d5;color:var(--groen)}
+  .mb-act:hover{background:var(--groen);color:#fff;border-color:var(--groen)}
+  .mb-act.prim{background:var(--groen);color:#fff;border-color:var(--groen)}
+  .mb-act.prim:hover{background:var(--groen2)}
+  .mb-tit{font-size:10.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#5c7266;width:100%;margin-bottom:2px}
+
   .badge-nietop{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:800;padding:4px 10px;border-radius:999px;background:#fbf3dc;color:#8a6d10}
   .badge-nietop.hard{background:#fff0e6;color:var(--heet)}
 
-  .tijdlijn{border-top:1px dashed var(--rand);padding-top:12px;margin-bottom:14px}
-  .tl-item{display:flex;gap:10px;font-size:13px;color:#4a544c;margin-bottom:7px}
+  .tijdlijn{border-top:1px dashed var(--rand);padding-top:11px;margin-bottom:14px}
+  .tl-lab{font-size:10.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--grijs);margin-bottom:7px}
+  .tl-item{display:flex;gap:10px;font-size:13px;color:#4a544c;margin-bottom:6px}
   .tl-item .tp{width:8px;height:8px;border-radius:50%;background:var(--groen);margin-top:6px;flex:none}
   .tl-item b{color:var(--tekst)}
   .tl-item .t{color:var(--grijs);font-size:11.5px}
 
-  .next{display:flex;align-items:center;gap:10px;background:#eef5f0;border:1px solid #d3e6da;border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:13.5px;font-weight:600;color:var(--groen)}
+  .next{display:flex;align-items:center;gap:8px;background:#eef5f0;border:1px solid #d3e6da;border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:13.5px;font-weight:600;color:var(--groen)}
   .next .ic{font-size:16px}
 
   .note{display:flex;gap:8px}
   .note input{flex:1;border:1.5px solid var(--rand);border-radius:11px;padding:11px 14px;font-size:13.5px;font-family:inherit;outline:none}
   .note input:focus{border-color:var(--goud)}
-  .note button{border:none;background:var(--groen);color:#fff;font-weight:700;font-size:13px;border-radius:11px;padding:0 18px;cursor:pointer;white-space:nowrap}
+  .note button{border:none;background:var(--groen);color:#fff;font-weight:700;font-size:12.5px;border-radius:11px;padding:0 16px;cursor:pointer;white-space:nowrap}
 
-  .won-banner{background:linear-gradient(90deg,#2f9e44,#37b24d,#2f9e44);color:#fff;text-align:center;font-weight:800;
-    padding:9px;font-size:14px;letter-spacing:.4px}
+  .won-banner{background:linear-gradient(90deg,#2f9e44,#37b24d,#2f9e44);color:#fff;text-align:center;font-weight:800;padding:9px;font-size:14px;letter-spacing:.4px}
   .card.won{border-color:#a9dcb6}
   .note-uitleg{font-size:12.5px;color:var(--grijs);text-align:center;margin-top:34px;line-height:1.6}
 </style>
@@ -122,9 +136,9 @@
 <div class="wrap">
   <div class="concept-tag"><i></i> Concept · niet live</div>
   <div class="titel">Sales, gebouwd voor de closer</div>
-  <p class="subtitel">Eén kaart, alles wat je nodig hebt om te scoren: waarde, temperatuur, fase, en de volgende stap, zonder ruis.</p>
+  <p class="subtitel">Eén kaart, alles wat je nodig hebt om te scoren: waarde, temperatuur, fase, de doorklik naar Moneybird, en de volgende stap, zonder ruis.</p>
 
-  <!-- KAART 1 · heet / nieuw -->
+  <!-- KAART 1 · heet / offerte staat, nu bellen -->
   <div class="card">
     <div class="rail heet"></div>
     <div class="head">
@@ -134,26 +148,28 @@
         <div class="meta-row">
           <span class="chip">Morris Minor Traveller · 1971</span>
           <span class="chip bron">Organisch</span>
+          <span class="chip eig">👤 Lukas</span>
         </div>
       </div>
       <div class="right-top">
         <span class="temp heet">🔥 Heet</span>
         <div class="waarde">€ 632,33<small>Offerte</small></div>
+        <a href="#" class="mb-chip">🧾 2026-0680 · verstuurd ↗</a>
       </div>
     </div>
     <div class="stages-wrap">
       <div class="open-dagen">3 dagen open</div>
       <div class="stages">
         <div class="stage done"><span class="dot"></span><span class="lbl">Nieuw</span><span class="bar"></span></div>
+        <div class="stage done"><span class="dot"></span><span class="lbl">Offerte</span><span class="bar"></span></div>
         <div class="stage now"><span class="dot"></span><span class="lbl">Contact</span><span class="bar"></span></div>
-        <div class="stage"><span class="dot"></span><span class="lbl">Offerte</span><span class="bar"></span></div>
         <div class="stage"><span class="dot"></span><span class="lbl">Gewonnen</span></div>
       </div>
     </div>
     <div class="body">
       <div class="contact">
         <a href="tel:0624229907" class="tel">📞 06 24229907</a>
-        <button class="bel-btn">Bel nu →</button>
+        <a href="#" class="bel-btn push-r">Bel nu →</a>
       </div>
       <div class="email">a.kleinrunting@gmail.com</div>
       <div class="info">
@@ -168,10 +184,15 @@
         <span class="act">💤 Uitstellen</span>
         <span class="act win">🏆 Gewonnen</span>
       </div>
+      <div class="mb-bar">
+        <div class="mb-tit">Moneybird</div>
+        <a href="#" class="mb-act prim">🖊️ Klant laten tekenen ↗</a>
+        <a href="#" class="mb-act">🧾 Open offerte ↗</a>
+      </div>
       <div class="next"><span class="ic">🎯</span> Volgende stap: <b style="margin-left:4px">eerste keer bellen</b> · verse lead, sla nu toe</div>
       <div class="note">
         <input placeholder="Snelle notitie… (verschijnt ook op de offerte in Moneybird)">
-        <button>Opslaan</button>
+        <button>Opslaan → Moneybird</button>
       </div>
     </div>
   </div>
@@ -186,27 +207,29 @@
         <div class="meta-row">
           <span class="chip">Jaguar E-Type · Stromberg</span>
           <span class="chip bron">Google Ads</span>
+          <span class="chip eig">👤 Cyriel</span>
           <span class="badge-nietop hard">📵 3× niet opgenomen · moeilijk bereikbaar</span>
         </div>
       </div>
       <div class="right-top">
         <span class="temp warm">🌤 Warm</span>
         <div class="waarde">€ 1.240,00<small>Offerte</small></div>
+        <a href="#" class="mb-chip">🧾 2026-0664 · verstuurd ↗</a>
       </div>
     </div>
     <div class="stages-wrap">
       <div class="open-dagen">11 dagen open</div>
       <div class="stages">
         <div class="stage done"><span class="dot"></span><span class="lbl">Nieuw</span><span class="bar"></span></div>
+        <div class="stage done"><span class="dot"></span><span class="lbl">Offerte</span><span class="bar"></span></div>
         <div class="stage now"><span class="dot"></span><span class="lbl">Contact</span><span class="bar"></span></div>
-        <div class="stage"><span class="dot"></span><span class="lbl">Offerte</span><span class="bar"></span></div>
         <div class="stage"><span class="dot"></span><span class="lbl">Gewonnen</span></div>
       </div>
     </div>
     <div class="body">
       <div class="contact">
         <a href="tel:0611223344" class="tel">📞 06 11223344</a>
-        <button class="bel-btn" style="background:linear-gradient(135deg,#5c7c8a,#405663);box-shadow:0 8px 20px rgba(64,86,99,.3)">✉️ Stuur appje →</button>
+        <a href="https://wa.me/31611223344?text=Hoi%20Peter%2C%20je%20spreekt%20met%20Carburateur%20Service%20Nederland%20over%20je%20offerte%20voor%20de%20Stromberg-set.%20Wanneer%20komt%20het%20jou%20uit%20om%20even%20te%20bellen%3F" target="_blank" rel="noopener" class="wa-btn push-r">💬 Stuur appje</a>
       </div>
       <div class="email">p.vermeer@classics.nl</div>
       <div class="info">
@@ -221,10 +244,20 @@
         <span class="act">💤 Uitstellen</span>
         <span class="act win">🏆 Gewonnen</span>
       </div>
-      <div class="next"><span class="ic">💡</span> Tip: 3× niet bereikt, <b style="margin-left:4px">probeer nu een WhatsApp of mail</b></div>
+      <div class="mb-bar">
+        <div class="mb-tit">Moneybird</div>
+        <a href="#" class="mb-act prim">🖊️ Klant laten tekenen ↗</a>
+        <a href="#" class="mb-act">🧾 Open offerte ↗</a>
+      </div>
+      <div class="tijdlijn">
+        <div class="tl-lab">Changelog</div>
+        <div class="tl-item"><span class="tp"></span><div><b>CG</b> 📵 niet opgenomen <span class="t">· 1 jul 10:12</span></div></div>
+        <div class="tl-item"><span class="tp"></span><div><b>CG</b> notitie: "vm ingesproken, wacht op terugbel" <span class="t">· 27 jun</span></div></div>
+      </div>
+      <div class="next"><span class="ic">💡</span> Tip: 3× niet bereikt, <b style="margin-left:4px">nu een WhatsApp of mail</b></div>
       <div class="note">
         <input placeholder="Snelle notitie…" value="Vm ingesproken, wacht op terugbel.">
-        <button>Opslaan</button>
+        <button>Opslaan → Moneybird</button>
       </div>
     </div>
   </div>
@@ -240,24 +273,27 @@
         <div class="meta-row">
           <span class="chip">Alfa Spider · Weber DCOE</span>
           <span class="chip bron">Marktplaats</span>
+          <span class="chip eig">👤 Lukas</span>
         </div>
       </div>
       <div class="right-top">
         <span class="temp gewonnen">🏆 Gewonnen</span>
         <div class="waarde" style="color:var(--gewonnen)">€ 890,00<small>Omzet</small></div>
+        <a href="#" class="mb-chip">🧾 2026-0651 · geaccepteerd ↗</a>
       </div>
     </div>
     <div class="stages-wrap">
       <div class="open-dagen">Gesloten in 5 dagen</div>
       <div class="stages">
         <div class="stage done"><span class="dot"></span><span class="lbl">Nieuw</span><span class="bar"></span></div>
-        <div class="stage done"><span class="dot"></span><span class="lbl">Contact</span><span class="bar"></span></div>
         <div class="stage done"><span class="dot"></span><span class="lbl">Offerte</span><span class="bar"></span></div>
+        <div class="stage done"><span class="dot"></span><span class="lbl">Contact</span><span class="bar"></span></div>
         <div class="stage done"><span class="dot"></span><span class="lbl">Gewonnen</span></div>
       </div>
     </div>
     <div class="body">
       <div class="tijdlijn" style="border-top:none;padding-top:0">
+        <div class="tl-lab">Changelog</div>
         <div class="tl-item"><span class="tp"></span><div>Offerte <b>geaccepteerd</b> · € 890,00 <span class="t">· 30 jun</span></div></div>
         <div class="tl-item"><span class="tp"></span><div><b>CG</b> gesproken: "klant akkoord, brengt 'm dinsdag" <span class="t">· 28 jun</span></div></div>
         <div class="tl-item"><span class="tp"></span><div>Offerte verstuurd <span class="t">· 26 jun</span></div></div>
@@ -265,7 +301,7 @@
     </div>
   </div>
 
-  <p class="note-uitleg">Dit is puur een <b>ontwerpconcept</b> (statisch, niet gekoppeld). Zeg wat je pakt: de temperatuur-logica, de stage-pijplijn, de waarde-nadruk, de kleuren, de acties, en ik verwerk het richting de echte pagina.</p>
+  <p class="note-uitleg">Puur een <b>ontwerpconcept</b> (statisch, niet gekoppeld). Fase-volgorde = Nieuw → Offerte → Contact → Gewonnen · WhatsApp opent een chat met de klant (verstuur je vanaf jullie zakelijke WhatsApp-web) · Moneybird-doorklik zit erin (offerte openen + klant laten tekenen). Zeg wat je pakt, dan verwerk ik het richting de echte pagina.</p>
 </div>
 </body>
 </html>
