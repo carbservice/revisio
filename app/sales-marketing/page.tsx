@@ -16,7 +16,7 @@ import { magSales, codeVoorEmail, naamVoorCode } from "@/app/werkplaats-planning
 import { GROEN, GROEN_BG, GOUD, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG, KAART_BG } from "@/lib/theme";
 
 type Actie = { id: string; soort: string; tekst: string; door: string; datum: string };
-type Lead = { id: string; datum: string; naam: string; email: string; telefoon: string; bedrijf: string; carburateur: string; bericht: string; bron: string; status: string; eigenaar: string | null; sales_notitie: string | null; opvolgen_op: string | null; omzet_excl: number; offerte_id: string | null; offerte_nummer: string | null; offerte_state: string | null; offerte_bedrag: number | null; offerte_url: string | null; offerte_datum?: string | null; offerte_verstuurd_op?: string | null; acties: Actie[] };
+type Lead = { id: string; datum: string; naam: string; email: string; telefoon: string; bedrijf: string; carburateur: string; bericht: string; bron: string; status: string; eigenaar: string | null; sales_notitie: string | null; opvolgen_op: string | null; omzet_excl: number; offerte_id: string | null; offerte_nummer: string | null; offerte_state: string | null; offerte_bedrag: number | null; offerte_url: string | null; offerte_datum?: string | null; offerte_verstuurd_op?: string | null; offerte_kenmerk?: string | null; acties: Actie[] };
 type PerBron = { bron: string; leads: number; klanten: number; omzet: number; spend: number; roas: number | null; conversie: number };
 type Ltv = { bron: string; klanten: number; omzet: number; gem: number; aandeel: number; aandeelKlanten: number };
 type Data = { perBron: PerBron[]; totaal: { leads: number; klanten: number; omzet: number; spend: number; omzetBetaald: number; roas: number | null }; leads: Lead[]; spend: { google_ads: number; facebook: number; marktplaats: number }; ltv: Ltv[]; ltvTotaal: { klanten: number; omzet: number; gem: number }; dagteller?: { totaal: number; perPersoon: Record<string, number> } };
@@ -512,6 +512,9 @@ function Dashboard() {
                     kenmerk = L.carburateur || "";
                     klacht = _ruw;
                   }
+                  // Het volledige kenmerk staat op de Moneybird-offerte (reference): voertuig +
+                  // bouwjaar + cilinders + carburateur. Dat is leidend als het er is.
+                  if (L.offerte_kenmerk && L.offerte_kenmerk.trim()) kenmerk = L.offerte_kenmerk.trim();
                   const _dagen = dagenOpen(L);
                   const _heeftOff = !!L.offerte_id;
                   const _verstuurdOp = L.offerte_verstuurd_op || null;      // sent_at: leeg = nog concept
