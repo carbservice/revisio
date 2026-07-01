@@ -474,7 +474,6 @@ function Dashboard() {
                         <div className="lc-rt">
                           <span className="lc-temp" style={{ background: tm.bg, color: tm.kl }}>{tm.lab}</span>
                           {waarde != null && <span className="lc-waarde" style={gewonnen ? { color: "#2f9e44" } : undefined}>{euro(waarde)}</span>}
-                          {L.offerte_nummer && L.offerte_url && <a href={L.offerte_url} target="_blank" rel="noreferrer" className="lc-mbchip">🧾 {L.offerte_nummer}{L.offerte_state ? ` · ${OFFERTE_LABEL[L.offerte_state] || L.offerte_state}` : ""} ↗</a>}
                         </div>
                       </div>
                       {!gewonnen && (
@@ -493,6 +492,7 @@ function Dashboard() {
                           <span className="lc-open">{afgewezen ? "afgerond" : `${_dagen} dagen open`}</span>
                         </div>
                       )}
+                      {volgende && <div className="lc-next"><span>🎯</span> {volgende}</div>}
                       {L.telefoon
                         ? <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", margin: "8px 0 2px" }}>
                             <a href={`tel:${telClean}`} className="lc-tel">📞 {L.telefoon}</a>
@@ -516,7 +516,6 @@ function Dashboard() {
                           <span className="lc-btn" onClick={() => { if (window.confirm("Deze lead afronden (klaar / geen interesse)?")) wijzigStatus(L, "afgewezen"); }}>✔ Afronden</span>
                         </div>
                       )}
-                      {volgende && <div className="lc-next"><span>🎯</span> {volgende}</div>}
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
                         <select value={L.eigenaar || ""} onChange={(e) => wijzigLead(L.id, "eigenaar", e.target.value)} style={sel}>
                           {EIGENAREN.map((e) => <option key={e} value={e}>{e || "— eigenaar —"}</option>)}
