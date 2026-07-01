@@ -223,7 +223,7 @@ function Dashboard() {
     <main style={wrap}>
       <div style={binnen}>
         <PaginaKop naam={naam} onUitloggen={uitloggen} titel="Sales & Marketing" streep />
-        <style>{`@keyframes verzondenFade { 0%,60% { opacity: 1; } 100% { opacity: 0.15; } } @keyframes laadbalk { 0% { left: -35%; } 100% { left: 100%; } } .lc{position:relative;background:#fff;border:1px solid #e6e9e1;border-radius:16px;padding:12px 14px;box-shadow:0 6px 20px rgba(26,60,46,.07);overflow:hidden;transition:box-shadow .16s,transform .16s} .lc:hover{box-shadow:0 14px 34px rgba(26,60,46,.13);transform:translateY(-2px)} .lc-head{display:flex;align-items:flex-start;gap:11px} .lc-av{width:42px;height:42px;border-radius:12px;flex:none;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:700;font-size:16px;color:#fff;background:linear-gradient(140deg,#27593f,#1a3c2e)} .lc-who{flex:1;min-width:0} .lc-naam{font-size:16px;font-weight:800;color:#1c211d} .lc-sub{color:#6f7770;font-weight:600;font-size:13px} .lc-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:5px} .lc-chip{font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;background:#eef2ec;color:#5b665d} .lc-chip.bron{background:#eaf1fb;color:#3b6aa0} .lc-chip.eig{background:#efeafb;color:#6a4fb0} .lc-chip.nietop{background:#fdf3d6;color:#8a6d10} .lc-chip.nietop.hard{background:#fff0e6;color:#e8590c} .lc-rt{text-align:right;flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:5px} .lc-temp{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;text-transform:uppercase;white-space:nowrap} .lc-waarde{font-family:'Fraunces',serif;font-weight:700;font-size:20px;color:#b8962e;line-height:1} .lc-mbchip{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;background:#e7f0ea;color:#1a3c2e;text-decoration:none} .lc-mbchip:hover{background:#d8e8de} .lc-stages{display:flex;align-items:center;margin:15px 4px 4px;padding-bottom:19px;position:relative} .lc-stage{display:flex;align-items:center;flex:none} .lc-stage:last-child{flex:none} .lc-dot{width:13px;height:13px;border-radius:50%;border:2px solid #dfe3dc;background:#fff;flex:none;position:relative} .lc-stage.done .lc-dot{background:#1a3c2e;border-color:#1a3c2e} .lc-stage.now .lc-dot{background:#b8962e;border-color:#b8962e;box-shadow:0 0 0 4px rgba(184,150,46,.18)} .lc-slbl{position:absolute;font-size:9.5px;font-weight:700;color:#8a938b;margin-top:17px;white-space:nowrap;transform:translateX(-32%)} .lc-stage.done .lc-slbl,.lc-stage.now .lc-slbl{color:#1a3c2e} .lc-sbar{height:2px;width:50px;background:#dfe3dc;margin:0 3px} .lc-stage.done .lc-sbar{background:#1a3c2e} .lc-open{position:absolute;right:0;top:-4px;font-size:11px;font-weight:700;color:#8a938b} .lc-tel{font-size:22px;font-weight:800;color:#1a3c2e;text-decoration:none} .lc-acts{display:flex;flex-wrap:wrap;gap:7px;margin:2px 0 10px} .lc-btn{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;padding:8px 12px;border-radius:10px;cursor:pointer;border:1.5px solid #e6e9e1;background:#fff;color:#4a544c;transition:all .13s;text-decoration:none} .lc-btn:hover{border-color:#1a3c2e;color:#1a3c2e} .lc-btn.bel{background:linear-gradient(135deg,#b8962e,#a07d1f);color:#fff;border:none} .lc-btn.wa{background:#25d366;color:#fff;border:none} .lc-btn.neg{color:#e8590c;border-color:#f0c6ad} .lc-btn.win{background:linear-gradient(135deg,#2f9e44,#37b24d);color:#fff;border:none} .lc-next{display:flex;align-items:center;gap:7px;background:#eef5f0;border:1px solid #d3e6da;border-radius:10px;padding:9px 12px;margin-bottom:10px;font-size:13px;font-weight:600;color:#1a3c2e}`}</style>
+        <style>{`@keyframes verzondenFade { 0%,60% { opacity: 1; } 100% { opacity: 0.15; } } @keyframes laadbalk { 0% { left: -35%; } 100% { left: 100%; } } .lc{position:relative;background:#fff;border:1px solid #e6e9e1;border-radius:16px;padding:12px 14px;box-shadow:0 6px 20px rgba(26,60,46,.07);overflow:hidden;transition:box-shadow .16s,transform .16s} .lc:hover{box-shadow:0 14px 34px rgba(26,60,46,.13);transform:translateY(-2px)} .lc-head{display:flex;align-items:flex-start;gap:11px} .lc-av{width:42px;height:42px;border-radius:12px;flex:none;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:700;font-size:16px;color:#fff;background:linear-gradient(140deg,#27593f,#1a3c2e)} .lc-who{flex:1;min-width:0} .lc-naam{font-size:16px;font-weight:800;color:#1c211d} .lc-sub{color:#6f7770;font-weight:600;font-size:13px} .lc-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:5px} .lc-chip{font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;background:#eef2ec;color:#5b665d} .lc-chip.bron{background:#eaf1fb;color:#3b6aa0} .lc-chip.eig{background:#efeafb;color:#6a4fb0} .lc-chip.nietop{background:#fdf3d6;color:#8a6d10} .lc-chip.nietop.hard{background:#fff0e6;color:#e8590c} .lc-rt{text-align:right;flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:5px} .lc-temp{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;text-transform:uppercase;white-space:nowrap} .lc-waarde{font-family:'Fraunces',serif;font-weight:700;font-size:20px;color:#b8962e;line-height:1} .lc-mbchip{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;background:#e7f0ea;color:#1a3c2e;text-decoration:none} .lc-mbchip:hover{background:#d8e8de} .lc-stages{position:relative;display:flex;justify-content:space-between;max-width:320px;flex:1} .lc-stages::before{content:"";position:absolute;top:6px;left:14px;right:14px;height:2px;background:#dfe3dc} .lc-stg{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;text-align:center} .lc-dot{width:13px;height:13px;border-radius:50%;border:2px solid #dfe3dc;background:#fff;position:relative;z-index:1} .lc-stg.done .lc-dot{background:#1a3c2e;border-color:#1a3c2e} .lc-stg.now .lc-dot{background:#b8962e;border-color:#b8962e;box-shadow:0 0 0 4px rgba(184,150,46,.18)} .lc-stg.nietop .lc-dot{background:#e8590c;border-color:#e8590c;box-shadow:0 0 0 4px rgba(232,89,12,.16)} .lc-slbl{font-size:9.5px;font-weight:700;color:#8a938b;line-height:1.25} .lc-stg.done .lc-slbl,.lc-stg.now .lc-slbl{color:#1a3c2e} .lc-stg.nietop .lc-slbl{color:#e8590c} .lc-open{font-size:11px;font-weight:700;color:#8a938b;white-space:nowrap;padding:1px 0 0 12px} .lc-tel{font-size:22px;font-weight:800;color:#1a3c2e;text-decoration:none} .lc-acts{display:flex;flex-wrap:wrap;gap:7px;margin:2px 0 10px} .lc-btn{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;padding:8px 12px;border-radius:10px;cursor:pointer;border:1.5px solid #e6e9e1;background:#fff;color:#4a544c;transition:all .13s;text-decoration:none} .lc-btn:hover{border-color:#1a3c2e;color:#1a3c2e} .lc-btn.bel{background:linear-gradient(135deg,#b8962e,#a07d1f);color:#fff;border:none} .lc-btn.wa{background:#25d366;color:#fff;border:none} .lc-btn.neg{color:#e8590c;border-color:#f0c6ad} .lc-btn.win{background:linear-gradient(135deg,#2f9e44,#37b24d);color:#fff;border:none} .lc-next{display:flex;align-items:center;gap:7px;background:#eef5f0;border:1px solid #d3e6da;border-radius:10px;padding:9px 12px;margin-bottom:10px;font-size:13px;font-weight:600;color:#1a3c2e}`}</style>
         {laden && (
           <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: 3, background: "rgba(0,0,0,0.07)", zIndex: 60, overflow: "hidden" }}>
             <div style={{ position: "absolute", top: 0, height: "100%", width: "35%", background: GROEN, animation: "laadbalk 1s ease-in-out infinite" }} />
@@ -465,6 +465,7 @@ function Dashboard() {
                         <div className="lc-who">
                           <div className="lc-naam">{L.naam || L.email}{L.bedrijf && <span className="lc-sub"> · {L.bedrijf}</span>}</div>
                           <div className="lc-chips">
+                            <span className="lc-chip" style={{ background: (STATUS_KLEUR[L.status || "nieuw"] || GRIJS) + "1f", color: STATUS_KLEUR[L.status || "nieuw"] || GRIJS, fontWeight: 800 }}>{L.status || "nieuw"}</span>
                             <span className="lc-chip bron">{bronLabel(L.bron)}</span>
                             {L.eigenaar && <span className="lc-chip eig">👤 {L.eigenaar}</span>}
                             {_nietOp > 0 && !gewonnen && !afgewezen && <span className={"lc-chip nietop" + (_nietOp >= 3 ? " hard" : "")}>📵 {_nietOp}× niet opgenomen{_nietOp >= 3 ? " · moeilijk bereikbaar" : ""}</span>}
@@ -477,13 +478,19 @@ function Dashboard() {
                         </div>
                       </div>
                       {!gewonnen && (
-                        <div className="lc-stages">
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", margin: "14px 0 8px" }}>
+                          <div className="lc-stages">
+                            {stg.map((s, i) => {
+                              const contactNietOp = s === "now" && stageLbls[i] === "Contact" && _nietOp > 0;
+                              return (
+                                <div key={i} className={"lc-stg " + (contactNietOp ? "nietop" : s)}>
+                                  <span className="lc-dot" />
+                                  <span className="lc-slbl">{stageLbls[i]}{contactNietOp && <><br />📵 {_nietOp}×</>}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
                           <span className="lc-open">{afgewezen ? "afgerond" : `${_dagen} dagen open`}</span>
-                          {stg.map((s, i) => (
-                            <div key={i} className={"lc-stage " + s}>
-                              <span className="lc-dot" /><span className="lc-slbl">{stageLbls[i]}</span>{i < 3 && <span className="lc-sbar" />}
-                            </div>
-                          ))}
                         </div>
                       )}
                       {L.telefoon
@@ -503,6 +510,7 @@ function Dashboard() {
                         <div className="lc-acts">
                           <span className="lc-btn" onClick={() => logActie(L, "gebeld", "")}>✅ Gesproken</span>
                           <span className="lc-btn neg" onClick={() => logActie(L, "niet opgenomen", "")}>📵 Niet opgenomen</span>
+                          <span className="lc-btn" onClick={() => wijzigStatus(L, "vernieuwde offerte")}>🔄 Nieuwe offerte</span>
                           <span className="lc-btn" onClick={() => wijzigStatus(L, "uitstellen")}>💤 Uitstellen</span>
                           <span className="lc-btn win" onClick={() => wijzigStatus(L, "geaccepteerd")}>🏆 Gewonnen</span>
                           <span className="lc-btn" onClick={() => { if (window.confirm("Deze lead afronden (klaar / geen interesse)?")) wijzigStatus(L, "afgewezen"); }}>✔ Afronden</span>
@@ -510,9 +518,6 @@ function Dashboard() {
                       )}
                       {volgende && <div className="lc-next"><span>🎯</span> {volgende}</div>}
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-                        <select value={L.status || "nieuw"} onChange={(e) => wijzigStatus(L, e.target.value)} style={{ ...sel, borderColor: STATUS_KLEUR[L.status || "nieuw"], color: STATUS_KLEUR[L.status || "nieuw"], fontWeight: 700 }}>
-                          {STATUS.map((s) => <option key={s} value={s}>{s}</option>)}
-                        </select>
                         <select value={L.eigenaar || ""} onChange={(e) => wijzigLead(L.id, "eigenaar", e.target.value)} style={sel}>
                           {EIGENAREN.map((e) => <option key={e} value={e}>{e || "— eigenaar —"}</option>)}
                         </select>
