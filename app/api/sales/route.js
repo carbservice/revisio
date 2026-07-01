@@ -124,18 +124,23 @@ export async function GET(req) {
     }
     return map;
   };
-  const [periodeRes, spend, alle, offertes] = await Promise.all([
+  const [periodeRes, spend, alle, offertes, pijplijnRes] = await Promise.all([
     supabaseAdmin.from("leads").select("*").gte("datum", van).lt("datum", tot).order("datum", { ascending: false }),
     haalSpend(van, tot),
     haalAlle(),
     haalOffertes(),
+    // De opvolg-pijplijn is DATUM-ONAFHANKELIJK: alle leads met een offerte (of
+    // gewonnen), zodat de lijst NIET leegloopt als de maand omslaat. De cijfers
+    // (perBron/totaal) hieronder blijven wel per periode (van/tot).
+    supabaseAdmin.from("leads").select("*").not("offerte_id", "is", null).order("datum", { ascending: false }),
   ]);
   const lijst = periodeRes.data || [];
+  const pijplijnLijst = pijplijnRes.data || [];
 
   // Offerte-status synchroniseren met Moneybird. Verwijderd = wissen (alleen actieve
   // offertes); status veranderd (bv. afgewezen/geaccepteerd) = bijwerken op de lead.
   if (offertes) {
-    for (const L of lijst) {
+    for (const L of pijplijnLijst) {
       if (!L.offerte_id) continue;
       const o = offertes.get(String(L.offerte_id));
       let patch = null;
@@ -151,7 +156,7 @@ export async function GET(req) {
     }
   }
 
-  const ids = lijst.map((L) => L.id);
+  const ids = pijplijnLijst.map((L) => L.id);
   let acties = [];
   if (ids.length) {
     const { data } = await supabaseAdmin.from("lead_actie").select("*").in("lead_id", ids).order("datum", { ascending: false });
@@ -159,7 +164,7 @@ export async function GET(req) {
   }
   const actiePer = new Map();
   acties.forEach((a) => { if (!actiePer.has(a.lead_id)) actiePer.set(a.lead_id, []); actiePer.get(a.lead_id).push(a); });
-  const verrijkt = lijst.map((L) => ({ ...L, offerte_url: offerteUrl(L.offerte_id), acties: actiePer.get(L.id) || [] }));
+  const verrijkt = pijplijnLijst.map((L) => ({ ...L, offerte_url: offerteUrl(L.offerte_id), acties: actiePer.get(L.id) || [] }));
 
   // Aggregatie per bron + ROAS.
   const map = new Map();

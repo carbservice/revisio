@@ -459,7 +459,7 @@ function Dashboard() {
                     </div>
                   );
                 })}
-                {pijplijn.length === 0 && <p style={{ color: GRIJS }}>Geen leads in deze selectie. Tip: zet op "Jaar" of schakel "Alle leads" aan.</p>}
+                {pijplijn.length === 0 && <p style={{ color: GRIJS }}>Geen openstaande leads. Tip: schakel bovenin op "Alle aanvragen".</p>}
               </div>
             </div>
           </>
