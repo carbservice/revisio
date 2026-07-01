@@ -130,6 +130,22 @@ function Dashboard() {
     patchLokaal(L.id, { eigenaar: mijnCode });
     apiFetch("/api/sales/lead", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: L.id, eigenaar: mijnCode }) }).catch(() => {});
   }
+  // Verplichte notitie vóór een actie die de kaart afsluit. Staat er al iets in het
+  // notitieveld, dan gebruiken we dat (en maken het veld leeg). Anders een popup.
+  // Return: de notitie, of null als de gebruiker annuleert (kaart blijft dan staan).
+  function vraagNotitie(L: Lead): string | null {
+    const bestaand = (L.sales_notitie || "").trim();
+    if (bestaand) {
+      patchLokaal(L.id, { sales_notitie: "" });
+      apiFetch("/api/sales/lead", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: L.id, sales_notitie: "" }) }).catch(() => {});
+      return bestaand;
+    }
+    const inp = window.prompt("Voeg eerst een korte notitie toe voor deze lead (verplicht):", "");
+    if (inp === null) return null;
+    const t = inp.trim();
+    if (!t) { window.alert("Een notitie is verplicht om verder te kunnen."); return null; }
+    return t;
+  }
   async function logActie(L: Lead, soort: string, tekst: string): Promise<boolean> {
     try {
       const r = await apiFetch("/api/sales/actie", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lead_id: L.id, soort, tekst }) });
@@ -164,9 +180,10 @@ function Dashboard() {
   }
   // De status-dropdown is de enige knop: bij een beslissing met gekoppelde
   // offerte schrijft 'ie (na bevestiging) terug naar Moneybird. Idempotent.
-  async function wijzigStatus(L: Lead, nieuw: string) {
+  async function wijzigStatus(L: Lead, nieuw: string, note?: string) {
     patchLokaal(L.id, { status: nieuw } as Partial<Lead>);
     claimEigenaar(L);
+    if (note && note.trim()) await logActie(L, "notitie", note.trim());
     try {
       await apiFetch("/api/sales/lead", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: L.id, status: nieuw }) });
     } catch { window.alert("Opslaan mislukt (geen verbinding)."); }
@@ -580,11 +597,11 @@ function Dashboard() {
 
                       {!gewonnen && !afgewezen && (
                         <div className="lc-acts">
-                          <span className="lc-btn" onClick={() => logActie(L, "gebeld", "")}>✅ Gesproken</span>
-                          <span className="lc-btn neg" onClick={() => logActie(L, "niet opgenomen", "")}>📵 Niet opgenomen{_nietOp > 0 ? ` (${_nietOp}×)` : ""}</span>
-                          <span className="lc-btn" style={{ position: "relative" }} onClick={(e) => { const inp = e.currentTarget.querySelector("input") as HTMLInputElement | null; if (inp && (inp as unknown as { showPicker?: () => void }).showPicker) (inp as unknown as { showPicker: () => void }).showPicker(); else inp?.focus(); }}>💤 Uitstellen<input type="date" value={L.opvolgen_op || ""} onChange={(e) => { const d = e.target.value; if (d) { wijzigLead(L.id, "opvolgen_op", d); wijzigStatus(L, "uitstellen"); } }} onClick={(e) => e.stopPropagation()} style={{ position: "absolute", left: 10, bottom: 0, width: 1, height: 1, opacity: 0, pointerEvents: "none" }} /></span>
-                          <span className="lc-btn" onClick={() => wijzigStatus(L, "geaccepteerd")}>🏆 Gewonnen</span>
-                          <span className="lc-btn" onClick={() => { if (window.confirm("Deze lead op 'verloren / geen interesse' zetten? Hij gaat dan naar het tabblad Afgerond, uit je actieve lijst.")) wijzigStatus(L, "afgewezen"); }}>❌ Verloren</span>
+                          <span className="lc-btn" onClick={() => { const n = vraagNotitie(L); if (n === null) return; logActie(L, "gebeld", n); }}>✅ Gesproken</span>
+                          <span className="lc-btn neg" onClick={() => { const n = vraagNotitie(L); if (n === null) return; logActie(L, "niet opgenomen", n); }}>📵 Niet opgenomen{_nietOp > 0 ? ` (${_nietOp}×)` : ""}</span>
+                          <span className="lc-btn" style={{ position: "relative" }} onClick={(e) => { const inp = e.currentTarget.querySelector("input") as HTMLInputElement | null; if (inp && (inp as unknown as { showPicker?: () => void }).showPicker) (inp as unknown as { showPicker: () => void }).showPicker(); else inp?.focus(); }}>💤 Uitstellen<input type="date" value={L.opvolgen_op || ""} onChange={(e) => { const d = e.target.value; if (d) { const n = vraagNotitie(L); if (n === null) return; wijzigLead(L.id, "opvolgen_op", d); wijzigStatus(L, "uitstellen", n); } }} onClick={(e) => e.stopPropagation()} style={{ position: "absolute", left: 10, bottom: 0, width: 1, height: 1, opacity: 0, pointerEvents: "none" }} /></span>
+                          <span className="lc-btn" onClick={() => { const n = vraagNotitie(L); if (n === null) return; wijzigStatus(L, "geaccepteerd", n); }}>🏆 Gewonnen</span>
+                          <span className="lc-btn" onClick={() => { if (!window.confirm("Deze lead op 'verloren / geen interesse' zetten? Hij gaat dan naar het tabblad Afgerond, uit je actieve lijst.")) return; const n = vraagNotitie(L); if (n === null) return; wijzigStatus(L, "afgewezen", n); }}>❌ Verloren</span>
                         </div>
                       )}
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>

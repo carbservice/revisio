@@ -38,7 +38,7 @@ export async function POST(req) {
     const regel = (soort === "gebeld")
       ? `Gebeld${door ? ` door ${door}` : ""}${tekst ? `: ${tekst}` : ""} (via Revisio)`
       : (soort === "niet opgenomen")
-      ? `Niet opgenomen${door ? ` door ${door}` : ""} (via Revisio)`
+      ? `Niet opgenomen${door ? ` door ${door}` : ""}${tekst ? `: ${tekst}` : ""} (via Revisio)`
       : `Revisio notitie${door ? ` (${door})` : ""}: ${tekst || ""}`;
     naarMoneybird = await moneybirdNotitie(lead.offerte_id, regel);
   }
