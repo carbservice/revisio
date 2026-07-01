@@ -119,7 +119,7 @@ export async function GET(req) {
       const est = await mb(`estimates.json?per_page=100&page=${page}`);
       if (!Array.isArray(est)) return null; // fout -> niet synchroniseren (veilig)
       if (!est.length) break;
-      est.forEach((e) => map.set(String(e.id), { state: e.state || "", nummer: e.estimate_id || "", bedrag: e.total_price_incl_tax != null ? Number(e.total_price_incl_tax) : null }));
+      est.forEach((e) => map.set(String(e.id), { state: e.state || "", nummer: e.estimate_id || "", bedrag: e.total_price_incl_tax != null ? Number(e.total_price_incl_tax) : null, datum: e.estimate_date || e.created_at || null }));
       if (est.length < 100) break;
     }
     return map;
@@ -143,6 +143,7 @@ export async function GET(req) {
     for (const L of pijplijnLijst) {
       if (!L.offerte_id) continue;
       const o = offertes.get(String(L.offerte_id));
+      if (o && o.datum) L.offerte_datum = o.datum;
       let patch = null;
       if (!o) {
         if (["draft", "open", "late"].includes(L.offerte_state || "")) patch = { offerte_id: null, offerte_nummer: null, offerte_state: null, offerte_bedrag: null };
