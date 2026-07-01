@@ -19,7 +19,7 @@ type Actie = { id: string; soort: string; tekst: string; door: string; datum: st
 type Lead = { id: string; datum: string; naam: string; email: string; telefoon: string; bedrijf: string; carburateur: string; bericht: string; bron: string; status: string; eigenaar: string | null; sales_notitie: string | null; opvolgen_op: string | null; omzet_excl: number; offerte_id: string | null; offerte_nummer: string | null; offerte_state: string | null; offerte_bedrag: number | null; offerte_url: string | null; offerte_datum?: string | null; offerte_verstuurd_op?: string | null; acties: Actie[] };
 type PerBron = { bron: string; leads: number; klanten: number; omzet: number; spend: number; roas: number | null; conversie: number };
 type Ltv = { bron: string; klanten: number; omzet: number; gem: number; aandeel: number; aandeelKlanten: number };
-type Data = { perBron: PerBron[]; totaal: { leads: number; klanten: number; omzet: number; spend: number; omzetBetaald: number; roas: number | null }; leads: Lead[]; spend: { google_ads: number; facebook: number; marktplaats: number }; ltv: Ltv[]; ltvTotaal: { klanten: number; omzet: number; gem: number } };
+type Data = { perBron: PerBron[]; totaal: { leads: number; klanten: number; omzet: number; spend: number; omzetBetaald: number; roas: number | null }; leads: Lead[]; spend: { google_ads: number; facebook: number; marktplaats: number }; ltv: Ltv[]; ltvTotaal: { klanten: number; omzet: number; gem: number }; dagteller?: { totaal: number; perPersoon: Record<string, number> } };
 
 const STATUS = ["nieuw", "gebeld", "vernieuwde offerte", "uitstellen", "geaccepteerd", "afgewezen"];
 const STATUS_KLEUR: Record<string, string> = { nieuw: "#6b7280", gebeld: "#2f6f8f", "vernieuwde offerte": "#0d9488", uitstellen: "#b07d12", geaccepteerd: GROEN, afgewezen: ROOD };
@@ -118,6 +118,13 @@ function Dashboard() {
       if (!r.ok || j.fout) window.alert("Opslaan mislukt: " + (j.fout || r.status));
     } catch { window.alert("Opslaan mislukt (geen verbinding)."); }
   }
+  // Je wordt eigenaar zodra je een actie/notitie op een lead doet · maar alleen als
+  // er nog geen eigenaar is (niet elkaars leads afpakken). Iedereen blijft ze zien.
+  function claimEigenaar(L: Lead) {
+    if (!mijnCode || L.eigenaar) return;
+    patchLokaal(L.id, { eigenaar: mijnCode });
+    apiFetch("/api/sales/lead", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: L.id, eigenaar: mijnCode }) }).catch(() => {});
+  }
   async function logActie(L: Lead, soort: string, tekst: string): Promise<boolean> {
     try {
       const r = await apiFetch("/api/sales/actie", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lead_id: L.id, soort, tekst }) });
@@ -126,6 +133,7 @@ function Dashboard() {
       const nieuw: Actie = { id: Math.random().toString(36), soort, tekst, door: j.door || mijnCode || "", datum: new Date().toISOString() };
       const wordtGebeld = soort === "gebeld" && L.status === "nieuw";
       patchLokaal(L.id, { acties: [nieuw, ...(L.acties || [])], status: wordtGebeld ? "gebeld" : L.status });
+      claimEigenaar(L);
       if (wordtGebeld) apiFetch("/api/sales/lead", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: L.id, status: "gebeld" }) });
       return true;
     } catch { window.alert("Niet opgeslagen (geen verbinding)."); return false; }
@@ -153,6 +161,7 @@ function Dashboard() {
   // offerte schrijft 'ie (na bevestiging) terug naar Moneybird. Idempotent.
   async function wijzigStatus(L: Lead, nieuw: string) {
     patchLokaal(L.id, { status: nieuw } as Partial<Lead>);
+    claimEigenaar(L);
     try {
       await apiFetch("/api/sales/lead", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: L.id, status: nieuw }) });
     } catch { window.alert("Opslaan mislukt (geen verbinding)."); }
@@ -419,6 +428,17 @@ function Dashboard() {
 
             {/* Pijplijn */}
             <div style={kaart}>
+              {data.dagteller && (
+                <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10, marginBottom: 12, background: "linear-gradient(135deg,#eef5f0,#e3efe8)", border: "1px solid #cfe0d5", borderRadius: 12, padding: "10px 14px" }}>
+                  <span style={{ fontSize: 15, fontWeight: 800, color: GROEN }}>📞 Vandaag {data.dagteller.totaal} behandeld</span>
+                  <span style={{ fontSize: 12.5, color: GRIJS, fontWeight: 600 }}>· totaal van iedereen</span>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginLeft: "auto" }}>
+                    {Object.entries(data.dagteller.perPersoon).sort((a, b) => b[1] - a[1]).map(([code, n]) => (
+                      <span key={code} style={{ fontSize: 12, fontWeight: 700, padding: "3px 10px", borderRadius: 999, background: code === mijnCode ? GROEN : "#fff", color: code === mijnCode ? "#fff" : "#4a544c", border: "1px solid #cfe0d5" }}>{naamVoorCode(code) || code} {n}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", marginBottom: 12 }}>
                 <div style={kop}>Pijplijn ({pijplijn.length})</div>
                 <div style={{ display: "flex", gap: 6, marginLeft: "auto", flexWrap: "wrap" }}>

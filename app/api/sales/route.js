@@ -168,6 +168,26 @@ export async function GET(req) {
   acties.forEach((a) => { if (!actiePer.has(a.lead_id)) actiePer.set(a.lead_id, []); actiePer.get(a.lead_id).push(a); });
   const verrijkt = pijplijnLijst.map((L) => ({ ...L, offerte_url: offerteUrl(L.offerte_id), acties: actiePer.get(L.id) || [] }));
 
+  // Dagteller: hoeveel unieke leads zijn vandaag behandeld (over ALLE leads en iedereen),
+  // plus een uitsplitsing per medewerker. "Vandaag" = kalenderdag in Europe/Amsterdam.
+  const dagteller = { totaal: 0, perPersoon: {} };
+  try {
+    const sinds = new Date(Date.now() - 48 * 3600 * 1000).toISOString();
+    const { data: recent } = await supabaseAdmin.from("lead_actie").select("lead_id,door,datum").gte("datum", sinds);
+    const vandaagNL = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Amsterdam" });
+    const totaalSet = new Set();
+    const perPersoonSet = {};
+    (recent || []).forEach((a) => {
+      if (new Date(a.datum).toLocaleDateString("en-CA", { timeZone: "Europe/Amsterdam" }) !== vandaagNL) return;
+      totaalSet.add(a.lead_id);
+      const p = a.door || "?";
+      if (!perPersoonSet[p]) perPersoonSet[p] = new Set();
+      perPersoonSet[p].add(a.lead_id);
+    });
+    dagteller.totaal = totaalSet.size;
+    dagteller.perPersoon = Object.fromEntries(Object.entries(perPersoonSet).map(([k, v]) => [k, v.size]));
+  } catch { /* teller is nice-to-have; bij een fout gewoon 0 */ }
+
   // Aggregatie per bron + ROAS.
   const map = new Map();
   for (const L of lijst) {
@@ -221,5 +241,5 @@ export async function GET(req) {
   })).sort((a, b) => b.omzet - a.omzet);
   const ltvTotaal = { klanten: ltvKlantenTot, omzet: Math.round(ltvOmzetTot * 100) / 100, gem: ltvKlantenTot ? Math.round(ltvOmzetTot / ltvKlantenTot) : 0 };
 
-  return Response.json({ perBron, totaal, leads: verrijkt, spend, ltv, ltvTotaal });
+  return Response.json({ perBron, totaal, leads: verrijkt, spend, ltv, ltvTotaal, dagteller });
 }
