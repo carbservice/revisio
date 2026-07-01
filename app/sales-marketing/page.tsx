@@ -204,14 +204,23 @@ function Dashboard() {
     if (tab === "nietop") return isActief(L) && nietOpN(L) > 0;
     return isActief(L); // "open" = alle openstaande
   };
+  // Sorteer-prioriteit: een uitstel-lead waarvan de terugbel-datum bereikt is gaat
+  // bovenaan (-1); een uitstel in de toekomst zakt juist (nog niet aan de beurt).
+  const vandaag = new Date().toISOString().slice(0, 10);
+  const sortPrio = (L: Lead) => {
+    const s = L.status || "nieuw";
+    if (s === "uitstellen") return (L.opvolgen_op && L.opvolgen_op <= vandaag) ? -1 : 3.5;
+    return STATUS_PRIO[s] ?? 2;
+  };
   const alleLeads = data?.leads || [];
   const pijplijn = alleLeads.filter((L) => {
     const vanMij = !mijn || L.eigenaar === mijnCode;
     const raakt = !zoekTerm || [L.naam, L.email, L.bedrijf, L.telefoon, L.carburateur, L.offerte_nummer].some((v) => (v || "").toLowerCase().includes(zoekTerm));
     return inTab(L) && vanMij && raakt;
   }).sort((a, b) => {
-    const pa = STATUS_PRIO[a.status || "nieuw"] ?? 2, pb = STATUS_PRIO[b.status || "nieuw"] ?? 2;
-    if (pa !== pb) return pa - pb;            // op te volgen bovenaan, afgerond onderaan
+    const pa = sortPrio(a), pb = sortPrio(b);
+    if (pa !== pb) return pa - pb;            // terugbel-datum bereikt bovenaan, toekomst-uitstel lager
+    if (pa === -1) return (a.opvolgen_op || "").localeCompare(b.opvolgen_op || ""); // meest overdue eerst
     return (b.datum || "").localeCompare(a.datum || ""); // binnen een groep: nieuwste eerst
   });
   const aantalOpen = alleLeads.filter(isActief).length;
@@ -447,7 +456,7 @@ function Dashboard() {
                   const tm = TEMP[_temp];
                   const stg = ["done", (_heeftOff || gewonnen) ? "done" : "now", cState, gewonnen ? "done" : (reached ? "now" : "")];
                   const stageLbls = ["Nieuw", "Offerte", "Contact", "Gewonnen"];
-                  const volgende = (gewonnen || afgewezen) ? "" : !reached ? (_nietOp > 0 ? (_nietOp >= 3 ? "Moeilijk bereikbaar · probeer nu WhatsApp of mail" : "Niet opgenomen · probeer opnieuw of stuur een appje") : (_dagen <= 3 ? "Eerste keer bellen · verse lead, sla nu toe" : `Nog bellen · al ${_dagen} dagen open`)) : (_st === "uitstellen" && L.opvolgen_op) ? `Opvolgen op ${L.opvolgen_op}` : "Opvolgen richting de close";
+                  const volgende = (gewonnen || afgewezen) ? "" : (_st === "uitstellen" && L.opvolgen_op) ? (L.opvolgen_op <= vandaag ? `⏰ Nu terugbellen · stond gepland voor ${new Date(L.opvolgen_op).toLocaleDateString("nl-NL", { day: "numeric", month: "short" })}` : `Terugbellen gepland op ${new Date(L.opvolgen_op).toLocaleDateString("nl-NL", { day: "numeric", month: "short" })}`) : !reached ? (_nietOp > 0 ? (_nietOp >= 3 ? "Moeilijk bereikbaar · probeer nu WhatsApp of mail" : "Niet opgenomen · probeer opnieuw of stuur een appje") : (_dagen <= 3 ? "Eerste keer bellen · verse lead, sla nu toe" : `Nog bellen · al ${_dagen} dagen open`)) : "Opvolgen richting de close";
                   const waarde = (gewonnen && Number(L.omzet_excl) > 0) ? Number(L.omzet_excl) : (L.offerte_bedrag ? Number(L.offerte_bedrag) : null);
                   const telClean = (L.telefoon || "").replace(/[^\d+]/g, "");
                   const waNr = telClean.replace(/^\+/, "").replace(/^0/, "31");
