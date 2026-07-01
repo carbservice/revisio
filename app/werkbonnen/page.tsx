@@ -1135,7 +1135,7 @@ function WerkplaatsApp({ ingelogd, isAdmin, isManager, onUitloggen }: { ingelogd
                   const waNr = waNummer(open.telefoon || "");
                   const klantVoor = (open.klant || "").trim().split(/\s+/)[0] || "";
                   const monteur = ingelogd?.naam || "het team";
-                  const waTekst = `Hoi ${klantVoor},\n\n${monteur} hier van Carburateur Service Nederland. Goed nieuws: er is een update over je revisie (order ${open.nummer}). Je kunt de voortgang live volgen, met foto's van de werkbank, via deze link:\n${deelLink}\nToegangscode: ${deelCode}\n\nBij Carburateur Service Nederland reviseren we jouw carburateur met echt vakmanschap en originele fabrieksdocumentatie, zodat 'ie weer loopt als nieuw. Vragen? Je mag ons altijd appen!\n\nFijne dag,\n${monteur}`;
+                  const waTekst = `Hi ${klantVoor},\n\nWe hebben een nieuw stukje software, vanaf nu kan je de voortgang live volgen met foto's op de werkbank, via deze link:\n${deelLink}\n\nDe einddatum is geautomatiseerd, kan nog wat uitlopen.\n\nBenieuwd wat je van deze software vindt, we horen graag je mening.\n\nFijne dag,\n${monteur}`;
                   return (
                     <div style={{ display: "flex", gap: 6 }}>
                       <input readOnly value={deelLink} onFocus={(e) => e.target.select()} style={inp} />
