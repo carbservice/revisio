@@ -530,11 +530,12 @@ function Dashboard() {
                       )}
 
                       {(L.acties || []).length > 0 && (
-                        <div style={{ marginTop: 10, borderTop: `1px solid ${RAND}`, paddingTop: 8 }}>
-                          <div style={{ fontSize: 11, fontWeight: 800, color: GRIJS, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 5 }}>Changelog</div>
-                          {(L.acties || []).slice(0, 6).map((a) => (
-                            <div key={a.id} style={{ fontSize: 13, color: TEKST, marginBottom: 3 }}>• {a.door || "?"} <b>{a.soort}</b>{a.tekst ? `: ${a.tekst}` : ""} <span style={{ color: GRIJS }}>· {new Date(a.datum).toLocaleString("nl-NL", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span></div>
+                        <div style={{ marginTop: 8, borderTop: `1px solid ${RAND}`, paddingTop: 6 }}>
+                          <div style={{ fontSize: 10, fontWeight: 800, color: GRIJS, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 3 }}>Laatste acties</div>
+                          {(L.acties || []).slice(0, 3).map((a) => (
+                            <div key={a.id} style={{ fontSize: 12, color: TEKST, marginBottom: 2 }}>• {a.door || "?"} <b>{a.soort}</b>{a.tekst ? `: ${a.tekst}` : ""} <span style={{ color: GRIJS }}>· {new Date(a.datum).toLocaleString("nl-NL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span></div>
                           ))}
+                          {(L.acties || []).length > 3 && <div style={{ fontSize: 11, color: GRIJS, marginTop: 2 }}>+ {(L.acties || []).length - 3} eerder</div>}
                         </div>
                       )}
                     </div>
