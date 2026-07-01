@@ -26,6 +26,16 @@ const STATUS_KLEUR: Record<string, string> = { nieuw: "#6b7280", gebeld: "#2f6f8
 // Sorteervolgorde: te-bellen bovenaan, afgehandelde leads zakken naar onderen.
 const STATUS_PRIO: Record<string, number> = { nieuw: 0, "vernieuwde offerte": 1, gebeld: 2, uitstellen: 3, geaccepteerd: 4, afgewezen: 5 };
 const EIGENAREN = ["", "CG", "LE", "JM", "LV"];
+// Temperatuur-weergave (loopt mee met de staat van de lead).
+const TEMP: Record<string, { lab: string; kl: string; bg: string }> = {
+  heet: { lab: "🔥 Heet", kl: "#e8590c", bg: "#fff0e6" },
+  warm: { lab: "🌤 Warm", kl: "#c98a12", bg: "#fbf3dc" },
+  koud: { lab: "❄ Koud", kl: "#5c7c8a", bg: "#eef2f4" },
+  gewonnen: { lab: "🏆 Gewonnen", kl: "#2f9e44", bg: "#e5f6ea" },
+  afgerond: { lab: "Afgerond", kl: "#7b857d", bg: "#f0f1ef" },
+};
+const initialen = (L: Lead) => { const n = (L.naam || L.email || "?").trim(); const p = n.split(/[\s@._-]+/).filter(Boolean); return ((p[0]?.[0] || "") + (p[1]?.[0] || "")).toUpperCase() || "?"; };
+const dagenOpen = (L: Lead) => Math.max(0, Math.floor((Date.now() - new Date(L.datum).getTime()) / 86400000));
 const BRON_LABEL: Record<string, string> = { google_ads: "Google Ads", facebook: "Facebook", marktplaats: "Marktplaats", organisch: "Organisch" };
 const bronLabel = (b: string) => BRON_LABEL[b] || b;
 const OFFERTE_LABEL: Record<string, string> = { open: "verstuurd", late: "verlopen", accepted: "geaccepteerd", rejected: "afgewezen", draft: "concept", billed: "gefactureerd" };
@@ -213,7 +223,7 @@ function Dashboard() {
     <main style={wrap}>
       <div style={binnen}>
         <PaginaKop naam={naam} onUitloggen={uitloggen} titel="Sales & Marketing" streep />
-        <style>{`@keyframes verzondenFade { 0%,60% { opacity: 1; } 100% { opacity: 0.15; } } @keyframes laadbalk { 0% { left: -35%; } 100% { left: 100%; } }`}</style>
+        <style>{`@keyframes verzondenFade { 0%,60% { opacity: 1; } 100% { opacity: 0.15; } } @keyframes laadbalk { 0% { left: -35%; } 100% { left: 100%; } } .lc{position:relative;background:#fff;border:1px solid #e6e9e1;border-radius:16px;padding:12px 14px;box-shadow:0 6px 20px rgba(26,60,46,.07);overflow:hidden;transition:box-shadow .16s,transform .16s} .lc:hover{box-shadow:0 14px 34px rgba(26,60,46,.13);transform:translateY(-2px)} .lc-head{display:flex;align-items:flex-start;gap:11px} .lc-av{width:42px;height:42px;border-radius:12px;flex:none;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:700;font-size:16px;color:#fff;background:linear-gradient(140deg,#27593f,#1a3c2e)} .lc-who{flex:1;min-width:0} .lc-naam{font-size:16px;font-weight:800;color:#1c211d} .lc-sub{color:#6f7770;font-weight:600;font-size:13px} .lc-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:5px} .lc-chip{font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;background:#eef2ec;color:#5b665d} .lc-chip.bron{background:#eaf1fb;color:#3b6aa0} .lc-chip.eig{background:#efeafb;color:#6a4fb0} .lc-chip.nietop{background:#fdf3d6;color:#8a6d10} .lc-chip.nietop.hard{background:#fff0e6;color:#e8590c} .lc-rt{text-align:right;flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:5px} .lc-temp{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;text-transform:uppercase;white-space:nowrap} .lc-waarde{font-family:'Fraunces',serif;font-weight:700;font-size:20px;color:#b8962e;line-height:1} .lc-mbchip{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;background:#e7f0ea;color:#1a3c2e;text-decoration:none} .lc-mbchip:hover{background:#d8e8de} .lc-stages{display:flex;align-items:center;margin:15px 4px 4px;padding-bottom:15px;position:relative} .lc-stage{display:flex;align-items:center;flex:1} .lc-stage:last-child{flex:none} .lc-dot{width:13px;height:13px;border-radius:50%;border:2px solid #dfe3dc;background:#fff;flex:none;position:relative} .lc-stage.done .lc-dot{background:#1a3c2e;border-color:#1a3c2e} .lc-stage.now .lc-dot{background:#b8962e;border-color:#b8962e;box-shadow:0 0 0 4px rgba(184,150,46,.18)} .lc-slbl{position:absolute;font-size:9.5px;font-weight:700;color:#8a938b;margin-top:17px;white-space:nowrap;transform:translateX(-32%)} .lc-stage.done .lc-slbl,.lc-stage.now .lc-slbl{color:#1a3c2e} .lc-sbar{height:2px;flex:1;background:#dfe3dc;margin:0 2px} .lc-stage.done .lc-sbar{background:#1a3c2e} .lc-open{position:absolute;right:0;top:-4px;font-size:11px;font-weight:700;color:#8a938b} .lc-tel{font-size:22px;font-weight:800;color:#1a3c2e;text-decoration:none} .lc-acts{display:flex;flex-wrap:wrap;gap:7px;margin:2px 0 10px} .lc-btn{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;padding:8px 12px;border-radius:10px;cursor:pointer;border:1.5px solid #e6e9e1;background:#fff;color:#4a544c;transition:all .13s;text-decoration:none} .lc-btn:hover{border-color:#1a3c2e;color:#1a3c2e} .lc-btn.bel{background:linear-gradient(135deg,#b8962e,#a07d1f);color:#fff;border:none} .lc-btn.wa{background:#25d366;color:#fff;border:none} .lc-btn.neg{color:#e8590c;border-color:#f0c6ad} .lc-btn.win{background:linear-gradient(135deg,#2f9e44,#37b24d);color:#fff;border:none} .lc-next{display:flex;align-items:center;gap:7px;background:#eef5f0;border:1px solid #d3e6da;border-radius:10px;padding:9px 12px;margin-bottom:10px;font-size:13px;font-weight:600;color:#1a3c2e}`}</style>
         {laden && (
           <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: 3, background: "rgba(0,0,0,0.07)", zIndex: 60, overflow: "hidden" }}>
             <div style={{ position: "absolute", top: 0, height: "100%", width: "35%", background: GROEN, animation: "laadbalk 1s ease-in-out infinite" }} />
@@ -428,8 +438,18 @@ function Dashboard() {
                     kenmerk = L.carburateur || "";
                     klacht = _ruw;
                   }
+                  const _dagen = dagenOpen(L);
+                  const _heeftOff = !!L.offerte_id;
+                  const _temp = gewonnen ? "gewonnen" : afgewezen ? "afgerond" : (_nietOp >= 3 || _dagen > 25) ? "koud" : (!_heeftContact && _dagen <= 4) ? "heet" : (_dagen <= 12 ? "warm" : "koud");
+                  const tm = TEMP[_temp];
+                  const stg = gewonnen ? ["done", "done", "done", "done"] : afgewezen ? ["done", "done", "done", ""] : !_heeftOff ? ["done", "now", "", ""] : !_heeftContact ? ["done", "done", "now", ""] : ["done", "done", "done", "now"];
+                  const stageLbls = ["Nieuw", "Offerte", "Contact", "Gewonnen"];
+                  const volgende = (gewonnen || afgewezen) ? "" : !_heeftContact ? (_dagen <= 3 ? "Eerste keer bellen · verse lead, sla nu toe" : `Nog bellen · al ${_dagen} dagen open`) : _nietOp >= 2 ? "Meerdere keren niet bereikt · probeer nu WhatsApp of mail" : (_st === "uitstellen" && L.opvolgen_op) ? `Opvolgen op ${L.opvolgen_op}` : "Opvolgen richting de close";
+                  const waarde = (gewonnen && Number(L.omzet_excl) > 0) ? Number(L.omzet_excl) : (L.offerte_bedrag ? Number(L.offerte_bedrag) : null);
+                  const telClean = (L.telefoon || "").replace(/[^\d+]/g, "");
+                  const waNr = telClean.replace(/^\+/, "").replace(/^0/, "31");
                   return (
-                    <div key={L.id} style={{ border: `${gewonnen ? 2 : 1}px solid ${gewonnen ? GROEN : afgewezen ? "#d3d8d2" : RAND}`, borderLeft: `5px solid ${randKleur}`, background: gewonnen ? GROEN_BG : afgewezen ? "#f5f6f4" : "#fff", borderRadius: 10, padding: "10px 12px", overflow: "hidden" }}>
+                    <div key={L.id} className="lc" style={{ borderLeftWidth: 5, borderLeftColor: tm.kl, ...(gewonnen ? { borderColor: "#bfe3c9", background: "#f4fbf6" } : afgewezen ? { background: "#fafbfa" } : {}) }}>
                       {gewonnen && (
                         <div style={{ margin: "-10px -12px 8px", padding: "6px 12px 8px", background: "linear-gradient(90deg,#2f9e44,#37b24d,#2f9e44)" }}>
                           <div style={{ display: "flex", gap: 5, justifyContent: "center", marginBottom: 4, flexWrap: "wrap" }}>
@@ -440,19 +460,38 @@ function Dashboard() {
                           <div style={{ textAlign: "center", color: "#fff", fontWeight: 800, fontSize: 14, letterSpacing: ".5px" }}>🎉 GEWONNEN, YEAH BABY! 🎉</div>
                         </div>
                       )}
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", justifyContent: "space-between" }}>
-                        <div style={{ minWidth: 0 }}>
-                          <span style={{ fontWeight: 800, color: TEKST }}>{L.naam || L.email}</span>
-                          {L.bedrijf && <span style={{ color: GRIJS, fontSize: 13 }}> · {L.bedrijf}</span>}
-                          <span style={{ ...pil, marginLeft: 8 }}>{bronLabel(L.bron)}</span>
-                          {_nietOp > 0 && !gewonnen && !afgewezen && <span style={{ ...pil, marginLeft: 6, background: _nietOp >= 3 ? ROOD_BG : "#fdf3d6", color: _nietOp >= 3 ? ROOD : "#8a6d10", fontWeight: 700 }}>📵 {_nietOp}× niet opgenomen{_nietOp >= 3 ? " · moeilijk bereikbaar" : ""}</span>}
-                          {L.offerte_state === "draft" && L.offerte_url && <a href={L.offerte_url} target="_blank" rel="noreferrer" style={{ ...pil, background: GROEN, color: "#fff", fontWeight: 800, marginLeft: 6, textDecoration: "none" }}>🟢 Concept · direct opvolgen ↗</a>}
-                          {L.offerte_nummer && L.offerte_url && <a href={L.offerte_url} target="_blank" rel="noreferrer" style={{ ...pil, background: "#e7f0ea", color: GROEN, marginLeft: 6, textDecoration: "none" }}>🧾 {L.offerte_nummer}{L.offerte_state ? ` · ${OFFERTE_LABEL[L.offerte_state] || L.offerte_state}` : ""}{L.offerte_bedrag ? ` · ${euro(Number(L.offerte_bedrag))}` : ""}</a>}
+                      <div className="lc-head">
+                        <div className="lc-av" style={gewonnen ? { background: "linear-gradient(140deg,#2f9e44,#37b24d)" } : undefined}>{initialen(L)}</div>
+                        <div className="lc-who">
+                          <div className="lc-naam">{L.naam || L.email}{L.bedrijf && <span className="lc-sub"> · {L.bedrijf}</span>}</div>
+                          <div className="lc-chips">
+                            <span className="lc-chip bron">{bronLabel(L.bron)}</span>
+                            {L.eigenaar && <span className="lc-chip eig">👤 {L.eigenaar}</span>}
+                            {_nietOp > 0 && !gewonnen && !afgewezen && <span className={"lc-chip nietop" + (_nietOp >= 3 ? " hard" : "")}>📵 {_nietOp}× niet opgenomen{_nietOp >= 3 ? " · moeilijk bereikbaar" : ""}</span>}
+                          </div>
                         </div>
-                        <div style={{ fontSize: 12, color: GRIJS, whiteSpace: "nowrap" }}>{datkort(L.datum)}</div>
+                        <div className="lc-rt">
+                          <span className="lc-temp" style={{ background: tm.bg, color: tm.kl }}>{tm.lab}</span>
+                          {waarde != null && <span className="lc-waarde" style={gewonnen ? { color: "#2f9e44" } : undefined}>{euro(waarde)}</span>}
+                          {L.offerte_nummer && L.offerte_url && <a href={L.offerte_url} target="_blank" rel="noreferrer" className="lc-mbchip">🧾 {L.offerte_nummer}{L.offerte_state ? ` · ${OFFERTE_LABEL[L.offerte_state] || L.offerte_state}` : ""} ↗</a>}
+                        </div>
                       </div>
+                      {!gewonnen && (
+                        <div className="lc-stages">
+                          <span className="lc-open">{afgewezen ? "afgerond" : `${_dagen} dagen open`}</span>
+                          {stg.map((s, i) => (
+                            <div key={i} className={"lc-stage " + s}>
+                              <span className="lc-dot" /><span className="lc-slbl">{stageLbls[i]}</span>{i < 3 && <span className="lc-sbar" />}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                       {L.telefoon
-                        ? <a href={`tel:${L.telefoon.replace(/[^\d+]/g, "")}`} style={{ display: "inline-block", margin: "6px 0 2px", fontSize: 23, fontWeight: 800, color: GROEN, textDecoration: "none", letterSpacing: ".5px" }}>📞 {L.telefoon}</a>
+                        ? <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", margin: "8px 0 2px" }}>
+                            <a href={`tel:${telClean}`} className="lc-tel">📞 {L.telefoon}</a>
+                            {!gewonnen && !afgewezen && <a href={`tel:${telClean}`} className="lc-btn bel" style={{ marginLeft: "auto" }}>Bel nu →</a>}
+                            {!gewonnen && !afgewezen && _nietOp >= 2 && waNr && <a href={`https://wa.me/${waNr}`} target="_blank" rel="noopener" className="lc-btn wa">💬 Appje</a>}
+                          </div>
                         : <div style={{ margin: "6px 0 2px", fontSize: 14, color: ROOD, fontWeight: 700 }}>⚠ Geen telefoonnummer</div>}
                       <div style={{ fontSize: 12.5, color: GRIJS, marginBottom: 8 }}>{L.email}{L.carburateur ? ` · ${L.carburateur}` : ""}</div>
                       <div style={{ marginBottom: 8, background: "#fbf7ec", border: "1px solid #ecdcae", borderRadius: 8, padding: "9px 12px", lineHeight: 1.5 }}>
@@ -460,6 +499,16 @@ function Dashboard() {
                         <div style={{ fontSize: klacht ? 15 : 13.5, color: TEKST, marginTop: 4 }}><span style={{ fontSize: 11, fontWeight: 800, color: "#9a7b1f", textTransform: "uppercase", letterSpacing: 0.4, marginRight: 6 }}>Klacht</span>{klacht || <span style={{ color: GRIJS, fontStyle: "italic", fontWeight: 400 }}>niet opgegeven</span>}</div>
                       </div>
 
+                      {!gewonnen && !afgewezen && (
+                        <div className="lc-acts">
+                          <span className="lc-btn" onClick={() => logActie(L, "gebeld", "")}>✅ Gesproken</span>
+                          <span className="lc-btn neg" onClick={() => logActie(L, "niet opgenomen", "")}>📵 Niet opgenomen</span>
+                          <span className="lc-btn" onClick={() => wijzigStatus(L, "uitstellen")}>💤 Uitstellen</span>
+                          <span className="lc-btn win" onClick={() => wijzigStatus(L, "geaccepteerd")}>🏆 Gewonnen</span>
+                          <span className="lc-btn" onClick={() => { if (window.confirm("Deze lead afronden (klaar / geen interesse)?")) wijzigStatus(L, "afgewezen"); }}>✔ Afronden</span>
+                        </div>
+                      )}
+                      {volgende && <div className="lc-next"><span>🎯</span> {volgende}</div>}
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
                         <select value={L.status || "nieuw"} onChange={(e) => wijzigStatus(L, e.target.value)} style={{ ...sel, borderColor: STATUS_KLEUR[L.status || "nieuw"], color: STATUS_KLEUR[L.status || "nieuw"], fontWeight: 700 }}>
                           {STATUS.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -467,9 +516,8 @@ function Dashboard() {
                         <select value={L.eigenaar || ""} onChange={(e) => wijzigLead(L.id, "eigenaar", e.target.value)} style={sel}>
                           {EIGENAREN.map((e) => <option key={e} value={e}>{e || "— eigenaar —"}</option>)}
                         </select>
-                        <button onClick={() => logActie(L, "niet opgenomen", "")} style={{ ...knopje, color: ROOD, borderColor: "#e6b8ad", background: ROOD_BG }} title="Gebeld, maar de klant nam niet op">📵 Niet opgenomen</button>
                         {L.status === "uitstellen" && <input type="date" value={L.opvolgen_op || ""} onChange={(e) => wijzigLead(L.id, "opvolgen_op", e.target.value)} title="Opvolgen op" style={{ ...sel, padding: "5px 8px" }} />}
-                        {L.offerte_id && L.offerte_url && <a href={L.offerte_url} target="_blank" rel="noreferrer" style={{ ...knopje, color: GRIJS, textDecoration: "none" }}>Klant laten tekenen ↗</a>}
+                        {L.offerte_id && L.offerte_url && <a href={L.offerte_url} target="_blank" rel="noreferrer" style={{ ...knopje, color: GROEN, borderColor: "#cfe0d5", textDecoration: "none" }}>🧾 Open offerte ↗</a>}
                       </div>
 
                       {flash[L.id] ? (
