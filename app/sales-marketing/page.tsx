@@ -449,6 +449,8 @@ function Dashboard() {
                   }
                   const _dagen = dagenOpen(L);
                   const _heeftOff = !!L.offerte_id;
+                  const _offDat = L.offerte_datum || (_heeftOff ? L.datum : null);
+                  const _offerteDatumKort = _offDat ? new Date(_offDat).toLocaleDateString("nl-NL", { day: "numeric", month: "short" }) : "";
                   const reached = (L.acties || []).some((a) => a.soort === "gebeld") || ["gebeld", "vernieuwde offerte", "geaccepteerd"].includes(_st);
                   const nietOpDatum = (L.acties || []).find((a) => a.soort === "niet opgenomen")?.datum || null;
                   const nietOpLijst = (L.acties || []).filter((a) => a.soort === "niet opgenomen").slice().sort((a, b) => (b.datum || "").localeCompare(a.datum || ""));
@@ -503,12 +505,14 @@ function Dashboard() {
                                     ? <><span style={{ fontWeight: 800 }}>niet opgenomen</span>{nietOpDatum && <><br /><span style={{ fontSize: 8.5, fontWeight: 600 }}>{new Date(nietOpDatum).toLocaleDateString("nl-NL", { day: "numeric", month: "short" })}</span></>}</>
                                     : s === "wacht"
                                     ? <><span style={{ fontWeight: 800 }}>terugbellen</span>{L.opvolgen_op && <><br /><span style={{ fontSize: 8.5, fontWeight: 600 }}>{new Date(L.opvolgen_op).toLocaleDateString("nl-NL", { day: "numeric", month: "short" })}</span></>}</>
+                                    : i === 1
+                                    ? <>{stageLbls[i]}{_offerteDatumKort && <><br /><span style={{ fontSize: 8.5, fontWeight: 600 }}>{_offerteDatumKort}</span></>}</>
                                     : stageLbls[i]}
                                 </span>
                               </div>
                             ))}
                           </div>
-                          <span className="lc-open">{afgewezen ? "afgerond" : `${_dagen} dagen open · aangevraagd ${new Date(L.datum).toLocaleDateString("nl-NL", { day: "numeric", month: "short", year: "numeric" })}`}</span>
+                          <span className="lc-open">{afgewezen ? "afgerond" : `${_dagen} dagen open`}</span>
                         </div>
                       )}
                       {volgende && <div className="lc-next"><span>🎯</span> {volgende}</div>}
