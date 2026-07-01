@@ -16,7 +16,7 @@ import { magSales, codeVoorEmail, naamVoorCode } from "@/app/werkplaats-planning
 import { GROEN, GROEN_BG, GOUD, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG, KAART_BG } from "@/lib/theme";
 
 type Actie = { id: string; soort: string; tekst: string; door: string; datum: string };
-type Lead = { id: string; datum: string; naam: string; email: string; telefoon: string; bedrijf: string; carburateur: string; bericht: string; bron: string; status: string; eigenaar: string | null; sales_notitie: string | null; opvolgen_op: string | null; omzet_excl: number; offerte_id: string | null; offerte_nummer: string | null; offerte_state: string | null; offerte_bedrag: number | null; offerte_url: string | null; offerte_datum?: string | null; acties: Actie[] };
+type Lead = { id: string; datum: string; naam: string; email: string; telefoon: string; bedrijf: string; carburateur: string; bericht: string; bron: string; status: string; eigenaar: string | null; sales_notitie: string | null; opvolgen_op: string | null; omzet_excl: number; offerte_id: string | null; offerte_nummer: string | null; offerte_state: string | null; offerte_bedrag: number | null; offerte_url: string | null; offerte_datum?: string | null; offerte_verstuurd_op?: string | null; acties: Actie[] };
 type PerBron = { bron: string; leads: number; klanten: number; omzet: number; spend: number; roas: number | null; conversie: number };
 type Ltv = { bron: string; klanten: number; omzet: number; gem: number; aandeel: number; aandeelKlanten: number };
 type Data = { perBron: PerBron[]; totaal: { leads: number; klanten: number; omzet: number; spend: number; omzetBetaald: number; roas: number | null }; leads: Lead[]; spend: { google_ads: number; facebook: number; marktplaats: number }; ltv: Ltv[]; ltvTotaal: { klanten: number; omzet: number; gem: number } };
@@ -35,7 +35,9 @@ const TEMP: Record<string, { lab: string; kl: string; bg: string }> = {
   afgerond: { lab: "Afgerond", kl: "#7b857d", bg: "#f0f1ef" },
 };
 const initialen = (L: Lead) => { const n = (L.naam || L.email || "?").trim(); const p = n.split(/[\s@._-]+/).filter(Boolean); return ((p[0]?.[0] || "") + (p[1]?.[0] || "")).toUpperCase() || "?"; };
-const dagenOpen = (L: Lead) => { const d = L.offerte_datum || L.datum; return Math.max(0, Math.floor((Date.now() - new Date(d).getTime()) / 86400000)); };
+// "Open sinds" telt vanaf het moment dat de offerte echt verstuurd is (sent_at),
+// NIET vanaf de document-/conceptdatum (die kan teruggezet of leeg zijn).
+const dagenOpen = (L: Lead) => { const d = L.offerte_verstuurd_op || L.datum; return Math.max(0, Math.floor((Date.now() - new Date(d).getTime()) / 86400000)); };
 const BRON_LABEL: Record<string, string> = { google_ads: "Google Ads", facebook: "Facebook", marktplaats: "Marktplaats", organisch: "Organisch" };
 const bronLabel = (b: string) => BRON_LABEL[b] || b;
 const OFFERTE_LABEL: Record<string, string> = { open: "verstuurd", late: "verlopen", accepted: "geaccepteerd", rejected: "afgewezen", draft: "concept", billed: "gefactureerd" };
@@ -202,11 +204,15 @@ function Dashboard() {
     if (tab === "gewonnen") return gewonnenL(L);
     if (tab === "afgerond") return afgerondL(L);
     if (tab === "nietop") return isActief(L) && nietOpN(L) > 0;
-    return isActief(L); // "open" = alle openstaande
+    return isActief(L) && !gemistVandaag(L); // "open" = openstaand; vandaag gemist verdwijnt tot morgen
   };
   // Sorteer-prioriteit: een uitstel-lead waarvan de terugbel-datum bereikt is gaat
   // bovenaan (-1); een uitstel in de toekomst zakt juist (nog niet aan de beurt).
   const vandaag = new Date().toISOString().slice(0, 10);
+  // Net gemist? Als de laatste actie een niet-opgenomen van vandaag is, verdwijnt de
+  // lead vandaag uit "Op te volgen" (je hebt 'm net geprobeerd) en komt morgen terug.
+  // Hij blijft wel zichtbaar in het tabblad "Niet opgenomen".
+  const gemistVandaag = (L: Lead) => { const a = (L.acties || [])[0]; return !!a && a.soort === "niet opgenomen" && (a.datum || "").slice(0, 10) === vandaag; };
   const sortPrio = (L: Lead) => {
     const s = L.status || "nieuw";
     if (s === "uitstellen") return (L.opvolgen_op && L.opvolgen_op <= vandaag) ? -1 : 3.5;
@@ -223,7 +229,7 @@ function Dashboard() {
     if (pa === -1) return (a.opvolgen_op || "").localeCompare(b.opvolgen_op || ""); // meest overdue eerst
     return (b.datum || "").localeCompare(a.datum || ""); // binnen een groep: nieuwste eerst
   });
-  const aantalOpen = alleLeads.filter(isActief).length;
+  const aantalOpen = alleLeads.filter((L) => isActief(L) && !gemistVandaag(L)).length;
   const aantalNietOp = alleLeads.filter((L) => isActief(L) && nietOpN(L) > 0).length;
   const aantalGewonnen = alleLeads.filter(gewonnenL).length;
   const aantalAfgerond = alleLeads.filter(afgerondL).length;
@@ -449,8 +455,9 @@ function Dashboard() {
                   }
                   const _dagen = dagenOpen(L);
                   const _heeftOff = !!L.offerte_id;
-                  const _offDat = L.offerte_datum || (_heeftOff ? L.datum : null);
-                  const _offerteDatumKort = _offDat ? new Date(_offDat).toLocaleDateString("nl-NL", { day: "numeric", month: "short" }) : "";
+                  const _verstuurdOp = L.offerte_verstuurd_op || null;      // sent_at: leeg = nog concept
+                  const _isConcept = _heeftOff && !_verstuurdOp;             // offerte bestaat, maar nog niet de deur uit
+                  const _offDat = _verstuurdOp;                              // Offerte-mijlpaal = wanneer verstuurd
                   const reached = (L.acties || []).some((a) => a.soort === "gebeld") || ["gebeld", "vernieuwde offerte", "geaccepteerd"].includes(_st);
                   const _temp = gewonnen ? "gewonnen" : afgewezen ? "afgerond" : (_nietOp >= 3 || _dagen > 25) ? "koud" : (!reached && _nietOp === 0 && _dagen <= 4) ? "heet" : (_dagen <= 12 ? "warm" : "koud");
                   const tm = TEMP[_temp];
@@ -459,7 +466,7 @@ function Dashboard() {
                   type TLNode = { state: string; label: string; datum: string | null };
                   const tijdlijn: TLNode[] = [
                     { state: "done", label: "Nieuw", datum: L.datum },
-                    { state: _heeftOff ? "done" : "now", label: "Offerte", datum: _offDat },
+                    { state: (_heeftOff && !_isConcept) ? "done" : "now", label: _isConcept ? "concept" : "Offerte", datum: _offDat },
                   ];
                   if (contactActs.length > 0) {
                     contactActs.forEach((a) => tijdlijn.push(a.soort === "gebeld"
@@ -470,7 +477,7 @@ function Dashboard() {
                   }
                   if (_st === "uitstellen" && L.opvolgen_op) tijdlijn.push({ state: "wacht", label: "terugbellen", datum: L.opvolgen_op });
                   tijdlijn.push({ state: "", label: "Gewonnen", datum: null });
-                  const volgende = (gewonnen || afgewezen) ? "" : (_st === "uitstellen" && L.opvolgen_op) ? (L.opvolgen_op <= vandaag ? `⏰ Nu terugbellen · stond gepland voor ${new Date(L.opvolgen_op).toLocaleDateString("nl-NL", { day: "numeric", month: "short" })}` : `Terugbellen gepland op ${new Date(L.opvolgen_op).toLocaleDateString("nl-NL", { day: "numeric", month: "short" })}`) : !reached ? (_nietOp > 0 ? (_nietOp >= 3 ? "Moeilijk bereikbaar · probeer nu WhatsApp of mail" : "Niet opgenomen · probeer opnieuw of stuur een appje") : (_dagen <= 3 ? "Eerste keer bellen · verse lead, sla nu toe" : `Nog bellen · al ${_dagen} dagen open`)) : "Opvolgen richting de close";
+                  const volgende = (gewonnen || afgewezen) ? "" : _isConcept ? "Offerte staat nog op concept · verstuur 'm eerst" : (_st === "uitstellen" && L.opvolgen_op) ? (L.opvolgen_op <= vandaag ? `⏰ Nu terugbellen · stond gepland voor ${new Date(L.opvolgen_op).toLocaleDateString("nl-NL", { day: "numeric", month: "short" })}` : `Terugbellen gepland op ${new Date(L.opvolgen_op).toLocaleDateString("nl-NL", { day: "numeric", month: "short" })}`) : !reached ? (_nietOp > 0 ? (_nietOp >= 3 ? "Moeilijk bereikbaar · probeer nu WhatsApp of mail" : "Niet opgenomen · probeer opnieuw of stuur een appje") : (_dagen <= 3 ? "Eerste keer bellen · verse lead, sla nu toe" : `Nog bellen · al ${_dagen} dagen open`)) : "Opvolgen richting de close";
                   const waarde = (gewonnen && Number(L.omzet_excl) > 0) ? Number(L.omzet_excl) : (L.offerte_bedrag ? Number(L.offerte_bedrag) : null);
                   const telClean = (L.telefoon || "").replace(/[^\d+]/g, "");
                   const waNr = telClean.replace(/^\+/, "").replace(/^0/, "31");
@@ -522,7 +529,7 @@ function Dashboard() {
                               </div>
                             ))}
                           </div>
-                          <span className="lc-open">{afgewezen ? "afgerond" : `${_dagen} dagen open`}</span>
+                          <span className="lc-open">{afgewezen ? "afgerond" : _isConcept ? "concept · nog niet verstuurd" : `${_dagen} dagen open`}</span>
                         </div>
                       )}
                       {volgende && <div className="lc-next"><span>🎯</span> {volgende}</div>}
