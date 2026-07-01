@@ -89,6 +89,7 @@ function Dashboard() {
   const [zoek, setZoek] = useState("");
   const [flash, setFlash] = useState<Record<string, boolean>>({});      // groene "verzonden"-flash
   const [teVaak, setTeVaak] = useState<Record<string, boolean>>({});     // dedup-melding
+  const [laadPopup, setLaadPopup] = useState<string | null>(null);       // kort "bezig…"-popupje na een actie
   const laatstRef = useRef<Record<string, { tekst: string; tijd: number }>>({});
 
   useEffect(() => { supabase.auth.getUser().then(({ data }) => setMijnCode(codeVoorEmail(data.user?.email))); }, []);
@@ -109,6 +110,11 @@ function Dashboard() {
 
   function patchLokaal(id: string, velden: Partial<Lead>) {
     setData((d) => d ? { ...d, leads: d.leads.map((L) => L.id === id ? { ...L, ...velden } : L) } : d);
+  }
+  // Kort, verzorgd "bezig…"-popupje na een actie (puur feedback, verdwijnt vanzelf).
+  function flitsLaden(tekst = "Bezig met opslaan…") {
+    setLaadPopup(tekst);
+    setTimeout(() => setLaadPopup(null), 950);
   }
   async function wijzigLead(id: string, veld: string, waarde: string) {
     patchLokaal(id, { [veld]: waarde } as Partial<Lead>);
@@ -147,6 +153,7 @@ function Dashboard() {
     return t;
   }
   async function logActie(L: Lead, soort: string, tekst: string): Promise<boolean> {
+    flitsLaden();
     try {
       const r = await apiFetch("/api/sales/actie", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lead_id: L.id, soort, tekst }) });
       const j = await r.json().catch(() => ({}));
@@ -183,6 +190,7 @@ function Dashboard() {
   // De status-dropdown is de enige knop: bij een beslissing met gekoppelde
   // offerte schrijft 'ie (na bevestiging) terug naar Moneybird. Idempotent.
   async function wijzigStatus(L: Lead, nieuw: string, note?: string) {
+    flitsLaden();
     patchLokaal(L.id, { status: nieuw } as Partial<Lead>);
     claimEigenaar(L);
     if (note && note.trim()) await logActie(L, "notitie", note.trim());
@@ -284,6 +292,16 @@ function Dashboard() {
 
   return (
     <main style={wrap}>
+      {laadPopup && (
+        <div style={{ position: "fixed", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999, background: "rgba(20,40,30,0.10)", pointerEvents: "none" }}>
+          <div style={{ background: "#fff", borderRadius: 14, padding: "16px 22px", minWidth: 230, boxShadow: "0 16px 44px rgba(20,40,30,0.22)", textAlign: "center", animation: "verzondenFade 1s ease forwards" }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: GROEN, marginBottom: 11 }}>⏳ {laadPopup}</div>
+            <div style={{ position: "relative", height: 6, borderRadius: 999, background: "#e6efe9", overflow: "hidden" }}>
+              <div style={{ position: "absolute", top: 0, bottom: 0, width: "38%", borderRadius: 999, background: `linear-gradient(90deg, ${GROEN}, #7bbf97)`, animation: "laadbalk 0.9s ease-in-out infinite" }} />
+            </div>
+          </div>
+        </div>
+      )}
       <div style={binnen}>
         <PaginaKop naam={naam} onUitloggen={uitloggen} titel="Sales & Marketing" streep />
         <style>{`@keyframes verzondenFade { 0%,60% { opacity: 1; } 100% { opacity: 0.15; } } @keyframes laadbalk { 0% { left: -35%; } 100% { left: 100%; } } .lc{position:relative;background:#fff;border:1px solid #e6e9e1;border-radius:16px;padding:12px 14px;box-shadow:0 6px 20px rgba(26,60,46,.07);overflow:hidden;transition:box-shadow .16s,transform .16s} .lc:hover{box-shadow:0 14px 34px rgba(26,60,46,.13);transform:translateY(-2px)} .lc-head{display:flex;align-items:flex-start;gap:11px} .lc-av{width:42px;height:42px;border-radius:12px;flex:none;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:700;font-size:16px;color:#fff;background:linear-gradient(140deg,#27593f,#1a3c2e)} .lc-who{flex:1;min-width:0} .lc-naam{font-size:16px;font-weight:800;color:#1c211d} .lc-sub{color:#6f7770;font-weight:600;font-size:13px} .lc-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:5px} .lc-chip{font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;background:#eef2ec;color:#5b665d} .lc-chip.bron{background:#eaf1fb;color:#3b6aa0} .lc-chip.eig{background:#efeafb;color:#6a4fb0} .lc-chip.nietop{background:#fdf3d6;color:#8a6d10} .lc-chip.nietop.hard{background:#fff0e6;color:#e8590c} .lc-rt{text-align:right;flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:5px} .lc-temp{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;text-transform:uppercase;white-space:nowrap} .lc-waarde{font-family:'Fraunces',serif;font-weight:700;font-size:20px;color:#b8962e;line-height:1} .lc-mbchip{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;background:#e7f0ea;color:#1a3c2e;text-decoration:none} .lc-mbchip:hover{background:#d8e8de} .lc-stages{position:relative;display:flex;justify-content:space-between;max-width:440px;flex:1} .lc-stages::before{content:"";position:absolute;top:6px;left:14px;right:14px;height:2px;background:#dfe3dc} .lc-stg{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;text-align:center} .lc-dot{width:13px;height:13px;border-radius:50%;border:2px solid #dfe3dc;background:#fff;position:relative;z-index:1} .lc-stg.done .lc-dot{background:#1a3c2e;border-color:#1a3c2e} .lc-stg.now .lc-dot{background:#b8962e;border-color:#b8962e;box-shadow:0 0 0 4px rgba(184,150,46,.18)} .lc-stg.nietop .lc-dot{background:#e8590c;border-color:#e8590c;box-shadow:0 0 0 4px rgba(232,89,12,.16)} .lc-slbl{font-size:9.5px;font-weight:700;color:#8a938b;line-height:1.25} .lc-stg.done .lc-slbl,.lc-stg.now .lc-slbl{color:#1a3c2e} .lc-stg.nietop .lc-slbl{color:#e8590c} .lc-stg.wacht .lc-dot{background:#7048e8;border-color:#7048e8;box-shadow:0 0 0 4px rgba(112,72,232,.15)} .lc-stg.wacht .lc-slbl{color:#7048e8} .lc-open{font-size:11px;font-weight:700;color:#8a938b;white-space:nowrap;padding:1px 0 0 12px} .lc-tel{font-size:22px;font-weight:800;color:#1a3c2e;text-decoration:none} .lc-acts{display:flex;flex-wrap:wrap;gap:7px;margin:2px 0 10px} .lc-btn{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;padding:8px 12px;border-radius:10px;cursor:pointer;border:1.5px solid #e6e9e1;background:#fff;color:#4a544c;transition:all .13s;text-decoration:none} .lc-btn:hover{border-color:#1a3c2e;color:#1a3c2e} .lc-btn.bel{background:linear-gradient(135deg,#b8962e,#a07d1f);color:#fff;border:none} .lc-btn.wa{background:#25d366;color:#fff;border:none} .lc-btn.neg{color:#e8590c;border-color:#f0c6ad} .lc-btn.win{background:linear-gradient(135deg,#2f9e44,#37b24d);color:#fff;border:none} .lc-next{display:flex;align-items:center;gap:7px;background:#eef5f0;border:1px solid #d3e6da;border-radius:10px;padding:9px 12px;margin-bottom:10px;font-size:13px;font-weight:600;color:#1a3c2e}`}</style>
