@@ -4,7 +4,7 @@
 // Boven: marketing-analyse (per bron leads/conversie/omzet/ROAS, spend-invoer).
 // Onder: de lead-pijplijn = leads met een verstuurde Moneybird-offerte. Per lead:
 // status, eigenaar, bel-actie met datum-log, opvolgdatum, en terugschrijven naar
-// Moneybird (accepteren/afwijzen). "Mijn opvolging" filtert op je eigen leads.
+// Moneybird (accepteren/afwijzen). "Mijn opvolging" = leads waar je eigenaar bent OF zelf een actie op deed.
 
 import { useEffect, useState, useCallback, useRef, CSSProperties } from "react";
 import AuthGate, { useGebruiker } from "@/app/components/AuthGate";
@@ -226,7 +226,9 @@ function Dashboard() {
   };
   const alleLeads = data?.leads || [];
   const pijplijn = alleLeads.filter((L) => {
-    const vanMij = !mijn || L.eigenaar === mijnCode;
+    // "Mijn opvolging" = alles waar ik bij betrokken ben: ik ben eigenaar OF ik heb
+    // er zelf een actie op gedaan (gebeld / niet opgenomen / notitie).
+    const vanMij = !mijn || L.eigenaar === mijnCode || (L.acties || []).some((a) => a.door === mijnCode);
     const raakt = !zoekTerm || [L.naam, L.email, L.bedrijf, L.telefoon, L.carburateur, L.offerte_nummer].some((v) => (v || "").toLowerCase().includes(zoekTerm));
     return inTab(L) && vanMij && raakt;
   }).sort((a, b) => {
