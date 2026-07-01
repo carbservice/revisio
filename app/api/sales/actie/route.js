@@ -5,7 +5,7 @@
 
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { vereisIngelogd } from "@/lib/auth-server";
-import { magSales, codeVoorEmail } from "@/app/werkplaats-planning/planning-config";
+import { magSales, codeVoorEmail, naamVoorCode } from "@/app/werkplaats-planning/planning-config";
 import { mbRaw, MB_ADMIN as ADMIN, MB_TOKEN as TOKEN } from "@/lib/moneybird";
 
 async function moneybirdNotitie(offerteId, tekst) {
@@ -35,11 +35,13 @@ export async function POST(req) {
   let naarMoneybird = false;
   const { data: lead } = await supabaseAdmin.from("leads").select("offerte_id, archief").eq("id", lead_id).single();
   if (lead && lead.offerte_id && !lead.archief && soort !== "geaccepteerd") {
+    // Elke notitie die Revisio naar Moneybird pusht draagt dezelfde naam.
+    const naam = `Auto Agent Revisio${door ? ` (${naamVoorCode(door) || door})` : ""}`;
     const regel = (soort === "gebeld")
-      ? `Gebeld${door ? ` door ${door}` : ""}${tekst ? `: ${tekst}` : ""} (via Revisio)`
+      ? `${naam}: Gebeld${tekst ? ` · ${tekst}` : ""}`
       : (soort === "niet opgenomen")
-      ? `Niet opgenomen${door ? ` door ${door}` : ""}${tekst ? `: ${tekst}` : ""} (via Revisio)`
-      : `Revisio agent notitie${door ? ` (${door})` : ""}: ${tekst || ""}`;
+      ? `${naam}: Niet opgenomen${tekst ? ` · ${tekst}` : ""}`
+      : `${naam}: ${tekst || ""}`;
     naarMoneybird = await moneybirdNotitie(lead.offerte_id, regel);
   }
   return Response.json({ ok: true, door, naarMoneybird });
