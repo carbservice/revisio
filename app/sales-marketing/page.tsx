@@ -451,6 +451,7 @@ function Dashboard() {
                   const _heeftOff = !!L.offerte_id;
                   const reached = (L.acties || []).some((a) => a.soort === "gebeld") || ["gebeld", "vernieuwde offerte", "geaccepteerd"].includes(_st);
                   const nietOpDatum = (L.acties || []).find((a) => a.soort === "niet opgenomen")?.datum || null;
+                  const nietOpLijst = (L.acties || []).filter((a) => a.soort === "niet opgenomen").slice().sort((a, b) => (b.datum || "").localeCompare(a.datum || ""));
                   const cState = gewonnen ? "done" : (_st === "uitstellen" && L.opvolgen_op) ? "wacht" : reached ? "done" : (_nietOp > 0 ? "nietop" : (_heeftOff ? "now" : ""));
                   const _temp = gewonnen ? "gewonnen" : afgewezen ? "afgerond" : (_nietOp >= 3 || _dagen > 25) ? "koud" : (!reached && _nietOp === 0 && _dagen <= 4) ? "heet" : (_dagen <= 12 ? "warm" : "koud");
                   const tm = TEMP[_temp];
@@ -511,6 +512,16 @@ function Dashboard() {
                         </div>
                       )}
                       {volgende && <div className="lc-next"><span>🎯</span> {volgende}</div>}
+                      {!gewonnen && !afgewezen && nietOpLijst.length > 0 && (
+                        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6, margin: "2px 0 6px" }}>
+                          <span style={{ fontSize: 12, fontWeight: 800, color: ROOD }}>📵 {nietOpLijst.length}× niet opgenomen</span>
+                          {nietOpLijst.map((a, i) => (
+                            <span key={i} style={{ fontSize: 11.5, fontWeight: 600, color: "#b0413a", background: "#fdeceb", border: "1px solid #f6d4d1", borderRadius: 999, padding: "2px 9px", whiteSpace: "nowrap" }}>
+                              {a.datum ? new Date(a.datum).toLocaleDateString("nl-NL", { day: "numeric", month: "short" }) : "?"}{a.datum ? ` · ${new Date(a.datum).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}` : ""}{a.door ? ` · ${a.door}` : ""}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                       {L.telefoon
                         ? <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", margin: "8px 0 2px" }}>
                             <a href={`tel:${telClean}`} className="lc-tel">📞 {L.telefoon}</a>
