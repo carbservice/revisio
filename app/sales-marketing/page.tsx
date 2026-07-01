@@ -176,11 +176,17 @@ function Dashboard() {
   // belpoging was (moeten opnieuw geprobeerd worden).
   const nietOpN = (L: Lead) => (L.acties || []).filter((a) => a.soort === "niet opgenomen").length;
   const laatstNietOp = (L: Lead) => (L.acties || [])[0]?.soort === "niet opgenomen";
-  const isActief = (L: Lead) => { const s = L.status || "nieuw"; return s !== "geaccepteerd" && s !== "afgewezen"; };
+  // Moneybird = de waarheid voor "gesloten": een offerte die geaccepteerd/gefactureerd
+  // of afgewezen is hoort NIET meer in de actieve lijst, ook al staat de lead-status
+  // nog open. Zo verdwijnt een gefactureerde/afgewezen lead vanzelf.
+  const stOf = (L: Lead) => (L.status || "nieuw").trim().toLowerCase();
+  const osOf = (L: Lead) => (L.offerte_state || "").trim().toLowerCase();
+  const gewonnenL = (L: Lead) => stOf(L) === "geaccepteerd" || osOf(L) === "accepted" || osOf(L) === "billed";
+  const afgerondL = (L: Lead) => stOf(L) === "afgewezen" || osOf(L) === "rejected";
+  const isActief = (L: Lead) => !gewonnenL(L) && !afgerondL(L);
   const inTab = (L: Lead) => {
-    const s = L.status || "nieuw";
-    if (tab === "gewonnen") return s === "geaccepteerd";
-    if (tab === "afgerond") return s === "afgewezen";
+    if (tab === "gewonnen") return gewonnenL(L);
+    if (tab === "afgerond") return afgerondL(L);
     if (tab === "nietop") return isActief(L) && nietOpN(L) > 0;
     return isActief(L); // "open" = alle openstaande
   };
@@ -196,8 +202,8 @@ function Dashboard() {
   });
   const aantalOpen = alleLeads.filter(isActief).length;
   const aantalNietOp = alleLeads.filter((L) => isActief(L) && nietOpN(L) > 0).length;
-  const aantalGewonnen = alleLeads.filter((L) => L.status === "geaccepteerd").length;
-  const aantalAfgerond = alleLeads.filter((L) => L.status === "afgewezen").length;
+  const aantalGewonnen = alleLeads.filter(gewonnenL).length;
+  const aantalAfgerond = alleLeads.filter(afgerondL).length;
 
   return (
     <main style={wrap}>
@@ -398,8 +404,8 @@ function Dashboard() {
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {pijplijn.map((L) => {
-                  const afgewezen = L.status === "afgewezen";
-                  const gewonnen = L.status === "geaccepteerd";
+                  const afgewezen = afgerondL(L);
+                  const gewonnen = gewonnenL(L);
                   const _nietOp = nietOpN(L);
                   const _st = L.status || "nieuw";
                   const _heeftContact = (L.acties || []).some((a) => a.soort === "gebeld" || a.soort === "notitie");
