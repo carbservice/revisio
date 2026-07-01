@@ -5,7 +5,7 @@
 
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { vereisIngelogd } from "@/lib/auth-server";
-import { magSales } from "@/app/werkplaats-planning/planning-config";
+import { magSales, codeVoorEmail } from "@/app/werkplaats-planning/planning-config";
 import { mbRaw, MB_ADMIN as ADMIN, MB_TOKEN as TOKEN } from "@/lib/moneybird";
 
 // dashboard-actie -> (Moneybird-state, lokale lead-status)
@@ -57,7 +57,7 @@ export async function POST(req) {
   await supabaseAdmin.from("lead_actie").insert({
     lead_id, soort: "status",
     tekst: mbFout ? `${map.status} (Moneybird mislukt: ${mbFout})` : `${map.status}, ook in Moneybird gezet`,
-    door: "",
+    door: codeVoorEmail(poort.personeel.email) || "",
   });
 
   if (mbFout) return Response.json({ ok: false, fout: mbFout, lokaal: true });

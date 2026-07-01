@@ -118,10 +118,15 @@ function Dashboard() {
       if (!r.ok || j.fout) window.alert("Opslaan mislukt: " + (j.fout || r.status));
     } catch { window.alert("Opslaan mislukt (geen verbinding)."); }
   }
-  // Je wordt eigenaar zodra je een actie/notitie op een lead doet · maar alleen als
-  // er nog geen eigenaar is (niet elkaars leads afpakken). Iedereen blijft ze zien.
+  // Je wordt eigenaar zodra je een actie/notitie op een lead doet. Binnen dezelfde dag
+  // pakken we elkaars lead NIET af (wie 'm die dag oppakt, blijft eigenaar). Maar een
+  // nieuwe dag is de lead weer vrij: is er vandaag nog door niemand iets gedaan, dan
+  // word jij de nieuwe eigenaar. Iedereen blijft ze altijd zien in "Op te volgen".
   function claimEigenaar(L: Lead) {
-    if (!mijnCode || L.eigenaar) return;
+    if (!mijnCode || L.eigenaar === mijnCode) return;
+    const vndg = new Date().toISOString().slice(0, 10);
+    const alVandaag = (L.acties || []).some((a) => (a.datum || "").slice(0, 10) === vndg);
+    if (L.eigenaar && alVandaag) return; // vandaag is iemand al bezig -> laat 'm staan
     patchLokaal(L.id, { eigenaar: mijnCode });
     apiFetch("/api/sales/lead", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: L.id, eigenaar: mijnCode }) }).catch(() => {});
   }

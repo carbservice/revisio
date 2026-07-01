@@ -178,9 +178,10 @@ export async function GET(req) {
     const totaalSet = new Set();
     const perPersoonSet = {};
     (recent || []).forEach((a) => {
+      const p = (a.door || "").trim();
+      if (!p) return; // naamloze/systeem-actie telt niet mee in het dagoverzicht
       if (new Date(a.datum).toLocaleDateString("en-CA", { timeZone: "Europe/Amsterdam" }) !== vandaagNL) return;
       totaalSet.add(a.lead_id);
-      const p = a.door || "?";
       if (!perPersoonSet[p]) perPersoonSet[p] = new Set();
       perPersoonSet[p].add(a.lead_id);
     });
