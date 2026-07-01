@@ -519,11 +519,17 @@ function Dashboard() {
                           <span className="lc-btn" onClick={() => { if (window.confirm("Deze lead op 'verloren / geen interesse' zetten? Hij gaat dan naar het tabblad Afgerond, uit je actieve lijst.")) wijzigStatus(L, "afgewezen"); }}>❌ Verloren</span>
                         </div>
                       )}
+                      {!gewonnen && !afgewezen && _st === "uitstellen" && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", background: "#f3f0fc", border: "1px solid #dcd3f5", borderRadius: 10, padding: "9px 12px", marginBottom: 10, fontSize: 13.5, fontWeight: 700, color: "#5a3ec8" }}>
+                          <span>📅 Wanneer mogen we terugbellen?</span>
+                          <input type="date" value={L.opvolgen_op || ""} onChange={(e) => wijzigLead(L.id, "opvolgen_op", e.target.value)} style={{ border: "1.5px solid #cdbef2", borderRadius: 8, padding: "6px 9px", fontSize: 13, fontFamily: "inherit", color: "#3a2e6e" }} />
+                          {L.opvolgen_op && <span style={{ fontWeight: 600 }}>· staat nu in de tijdlijn</span>}
+                        </div>
+                      )}
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
                         <select value={L.eigenaar || ""} onChange={(e) => wijzigLead(L.id, "eigenaar", e.target.value)} style={sel}>
                           {EIGENAREN.map((e) => <option key={e} value={e}>{e || "— eigenaar —"}</option>)}
                         </select>
-                        {L.status === "uitstellen" && <input type="date" value={L.opvolgen_op || ""} onChange={(e) => wijzigLead(L.id, "opvolgen_op", e.target.value)} title="Opvolgen op" style={{ ...sel, padding: "5px 8px" }} />}
                         {L.offerte_id && L.offerte_url && <a href={L.offerte_url} target="_blank" rel="noreferrer" style={{ ...knopje, color: GROEN, borderColor: "#cfe0d5", textDecoration: "none" }}>🧾 Open offerte ↗</a>}
                       </div>
 
