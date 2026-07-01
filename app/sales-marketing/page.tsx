@@ -514,7 +514,7 @@ function Dashboard() {
                       {L.telefoon
                         ? <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", margin: "8px 0 2px" }}>
                             <a href={`tel:${telClean}`} className="lc-tel">📞 {L.telefoon}</a>
-                            {!gewonnen && !afgewezen && waNr && <a href={`https://wa.me/${waNr}?text=${encodeURIComponent(waTekst)}`} target="_blank" rel="noopener" className="lc-btn wa" style={{ marginLeft: "auto" }}>💬 WhatsApp</a>}
+                            {!gewonnen && !afgewezen && waNr && <a href={`https://web.whatsapp.com/send?phone=${waNr}&text=${encodeURIComponent(waTekst)}`} target="cbwa" rel="noopener" className="lc-btn wa" style={{ marginLeft: "auto" }}>💬 WhatsApp</a>}
                           </div>
                         : <div style={{ margin: "6px 0 2px", fontSize: 14, color: ROOD, fontWeight: 700 }}>⚠ Geen telefoonnummer</div>}
                       <div style={{ fontSize: 12.5, color: GRIJS, marginBottom: 8 }}>{L.email}{L.carburateur ? ` · ${L.carburateur}` : ""}</div>
