@@ -181,7 +181,7 @@ function Dashboard() {
     const s = L.status || "nieuw";
     if (tab === "gewonnen") return s === "geaccepteerd";
     if (tab === "afgerond") return s === "afgewezen";
-    if (tab === "nietop") return isActief(L) && laatstNietOp(L);
+    if (tab === "nietop") return isActief(L) && nietOpN(L) > 0;
     return isActief(L); // "open" = alle openstaande
   };
   const alleLeads = data?.leads || [];
@@ -195,7 +195,7 @@ function Dashboard() {
     return (b.datum || "").localeCompare(a.datum || ""); // binnen een groep: nieuwste eerst
   });
   const aantalOpen = alleLeads.filter(isActief).length;
-  const aantalNietOp = alleLeads.filter((L) => isActief(L) && laatstNietOp(L)).length;
+  const aantalNietOp = alleLeads.filter((L) => isActief(L) && nietOpN(L) > 0).length;
   const aantalGewonnen = alleLeads.filter((L) => L.status === "geaccepteerd").length;
   const aantalAfgerond = alleLeads.filter((L) => L.status === "afgewezen").length;
 
