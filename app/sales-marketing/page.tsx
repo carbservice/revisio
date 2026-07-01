@@ -191,8 +191,15 @@ function Dashboard() {
     } catch { window.alert("Opslaan mislukt (geen verbinding)."); }
 
     if (nieuw === "geaccepteerd") {
-      // Geaccepteerd alleen loggen (telt mee in het sales-dagoverzicht); GEEN actie in Moneybird.
-      logActie(L, "geaccepteerd", "");
+      await logActie(L, "geaccepteerd", "");
+      // Ook de Moneybird-offerte op geaccepteerd zetten, zodat de klus automatisch in de
+      // werkplaats (geaccepteerd-bak) belandt.
+      if (L.offerte_id) {
+        const r = await apiFetch("/api/sales/moneybird", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lead_id: L.id, actie: "accepted" }) });
+        const j = await r.json().catch(() => ({}));
+        if (j.fout) window.alert(`Moneybird: ${j.fout}\n\nDe winst staat hier wel goed.`);
+        else laad();
+      }
     } else if (L.offerte_id && nieuw === "afgewezen") {
       if (window.confirm(`Offerte ${L.offerte_nummer || ""} ook in Moneybird afwijzen?`)) {
         const r = await apiFetch("/api/sales/moneybird", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lead_id: L.id, actie: "declined" }) });
