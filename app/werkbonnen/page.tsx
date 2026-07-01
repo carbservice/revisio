@@ -86,6 +86,16 @@ function statusKleur(o: string) { return o === "Goed" ? GROEN : o === "Slecht" ?
 // Korte klantcode, zonder verwarrende tekens (geen 0/O/1/I/L/S/5/B/8/2/Z).
 const CODE_ALFA = "ACDEFGHJKMNPQRTUVWXY3467";
 function maakCode() { let s = ""; for (let i = 0; i < 5; i++) s += CODE_ALFA[Math.floor(Math.random() * CODE_ALFA.length)]; return s; }
+// Telefoonnummer -> WhatsApp-formaat (landcode zonder +). Vangt NL-nummers met of
+// zonder leidende 0 en mobiele nummers zonder 0 (bv. "612345678").
+function waNummer(tel: string): string {
+  let t = (tel || "").replace(/[^\d]/g, "");
+  if (t.startsWith("00")) t = t.slice(2);
+  if (t.startsWith("31")) return t;
+  if (t.startsWith("0")) return "31" + t.slice(1);
+  if (t.length === 9 && t.startsWith("6")) return "31" + t;
+  return t;
+}
 function standaardVelden(): Veld[] {
   return VELD_TYPES.map((d) => ({ key: key(), veld_type: d.type, label: d.label, eenheid: d.eenheid, positie: 1, binnenkomst: "", afleveren: "" }));
 }
@@ -1120,11 +1130,21 @@ function WerkplaatsApp({ ingelogd, isAdmin, isManager, onUitloggen }: { ingelogd
                     <div style={{ fontSize: 15, fontWeight: 800, color: "#6b5410", letterSpacing: 2 }}>{deelCode}</div>
                   </div>
                 </div>
-                <div style={{ fontSize: 12, color: GRIJS, marginBottom: 4 }}>Of stuur de directe link:</div>
-                <div style={{ display: "flex", gap: 6 }}>
-                  <input readOnly value={deelLink} onFocus={(e) => e.target.select()} style={inp} />
-                  <button onClick={async () => { try { await navigator.clipboard?.writeText(deelLink); } catch {} setGekopieerd(true); setTimeout(() => setGekopieerd(false), 1800); }} style={{ border: "none", background: gekopieerd ? GOUD : GROEN, color: "#fff", borderRadius: 8, padding: "0 12px", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", minWidth: 92 }}>{gekopieerd ? "Gekopieerd!" : "Kopieer"}</button>
-                </div>
+                <div style={{ fontSize: 12, color: GRIJS, marginBottom: 4 }}>Stuur de klant zijn volg-link:</div>
+                {(() => {
+                  const waNr = waNummer(open.telefoon || "");
+                  const klantVoor = (open.klant || "").trim().split(/\s+/)[0] || "";
+                  const monteur = ingelogd?.naam || "het team";
+                  const waTekst = `Hoi ${klantVoor},\n\n${monteur} hier van Carburateur Service Nederland. Goed nieuws: er is een update over je revisie (order ${open.nummer}). Je kunt de voortgang live volgen, met foto's van de werkbank, via deze link:\n${deelLink}\nToegangscode: ${deelCode}\n\nBij Carburateur Service Nederland reviseren we jouw carburateur met echt vakmanschap en originele fabrieksdocumentatie, zodat 'ie weer loopt als nieuw. Vragen? Je mag ons altijd appen!\n\nFijne dag,\n${monteur}`;
+                  return (
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <input readOnly value={deelLink} onFocus={(e) => e.target.select()} style={inp} />
+                      {waNr
+                        ? <a href={`https://wa.me/${waNr}?text=${encodeURIComponent(waTekst)}`} target="_blank" rel="noopener" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", background: "#25d366", color: "#fff", borderRadius: 8, padding: "0 14px", fontWeight: 700, fontSize: 13.5, textDecoration: "none", whiteSpace: "nowrap", minWidth: 116 }}>💬 WhatsApp</a>
+                        : <button onClick={async () => { try { await navigator.clipboard?.writeText(deelLink); } catch {} setGekopieerd(true); setTimeout(() => setGekopieerd(false), 1800); }} style={{ border: "none", background: gekopieerd ? GOUD : GROEN, color: "#fff", borderRadius: 8, padding: "0 12px", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", minWidth: 92 }}>{gekopieerd ? "Gekopieerd!" : "Kopieer"}</button>}
+                    </div>
+                  );
+                })()}
               </div>
             )}
           </div>
