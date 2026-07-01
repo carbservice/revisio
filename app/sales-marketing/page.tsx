@@ -153,7 +153,9 @@ function Dashboard() {
       if (!r.ok || j.fout) { window.alert("Niet opgeslagen: " + (j.fout || r.status)); return false; }
       const nieuw: Actie = { id: Math.random().toString(36), soort, tekst, door: j.door || mijnCode || "", datum: new Date().toISOString() };
       const wordtGebeld = soort === "gebeld" && L.status === "nieuw";
-      patchLokaal(L.id, { acties: [nieuw, ...(L.acties || [])], status: wordtGebeld ? "gebeld" : L.status });
+      // Alleen bij een eerste "gebeld" de status aanraken. Anders NIET status meepatchen,
+      // anders overschrijven we een net-gezette status (bv. afgewezen) met de oude waarde.
+      patchLokaal(L.id, wordtGebeld ? { acties: [nieuw, ...(L.acties || [])], status: "gebeld" } : { acties: [nieuw, ...(L.acties || [])] });
       claimEigenaar(L);
       if (wordtGebeld) apiFetch("/api/sales/lead", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: L.id, status: "gebeld" }) });
       return true;
@@ -612,8 +614,7 @@ function Dashboard() {
                         <div style={{ marginTop: 8, background: GROEN_BG, color: GROEN, borderRadius: 8, padding: "9px 12px", fontSize: 13, fontWeight: 800, textAlign: "center", animation: "verzondenFade 1.7s ease forwards" }}>✓ Verzonden naar Moneybird</div>
                       ) : (
                         <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-                          <input value={L.sales_notitie || ""} onChange={(e) => wijzigLead(L.id, "sales_notitie", e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") notitieNaarMB(L); }} placeholder="notitie…  (Enter of de knop = ook naar de offerte in Moneybird)" style={{ flex: 1, boxSizing: "border-box", border: `1px solid ${RAND}`, borderRadius: 8, padding: "6px 10px", fontSize: 13, background: "#fff" }} />
-                          <button onClick={() => notitieNaarMB(L)} title="Notitie naar de Moneybird-offerte sturen" style={{ border: "none", background: teVaak[L.id] ? GRIJS : GROEN, color: "#fff", borderRadius: 8, padding: "6px 14px", fontSize: 12.5, fontWeight: 700, cursor: teVaak[L.id] ? "default" : "pointer", whiteSpace: "nowrap" }}>{teVaak[L.id] ? "Te vaak verzonden" : "Notitie naar Moneybird"}</button>
+                          <input value={L.sales_notitie || ""} onChange={(e) => wijzigLead(L.id, "sales_notitie", e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") notitieNaarMB(L); }} onBlur={() => notitieNaarMB(L)} placeholder={teVaak[L.id] ? "Net verzonden · even wachten…" : "notitie…  (Enter of wegklikken = automatisch naar de Moneybird-offerte)"} style={{ flex: 1, boxSizing: "border-box", border: `1px solid ${RAND}`, borderRadius: 8, padding: "6px 10px", fontSize: 13, background: "#fff" }} />
                         </div>
                       )}
 
