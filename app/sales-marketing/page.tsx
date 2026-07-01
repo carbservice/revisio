@@ -452,7 +452,6 @@ function Dashboard() {
                   const _offDat = L.offerte_datum || (_heeftOff ? L.datum : null);
                   const _offerteDatumKort = _offDat ? new Date(_offDat).toLocaleDateString("nl-NL", { day: "numeric", month: "short" }) : "";
                   const reached = (L.acties || []).some((a) => a.soort === "gebeld") || ["gebeld", "vernieuwde offerte", "geaccepteerd"].includes(_st);
-                  const nietOpLijst = (L.acties || []).filter((a) => a.soort === "niet opgenomen").slice().sort((a, b) => (b.datum || "").localeCompare(a.datum || ""));
                   const _temp = gewonnen ? "gewonnen" : afgewezen ? "afgerond" : (_nietOp >= 3 || _dagen > 25) ? "koud" : (!reached && _nietOp === 0 && _dagen <= 4) ? "heet" : (_dagen <= 12 ? "warm" : "koud");
                   const tm = TEMP[_temp];
                   // Echte actie-tijdlijn: Nieuw -> Offerte -> elke gebelde/gemiste poging als eigen bolletje -> (terugbellen) -> Gewonnen
@@ -514,7 +513,11 @@ function Dashboard() {
                                 <span className="lc-dot" />
                                 <span className="lc-slbl">
                                   <span style={(n.state === "nietop" || n.state === "wacht") ? { fontWeight: 800 } : undefined}>{n.label}</span>
-                                  {n.datum && <><br /><span style={{ fontSize: 8.5, fontWeight: 600 }}>{new Date(n.datum).toLocaleDateString("nl-NL", { day: "numeric", month: "short" })}</span></>}
+                                  {n.datum && (() => {
+                                    const d = new Date(n.datum);
+                                    const heeftTijd = /T\d\d:\d\d/.test(n.datum) && !(d.getHours() === 0 && d.getMinutes() === 0);
+                                    return <><br /><span style={{ fontSize: 8.5, fontWeight: 600, lineHeight: 1.25 }}>{d.toLocaleDateString("nl-NL", { day: "numeric", month: "short", year: "numeric" })}{heeftTijd ? <><br />{d.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}</> : ""}</span></>;
+                                  })()}
                                 </span>
                               </div>
                             ))}
@@ -544,19 +547,7 @@ function Dashboard() {
                           <span className="lc-btn" onClick={() => { if (window.confirm("Deze lead op 'verloren / geen interesse' zetten? Hij gaat dan naar het tabblad Afgerond, uit je actieve lijst.")) wijzigStatus(L, "afgewezen"); }}>❌ Verloren</span>
                         </div>
                       )}
-                      {!gewonnen && !afgewezen && nietOpLijst.length > 0 && (
-                        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6, margin: "6px 0 2px" }}>
-                          {nietOpLijst.map((a, i) => (
-                            <span key={i} style={{ fontSize: 11.5, fontWeight: 600, color: "#b0413a", background: "#fdeceb", border: "1px solid #f6d4d1", borderRadius: 999, padding: "2px 9px", whiteSpace: "nowrap" }}>
-                              📵 {a.datum ? new Date(a.datum).toLocaleDateString("nl-NL", { day: "numeric", month: "short" }) : "?"}{a.datum ? ` · ${new Date(a.datum).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}` : ""}{a.door ? ` · ${a.door}` : ""}
-                            </span>
-                          ))}
-                        </div>
-                      )}
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-                        <select value={L.eigenaar || ""} onChange={(e) => wijzigLead(L.id, "eigenaar", e.target.value)} style={sel}>
-                          {EIGENAREN.map((e) => <option key={e} value={e}>{e || "— eigenaar —"}</option>)}
-                        </select>
                         {L.offerte_id && L.offerte_url && <a href={L.offerte_url} target="_blank" rel="noreferrer" style={{ ...knopje, color: GROEN, borderColor: "#cfe0d5", textDecoration: "none" }}>🧾 Open offerte ↗</a>}
                       </div>
 
