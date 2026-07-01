@@ -181,8 +181,12 @@ function Dashboard() {
   // nog open. Zo verdwijnt een gefactureerde/afgewezen lead vanzelf.
   const stOf = (L: Lead) => (L.status || "nieuw").trim().toLowerCase();
   const osOf = (L: Lead) => (L.offerte_state || "").trim().toLowerCase();
-  const gewonnenL = (L: Lead) => stOf(L) === "geaccepteerd" || osOf(L) === "accepted" || osOf(L) === "billed";
-  const afgerondL = (L: Lead) => stOf(L) === "afgewezen" || osOf(L) === "rejected";
+  // Gewonnen = alleen leads die het sales-team zelf op "geaccepteerd" zette (de echte
+  // dashboard-winst). Afgerond = afgewezen OF een offerte die in Moneybird gesloten is
+  // (geaccepteerd/gefactureerd/afgewezen) zonder dashboard-win: normale klussen die
+  // niet meer opgevolgd hoeven te worden. Zo blijft "Gewonnen" zuiver.
+  const gewonnenL = (L: Lead) => stOf(L) === "geaccepteerd";
+  const afgerondL = (L: Lead) => !gewonnenL(L) && (stOf(L) === "afgewezen" || ["accepted", "billed", "rejected"].includes(osOf(L)));
   const isActief = (L: Lead) => !gewonnenL(L) && !afgerondL(L);
   const inTab = (L: Lead) => {
     if (tab === "gewonnen") return gewonnenL(L);
@@ -425,7 +429,7 @@ function Dashboard() {
                     klacht = _ruw;
                   }
                   return (
-                    <div key={L.id} style={{ border: `${gewonnen ? 2 : 1}px solid ${gewonnen ? GROEN : afgewezen ? "#e0b3a8" : RAND}`, borderLeft: `5px solid ${randKleur}`, background: gewonnen ? GROEN_BG : afgewezen ? ROOD_BG : "#fff", borderRadius: 10, padding: "10px 12px", overflow: "hidden" }}>
+                    <div key={L.id} style={{ border: `${gewonnen ? 2 : 1}px solid ${gewonnen ? GROEN : afgewezen ? "#d3d8d2" : RAND}`, borderLeft: `5px solid ${randKleur}`, background: gewonnen ? GROEN_BG : afgewezen ? "#f5f6f4" : "#fff", borderRadius: 10, padding: "10px 12px", overflow: "hidden" }}>
                       {gewonnen && (
                         <div style={{ margin: "-10px -12px 8px", padding: "6px 12px 8px", background: "linear-gradient(90deg,#2f9e44,#37b24d,#2f9e44)" }}>
                           <div style={{ display: "flex", gap: 5, justifyContent: "center", marginBottom: 4, flexWrap: "wrap" }}>
