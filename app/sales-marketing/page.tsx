@@ -212,7 +212,13 @@ function Dashboard() {
   // Net gemist? Als de laatste actie een niet-opgenomen van vandaag is, verdwijnt de
   // lead vandaag uit "Op te volgen" (je hebt 'm net geprobeerd) en komt morgen terug.
   // Hij blijft wel zichtbaar in het tabblad "Niet opgenomen".
-  const gemistVandaag = (L: Lead) => { const a = (L.acties || [])[0]; return !!a && a.soort === "niet opgenomen" && (a.datum || "").slice(0, 10) === vandaag; };
+  const gemistVandaag = (L: Lead) => {
+    const acts = L.acties || [];                                    // door de API op datum aflopend gesorteerd
+    const gemist = acts.find((a) => a.soort === "niet opgenomen");  // meest recente gemiste belpoging
+    if (!gemist || (gemist.datum || "").slice(0, 10) !== vandaag) return false;
+    const gesprokenNa = acts.some((a) => a.soort === "gebeld" && (a.datum || "") > (gemist.datum || ""));
+    return !gesprokenNa;                                            // een losse notitie telt niet als contact
+  };
   const sortPrio = (L: Lead) => {
     const s = L.status || "nieuw";
     if (s === "uitstellen") return (L.opvolgen_op && L.opvolgen_op <= vandaag) ? -1 : 3.5;
