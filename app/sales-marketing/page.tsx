@@ -12,7 +12,7 @@ import PaginaKop from "@/app/components/PaginaKop";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/api";
 import { euro } from "@/lib/format";
-import { magSales, codeVoorEmail } from "@/app/werkplaats-planning/planning-config";
+import { magSales, codeVoorEmail, naamVoorCode } from "@/app/werkplaats-planning/planning-config";
 import { GROEN, GROEN_BG, GOUD, ROOD, ROOD_BG, TEKST, GRIJS, RAND, BG, KAART_BG } from "@/lib/theme";
 
 type Actie = { id: string; soort: string; tekst: string; door: string; datum: string };
@@ -460,6 +460,10 @@ function Dashboard() {
                   const waarde = (gewonnen && Number(L.omzet_excl) > 0) ? Number(L.omzet_excl) : (L.offerte_bedrag ? Number(L.offerte_bedrag) : null);
                   const telClean = (L.telefoon || "").replace(/[^\d+]/g, "");
                   const waNr = telClean.replace(/^\+/, "").replace(/^0/, "31");
+                  const klantVoor = (L.naam || "").trim().split(/\s+/)[0] || "";
+                  const mijnNaam = naamVoorCode(mijnCode) || "het team van Carburateur Service Nederland";
+                  const offerteDeel = L.offerte_nummer ? `offerte ${L.offerte_nummer}` : "aanvraag";
+                  const waTekst = `Hi ${klantVoor},\n\n${mijnNaam} hier, van Carburateur Service Nederland. We nemen contact op over je ${offerteDeel}, we vroegen ons af of je deze al gezien hebt, en of alles duidelijk is? We bellen of appen altijd even. Persoonlijk contact is altijd goed!\n\nWe horen graag of we deze klus mogen gaan inplannen.\n\nFijne dag,\n${mijnNaam}`;
                   return (
                     <div key={L.id} className="lc" style={{ borderLeftWidth: 5, borderLeftColor: tm.kl, ...(gewonnen ? { borderColor: "#bfe3c9", background: "#f4fbf6" } : afgewezen ? { background: "#fafbfa" } : {}) }}>
                       {gewonnen && (
@@ -510,7 +514,7 @@ function Dashboard() {
                       {L.telefoon
                         ? <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", margin: "8px 0 2px" }}>
                             <a href={`tel:${telClean}`} className="lc-tel">📞 {L.telefoon}</a>
-                            {!gewonnen && !afgewezen && waNr && <a href={`https://wa.me/${waNr}?text=${encodeURIComponent(`Hoi ${L.naam || ""}, je spreekt met Carburateur Service Nederland over je aanvraag. `)}`} target="_blank" rel="noopener" className="lc-btn wa" style={{ marginLeft: "auto" }}>💬 WhatsApp</a>}
+                            {!gewonnen && !afgewezen && waNr && <a href={`https://wa.me/${waNr}?text=${encodeURIComponent(waTekst)}`} target="_blank" rel="noopener" className="lc-btn wa" style={{ marginLeft: "auto" }}>💬 WhatsApp</a>}
                           </div>
                         : <div style={{ margin: "6px 0 2px", fontSize: 14, color: ROOD, fontWeight: 700 }}>⚠ Geen telefoonnummer</div>}
                       <div style={{ fontSize: 12.5, color: GRIJS, marginBottom: 8 }}>{L.email}{L.carburateur ? ` · ${L.carburateur}` : ""}</div>

@@ -61,6 +61,12 @@ export function codeVoorEmail(email: string | null | undefined): string | null {
   return TEAM.find((l) => l.email.toLowerCase() === e)?.code || null;
 }
 
+// Voornaam bij een teamcode (CG -> Cyriel), voor persoonlijke aanhef in berichten.
+export function naamVoorCode(code: string | null | undefined): string | null {
+  if (!code) return null;
+  return TEAM.find((l) => l.code === code)?.naam || null;
+}
+
 // Wie het sales-dashboard mag zien: Cyriel, Lukas, Jarno, Luuk.
 export const SALES_CODES = ["CG", "LE", "JM", "LV"];
 export function magSales(email: string | null | undefined): boolean {
