@@ -512,16 +512,6 @@ function Dashboard() {
                         </div>
                       )}
                       {volgende && <div className="lc-next"><span>🎯</span> {volgende}</div>}
-                      {!gewonnen && !afgewezen && nietOpLijst.length > 0 && (
-                        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6, margin: "2px 0 6px" }}>
-                          <span style={{ fontSize: 12, fontWeight: 800, color: ROOD }}>📵 {nietOpLijst.length}× niet opgenomen</span>
-                          {nietOpLijst.map((a, i) => (
-                            <span key={i} style={{ fontSize: 11.5, fontWeight: 600, color: "#b0413a", background: "#fdeceb", border: "1px solid #f6d4d1", borderRadius: 999, padding: "2px 9px", whiteSpace: "nowrap" }}>
-                              {a.datum ? new Date(a.datum).toLocaleDateString("nl-NL", { day: "numeric", month: "short" }) : "?"}{a.datum ? ` · ${new Date(a.datum).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}` : ""}{a.door ? ` · ${a.door}` : ""}
-                            </span>
-                          ))}
-                        </div>
-                      )}
                       {L.telefoon
                         ? <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", margin: "8px 0 2px" }}>
                             <a href={`tel:${telClean}`} className="lc-tel">📞 {L.telefoon}</a>
@@ -537,10 +527,19 @@ function Dashboard() {
                       {!gewonnen && !afgewezen && (
                         <div className="lc-acts">
                           <span className="lc-btn" onClick={() => logActie(L, "gebeld", "")}>✅ Gesproken</span>
-                          <span className="lc-btn neg" onClick={() => logActie(L, "niet opgenomen", "")}>📵 Niet opgenomen</span>
+                          <span className="lc-btn neg" onClick={() => logActie(L, "niet opgenomen", "")}>📵 Niet opgenomen{_nietOp > 0 ? ` (${_nietOp}×)` : ""}</span>
                           <span className="lc-btn" style={{ position: "relative" }} onClick={(e) => { const inp = e.currentTarget.querySelector("input") as HTMLInputElement | null; if (inp && (inp as unknown as { showPicker?: () => void }).showPicker) (inp as unknown as { showPicker: () => void }).showPicker(); else inp?.focus(); }}>💤 Uitstellen<input type="date" value={L.opvolgen_op || ""} onChange={(e) => { const d = e.target.value; if (d) { wijzigLead(L.id, "opvolgen_op", d); wijzigStatus(L, "uitstellen"); } }} onClick={(e) => e.stopPropagation()} style={{ position: "absolute", left: 10, bottom: 0, width: 1, height: 1, opacity: 0, pointerEvents: "none" }} /></span>
                           <span className="lc-btn" onClick={() => wijzigStatus(L, "geaccepteerd")}>🏆 Gewonnen</span>
                           <span className="lc-btn" onClick={() => { if (window.confirm("Deze lead op 'verloren / geen interesse' zetten? Hij gaat dan naar het tabblad Afgerond, uit je actieve lijst.")) wijzigStatus(L, "afgewezen"); }}>❌ Verloren</span>
+                        </div>
+                      )}
+                      {!gewonnen && !afgewezen && nietOpLijst.length > 0 && (
+                        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6, margin: "6px 0 2px" }}>
+                          {nietOpLijst.map((a, i) => (
+                            <span key={i} style={{ fontSize: 11.5, fontWeight: 600, color: "#b0413a", background: "#fdeceb", border: "1px solid #f6d4d1", borderRadius: 999, padding: "2px 9px", whiteSpace: "nowrap" }}>
+                              📵 {a.datum ? new Date(a.datum).toLocaleDateString("nl-NL", { day: "numeric", month: "short" }) : "?"}{a.datum ? ` · ${new Date(a.datum).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}` : ""}{a.door ? ` · ${a.door}` : ""}
+                            </span>
+                          ))}
                         </div>
                       )}
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
